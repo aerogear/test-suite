@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "inlineSourceMap": true,
+    "outDir": "tmp"
+  },
+  "exclude": ["node_modules"]
+}
