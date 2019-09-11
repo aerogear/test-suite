@@ -30,17 +30,34 @@ export FIREBASE_SENDER_ID=[..]
 npm install
 ```
 
-## Run services
+## Services
+
+Tests can either target locally running services or OpenShift instance with RHMI. To start services locally run:
 
 ```
 docker network create aerogear
 docker-compose up -d
 ```
 
+To target OpenShift instance run:
+
+```
+oc login <OPENSHIFT_HOST> # login as evals user
+./scripts/prepare.sh
+```
+
+Script will create mobile app and bindings via CRs and fetch mobile-services.json.
+
 ## Setup testing app
 
 ```
 ./scripts/build-testing-app.sh
+```
+
+By default testing app will be installed with latest version of js-sdk. To use `dev` version (master) export this environment variable before building the app:
+
+```
+export SDK_VERSION=dev
 ```
 
 ## Run the tests
