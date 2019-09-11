@@ -4,26 +4,7 @@ set -e
 
 IONIC_SHOWCASE="https://github.com/aerogear/ionic-showcase.git"
 
-MOBILE_PLATFORM="$MOBILE_PLATFORM"
-
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-    -h | --help)
-        echo
-        echo "Usage: $SCRIPT MOBILE_PLATFORM"
-        echo
-        echo "Mobile Platform: (env: MOBILE_PLATFORM)"
-        echo "  android"
-        echo "  ios"
-        echo
-        exit 0
-        ;;
-    *)
-        MOBILE_PLATFORM="$1"
-        shift
-        ;;
-    esac
-done
+MOBILE_PLATFORM="${1:-$MOBILE_PLATFORM}"
 
 APPS_DIR="$PWD/apps"
 APP_SRC=
