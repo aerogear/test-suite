@@ -35,7 +35,6 @@ npm install
 Tests can either target locally running services or OpenShift instance with RHMI. To start services locally run:
 
 ```
-docker network create aerogear
 docker-compose up -d
 ```
 
