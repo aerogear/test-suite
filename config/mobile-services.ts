@@ -1,14 +1,26 @@
 import { AeroGearConfiguration } from "@aerogear/core";
+import * as fs from 'fs';
+import * as path from 'path';
 
 const keycloakUrl = `http://${process.env.KEYCLOAK_HOST}:${process.env.KEYCLOAK_PORT}/auth`;
 const syncUrl = `${process.env.SYNC_HOST}:${process.env.SYNC_PORT}/graphql`;
 const metricsUrl = `http://${process.env.METRICS_HOST}:${process.env.METRICS_PORT}/metrics`;
 const upsUrl = `http://${process.env.UPS_HOST}:${process.env.UPS_PORT}`;
 
-export const config: AeroGearConfiguration = {
-    version: 1,
-    namespace: "integration",
-    clusterName: "test",
+let mobileServices;
+let dockerComposeConfig = true;
+
+if (fs.existsSync(path.resolve(__dirname, '../mobile-services.json'))) {
+    mobileServices = require('../mobile-services.json');
+    dockerComposeConfig = false;
+}
+
+export const dockerCompose = dockerComposeConfig;
+
+export const config: AeroGearConfiguration = mobileServices || {
+    clientId: "test",
+    namespace: "openshift-mobile-developer-console",
+    testType: "docker-compose",
     services: [
         {
             id: "be432368-44b1-4e3a-9750-5ac43c9fcd78",
@@ -26,7 +38,7 @@ export const config: AeroGearConfiguration = {
         },
         {
             id: "81f67bae-7d40-11e9-afde-06799ee5f0b0",
-            name: "sync-app-test",
+            name: "sync-app",
             type: "sync-app",
             url: `http://${syncUrl}`,
             config: {
@@ -42,7 +54,7 @@ export const config: AeroGearConfiguration = {
         },
         {
             id: "fb8ebb60-83b1-11e9-9805-e86a640057de",
-            name: "ups",
+            name: "push",
             type: "push",
             url: upsUrl,
             config: {

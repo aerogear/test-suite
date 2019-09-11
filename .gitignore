@@ -7,3 +7,6 @@ google-services.json
 .vscode
 .history
 .vars
+mobile-services.json
+push-app.json
+tmp

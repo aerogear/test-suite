@@ -3,6 +3,7 @@ chai.should();
 
 import { opts as appiumOpts } from "../../config/appium-opts";
 import { postgres } from "../../util/postgres";
+import { dockerCompose } from "../../config/mobile-services";
 
 import testAppConfig = require("../../testing-app/package-lock.json");
 
@@ -23,6 +24,10 @@ const expectedData = {
 
 describe("App Metrics", function() {
     this.timeout(0);
+
+    if (!dockerCompose) {
+        return;
+    }
 
     it("should receive app metrics", async () => {
         await new Promise(resolve => setTimeout(resolve, 10 * 1000));

@@ -18,7 +18,7 @@ services:
       POSTGRES_PASSWORD: metrics
       POSTGRES_DB: metrics
   metrics:
-    image: aerogear/aerogear-app-metrics:master
+    image: aerogear/aerogear-app-metrics:latest
     ports:
       - "3000:3000"
     environment:
@@ -26,6 +26,7 @@ services:
       PGUSER: metrics
       PGPASSWORD: metrics
       PGDATABASE: metrics
+    restart: always
     depends_on:
       - metricsdb
   upsdb:
@@ -35,7 +36,7 @@ services:
       POSTGRES_PASSWORD: ups
       POSTGRES_DB: ups
   ups:
-    image: aerogear/unifiedpush-configurable-container:2.3.2
+    image: aerogear/unifiedpush-configurable-container:latest
     ports:
     - "8089:8080"
     environment:
@@ -44,5 +45,24 @@ services:
       POSTGRES_USER: ups
       POSTGRES_PASSWORD: ups
       POSTGRES_DATABASE: ups
+    restart: always
     depends_on:
       - upsdb
+  datasyncdb:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: sync
+      POSTGRES_PASSWORD: sync
+      POSTGRES_DB: sync
+  datasync:
+    image: aerogear/voyager-server-example-task:latest
+    ports:
+      - "4000:4000"
+    environment:
+      DB_HOSTNAME: datasyncdb
+      DB_USERNAME: sync
+      DB_PASSWORD: sync
+      DB_NAME: sync
+    restart: always
+    depends_on:
+      - datasyncdb

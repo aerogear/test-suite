@@ -4,8 +4,14 @@ chai.should();
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
 import { postgres } from "../../util/postgres";
+import { dockerCompose } from "../../config/mobile-services";
 
 describe("Device Security with Metrics", () => {
+
+    if (!dockerCompose) {
+        return;
+    }
+
     it("should be possible to report device check via metrics", async () => {
         await device.execute(async (modules, universe: GlobalUniverse) => {
             const { SecurityService, DeviceCheckType } = modules[

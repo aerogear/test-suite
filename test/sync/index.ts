@@ -3,8 +3,6 @@ chai.should();
 
 import { ApolloOfflineClient } from "@aerogear/voyager-client";
 import { CordovaNetworkStatus } from "@aerogear/voyager-client";
-import { gql, VoyagerServer } from "@aerogear/voyager-server";
-import express = require("express");
 import { ToggleNetworkStatus } from "../../fixtures/ToggleNetworkStatus";
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
@@ -20,58 +18,7 @@ interface Universe extends GlobalUniverse {
 describe("Data Sync", function() {
     this.timeout(0);
 
-    let expressServer;
-    const serverItems = [];
-    let numItems = 0;
-
-    it("should run the voyager server", async () => {
-        const typeDefs = gql(`
-            type Item {
-                id: ID!
-                title: String!
-            }
-
-            type Query {
-                items: [Item]
-            }
-
-            type Mutation {
-                create(title: String!): Item
-            }
-        `);
-
-        const resolvers = {
-            Query: {
-                items: () => {
-                    return serverItems;
-                },
-            },
-
-            Mutation: {
-                create: (_, args) => {
-                    const newItem = {
-                        id: numItems++,
-                        title: args.title,
-                    };
-                    serverItems.push(newItem);
-                    return newItem;
-                },
-            },
-        };
-
-        const server = VoyagerServer(
-            {
-                typeDefs,
-                resolvers,
-            },
-            {}
-        );
-
-        const app = express();
-        server.applyMiddleware({ app });
-
-        expressServer = app.listen(4000);
-    });
+    let numItems;
 
     it("should initialize voyager client", async () => {
         await device.execute(async (modules, universe: Universe, platform) => {
@@ -99,8 +46,8 @@ describe("Data Sync", function() {
             universe.networkStatus = networkStatus;
 
             const itemsQuery = gql(`
-                query items {
-                    items {
+                query allTasks {
+                    allTasks {
                         id
                         title
                     }
@@ -109,8 +56,8 @@ describe("Data Sync", function() {
             universe.itemsQuery = itemsQuery;
 
             const cacheUpdates = {
-                create: getUpdateFunction({
-                    mutationName: "create",
+                createTask: getUpdateFunction({
+                    mutationName: "createTask",
                     idField: "id",
                     operationType: CacheOperation.ADD,
                     updateQuery: itemsQuery,
@@ -141,10 +88,10 @@ describe("Data Sync", function() {
                 errorPolicy: "none",
             });
 
-            return { data: data.items };
+            return { data: data.allTasks };
         });
 
-        result.data.should.deep.equal([]);
+        numItems = result.data.length;
     });
 
     it("should perform offline mutation", async () => {
@@ -166,16 +113,16 @@ describe("Data Sync", function() {
 
                 await apolloClient.offlineMutate({
                     mutation: gql(`
-                        mutation create($title: String!) {
-                            create(title: $title) {
+                        mutation createTask($title: String!, $description: String!) {
+                            createTask(title: $title, description: $description) {
                                 id
                                 title
                             }
                         }
                     `),
-                    variables: { title: "test" },
+                    variables: { title: "test", description: "test" },
                     updateQuery: itemsQuery,
-                    returnType: "Item",
+                    returnType: "Task",
                 });
             } catch (error) {
                 if (error.networkError && error.networkError.offline) {
@@ -196,14 +143,14 @@ describe("Data Sync", function() {
             const { apolloClient, itemsQuery } = universe;
 
             const { data } = await apolloClient.query({
-                query: itemsQuery,
+                query: itemsQuery
             });
 
-            return { data: data.items };
+            return { data: data.allTasks };
         });
 
-        result.data.length.should.equal(1);
-        result.data[0].title.should.equal("test");
+        result.data.length.should.equal(numItems + 1);
+        result.data[numItems].title.should.equal("test");
     });
 
     it("should sync changes when going online", async () => {
@@ -227,25 +174,10 @@ describe("Data Sync", function() {
                 query: itemsQuery,
             });
 
-            return { data: data.items };
+            return { data: data.allTasks };
         });
 
-        result.data.should.deep.equal([
-            {
-                __typename: "Item",
-                id: "0",
-                title: "test",
-            },
-        ]);
-        serverItems.should.deep.equal([
-            {
-                id: 0,
-                title: "test",
-            },
-        ]);
-    });
-
-    it("should stop voyager server", async () => {
-        expressServer.close();
+        result.data.length.should.equal(numItems + 1);
+        result.data[numItems].title.should.equal("test");
     });
 });

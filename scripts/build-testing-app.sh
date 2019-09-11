@@ -21,12 +21,14 @@ fi
 
 cd testing-app
 
+SDK_VERSION="${SDK_VERSION:-latest}"
+
 npm install --save \
-  @aerogear/security@dev \
-  @aerogear/app@dev \
-  @aerogear/auth@dev \
-  @aerogear/voyager-client@dev \
-  @aerogear/push@dev \
+  @aerogear/security@$SDK_VERSION \
+  @aerogear/app@$SDK_VERSION \
+  @aerogear/auth@$SDK_VERSION \
+  @aerogear/voyager-client@$SDK_VERSION \
+  @aerogear/push@$SDK_VERSION \
   webpack \
   webpack-cli \
   typescript \
@@ -34,9 +36,9 @@ npm install --save \
   graphql \
   graphql-tag
 
-cordova plugin add @aerogear/cordova-plugin-aerogear-metrics@dev
-cordova plugin add @aerogear/cordova-plugin-aerogear-security@dev
-cordova plugin add @aerogear/cordova-plugin-aerogear-sync@dev
+cordova plugin add @aerogear/cordova-plugin-aerogear-metrics@$SDK_VERSION
+cordova plugin add @aerogear/cordova-plugin-aerogear-security@$SDK_VERSION
+cordova plugin add @aerogear/cordova-plugin-aerogear-sync@$SDK_VERSION
 cordova plugin add cordova-plugin-inappbrowser
 
 npx webpack
@@ -52,7 +54,7 @@ if [ "$MOBILE_PLATFORM" = "ios" ]; then
 else
 
   # push tests works only in android
-  cordova plugin add @aerogear/cordova-plugin-aerogear-push@dev
+  cordova plugin add @aerogear/cordova-plugin-aerogear-push@$SDK_VERSION
 
   cordova platform add android || true
   cordova build android
