@@ -16,7 +16,7 @@ exports.config = {
     real_mobile: true,
     app: process.env.BROWSERSTACK_APP,
     autoWebview: true,
-    "browserstack.local": "true",
+    // "browserstack.local": "true",
     'browserstack.user': process.env.BROWSERSTACK_USER,
     'browserstack.key': process.env.BROWSERSTACK_KEY,
     'browserstack.debug': true,
