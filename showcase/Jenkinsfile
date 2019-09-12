@@ -15,7 +15,7 @@ pipeline {
             MOBILE_PLATFORM = 'android'
           }
           stages {
-            stage('Build App') {
+            stage('Android: Build App') {
               agent {
                 dockerfile {
                   dir 'containers/android'
@@ -29,7 +29,7 @@ pipeline {
                 }
               }
             }
-            stage('Test') {
+            stage('Android: Test') {
               agent {
                 dockerfile {
                   dir 'containers/node'
@@ -55,7 +55,7 @@ pipeline {
             MOBILE_PLATFORM = 'ios'
           }
           stages {
-            stage('Build App') {
+            stage('iOS: Build App') {
               agent {
                 label 'osx5x'
               }
@@ -66,7 +66,7 @@ pipeline {
                 }
               }
             }
-            stage('Test') {
+            stage('iOS: Test') {
               agent {
                 dockerfile {
                   dir 'containers/node'
@@ -74,6 +74,7 @@ pipeline {
                 }
               }
               steps {
+                sh 'npm install -g cordova ionic'
                 dir("showcase") {
                   sh 'npm install'
                   unstash 'ios-app'

@@ -5,7 +5,7 @@ USER root
 RUN apt update \
     && apt install gradle
 
-RUN npm -g install cordova
+RUN npm -g install cordova ionic
 
 RUN useradd -m -u 1001 jenkins
 
