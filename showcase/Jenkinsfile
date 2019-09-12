@@ -1,0 +1,64 @@
+
+pipeline {
+  agent none
+  environment {
+    BROWSERSTACK_USER = credentials('browserstack-user')
+    BROWSERSTACK_KEY = credentials('browserstack-key')
+    FIREBASE_SERVER_KEY = credentials('firebase-server-key')
+    FIREBASE_SENDER_ID = credentials('firebase-sender-id')
+  }
+  stages {
+    stage('Showcase') {
+      parallel {
+        stage('Android') {
+          environment {
+            MOBILE_PLATFORM = 'android'
+          }
+          stages {
+            stage('Build App') {
+              agent {
+                dockerfile {
+                  dir 'containers/android'
+                  label 'psi_rhel8'
+                }
+              }
+              steps {
+                dir("showcase") {
+                  sh './scripts/build.sh'
+                  stash includes: 'apps/ionic-showcase.apk', name: 'android-app'
+                }
+              }
+            }
+            stage('Test') {
+              agent {
+                dockerfile {
+                  dir 'containers/node'
+                  label 'psi_rhel8'
+                }
+              }
+              steps {
+                dir("showcase") {
+                  sh 'npm install'
+                  unstash 'android-app'
+                  sh """
+                  export BROWSERSTACK_APP="\$(./scripts/upload.sh)"
+                  npm run test
+                  """
+                }
+              }
+            }
+          }
+        }
+
+        stage('iOS') {
+          agent {
+            label 'osx5x'
+          }
+          steps {
+            sh "exit 1"
+          }
+        }
+      }
+    }
+  }
+}
