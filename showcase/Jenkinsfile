@@ -51,11 +51,39 @@ pipeline {
         }
 
         stage('iOS') {
-          agent {
-            label 'osx5x'
+          environment {
+            MOBILE_PLATFORM = 'ios'
           }
-          steps {
-            sh "exit 1"
+          stages {
+            stage('Build App') {
+              agent {
+                label 'osx5x'
+              }
+              steps {
+                dir("showcase") {
+                  sh './scripts/build.sh'
+                  stash includes: 'apps/ionic-showcase.ipa', name: 'ios-app'
+                }
+              }
+            }
+            stage('Test') {
+              agent {
+                dockerfile {
+                  dir 'containers/node'
+                  label 'psi_rhel8'
+                }
+              }
+              steps {
+                dir("showcase") {
+                  sh 'npm install'
+                  unstash 'ios-app'
+                  sh """
+                  export BROWSERSTACK_APP="\$(./scripts/upload.sh)"
+                  npm run test
+                  """
+                }
+              }
+            }
           }
         }
       }
