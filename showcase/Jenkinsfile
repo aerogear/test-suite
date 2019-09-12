@@ -61,6 +61,7 @@ pipeline {
               }
               steps {
                 dir("showcase") {
+                  sh 'npm install -g cordova ionic'
                   sh './scripts/build.sh'
                   stash includes: 'apps/ionic-showcase.ipa', name: 'ios-app'
                 }
@@ -74,7 +75,6 @@ pipeline {
                 }
               }
               steps {
-                sh 'npm install -g cordova ionic'
                 dir("showcase") {
                   sh 'npm install'
                   unstash 'ios-app'
