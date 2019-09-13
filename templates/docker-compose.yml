@@ -2,7 +2,7 @@ version: '3'
 
 services:
   keycloak:
-    image: jboss/keycloak
+    image: jboss/keycloak:${KEYCLOAK_VERSION}
     ports:
       - "8080:8080"
     environment:
@@ -18,7 +18,7 @@ services:
       POSTGRES_PASSWORD: metrics
       POSTGRES_DB: metrics
   metrics:
-    image: aerogear/aerogear-app-metrics:latest
+    image: aerogear/aerogear-app-metrics:${METRICS_VERSION}
     ports:
       - "3000:3000"
     environment:
@@ -36,7 +36,7 @@ services:
       POSTGRES_PASSWORD: ups
       POSTGRES_DB: ups
   ups:
-    image: aerogear/unifiedpush-configurable-container:latest
+    image: aerogear/unifiedpush-configurable-container:${UPS_VERSION}
     ports:
     - "8089:8080"
     environment:
@@ -55,7 +55,7 @@ services:
       POSTGRES_PASSWORD: sync
       POSTGRES_DB: sync
   datasync:
-    image: aerogear/voyager-server-example-task:latest
+    image: aerogear/voyager-server-example-task:${DATASYNC_VERSION}
     ports:
       - "4000:4000"
     environment:

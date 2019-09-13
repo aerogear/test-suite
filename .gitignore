@@ -10,3 +10,4 @@ google-services.json
 mobile-services.json
 push-app.json
 tmp
+/docker-compose.yml
