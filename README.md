@@ -35,7 +35,16 @@ npm install
 Tests can either target locally running services or OpenShift instance with RHMI. To start services locally run:
 
 ```
-docker-compose up -d
+./scripts/docker-compose-up.sh
+```
+
+By default latest version of services will be installed. Version of each service can be specified via environment variables before running above script:
+
+```
+export KEYCLOAK_VERSION="..."
+export METRICS_VERSION="..."
+export UPS_VERSION="..."
+export DATASYNC_VERSION="..."
 ```
 
 To target OpenShift instance run:
