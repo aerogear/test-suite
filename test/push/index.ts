@@ -122,4 +122,51 @@ describe("Push", function() {
         // wait for the notification
         expect(await message).to.equal("test");
     });
+
+    it('should not receive notification if unregistered', async () => {
+        // unregister from the UPS server
+        await device.execute(async (modules, universe, config) => {
+            const { init } = modules["@aerogear/app"];
+            const { PushRegistration } = modules["@aerogear/push"];
+
+            const app = init(config);
+
+            await new PushRegistration(app.config).unregister();
+        }, mobileServices);
+
+        // start listening for notifications
+        // fail if notification received
+        // pass if no message received in 5s
+        const messageTimeout = device.execute(async modules => {
+            const { PushRegistration } = modules["@aerogear/push"];
+
+            return await new Promise((resolve, reject) => {
+                setTimeout(resolve, 5000);
+                PushRegistration.onMessageReceived(notification =>
+                    reject(notification)
+                );
+            });
+        });
+
+        const config = mobileServices.services.find(
+            service => service.name === "push"
+        );
+
+        upsUrl = config.url;
+
+        // send test notification
+        sender({
+            url: upsUrl,
+            applicationId: pushApplicationID,
+            masterSecret
+        }).then(client => {
+            client.sender.send(
+                { alert: "test" },
+                { criteria: { alias: ["alias"] } }
+            );
+        });
+
+        // wait for the notification timeout
+        await messageTimeout;
+    });
 });
