@@ -1,0 +1,16 @@
+apiVersion: push.aerogear.org/v1alpha1
+kind: AndroidVariant
+metadata:
+  name: test-android-ups-variant
+  ownerReferences:
+    - apiVersion: mdc.aerogear.org/v1alpha1
+      blockOwnerDeletion: false
+      kind: MobileClient
+      name: ${APP_NAME}
+      uid: ${APP_UID}
+spec:
+  description: UPS Android Variant
+  pushApplicationId: ${PUSH_APP_ID}
+  senderId: ''
+  serverKey: >-
+    ${FIREBASE_SERVER_KEY}

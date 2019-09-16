@@ -1,0 +1,6 @@
+apiVersion: push.aerogear.org/v1alpha1
+kind: PushApplication
+metadata:
+  name: ${PUSH_APP_NAME}
+spec:
+  description: MDC Push Application

@@ -10,8 +10,8 @@ const config = {
     password: "admin",
     token: null,
     authServerUrl: null,
-    testUser: "test",
-    testPass: "123",
+    testUser: "admin",
+    testPass: "admin",
 };
 
 async function authenticateKeycloak() {

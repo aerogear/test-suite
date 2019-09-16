@@ -3,7 +3,7 @@ chai.should();
 
 import { Auth } from "@aerogear/auth";
 import { KeycloakInitOptions } from "keycloak-js";
-import { config as mobileServices } from "../../config/mobile-services";
+import { config as mobileServices, dockerCompose } from "../../config/mobile-services";
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
 import {
@@ -22,15 +22,19 @@ describe("Auth", function() {
 
     before("setup test realm", async () => {
         mainWindow = await device.browser.getWindowHandle();
-        const config = mobileServices.services.find(
-            service => service.name === "keycloak"
-        );
-        await prepareKeycloak(config.url);
+        if (dockerCompose) {
+            const config = mobileServices.services.find(
+                service => service.name === "keycloak"
+            );
+            await prepareKeycloak(config.url);
+        }
     });
 
     after("remove test realm", async () => {
         await device.browser.switchToWindow(mainWindow);
-        await resetKeycloakConfiguration();
+        if (dockerCompose) {
+            await resetKeycloakConfiguration();
+        }
     });
 
     it("should not login with incorrect credentials", async () => {
@@ -54,7 +58,7 @@ describe("Auth", function() {
         await device.browser.switchToWindow(loginPage);
 
         const usernamEl = await device.browser.$("#username");
-        await usernamEl.setValue("test");
+        await usernamEl.setValue("admin");
 
         const passwordEl = await device.browser.$("#password");
         await passwordEl.setValue("wrong-password");
@@ -72,7 +76,7 @@ describe("Auth", function() {
 
     it("should login", async () => {
         const passwordEl = await device.browser.$("#password");
-        await passwordEl.setValue("123");
+        await passwordEl.setValue("admin");
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
