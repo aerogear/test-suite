@@ -10,6 +10,7 @@ pipeline {
         stage("install") {
             steps {
                 sh "npm install"
+                unstash 'package-lock'
             }
         }
         stage("test") {
