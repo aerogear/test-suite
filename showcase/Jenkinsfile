@@ -12,5 +12,11 @@ pipeline {
                 sh "npm install"
             }
         }
+        stage("test") {
+            steps {
+                sh "npm run lint"
+                sh "npm run prettier:check"
+            }
+        }
     }
 }
