@@ -4,7 +4,7 @@ const path = require("path");
  * Read and return the {name} environment variable or
  * if undefined return {fallback} and if also {fallback}
  * is undefined throw an Error
- * 
+ *
  * @param {string} name of the env var to return
  * @param {string} fallback value to use if the env var is undefined
  * @throws {Error} when env var and fallback is undefined
@@ -13,7 +13,7 @@ function getEnv(name, fallback = undefined) {
   const value = process.env[name];
   if (value === undefined) {
     if (fallback === undefined) {
-      throw new Error(`\'${name}\' environment variable is not defined`)
+      throw new Error(`\'${name}\' environment variable is not defined`);
     } else {
       return fallback;
     }
@@ -21,10 +21,10 @@ function getEnv(name, fallback = undefined) {
   return value;
 }
 
-const BROWSERSTACK_USER = getEnv('BROWSERSTACK_USER')
-const BROWSERSTACK_KEY = getEnv('BROWSERSTACK_KEY')
-const BROWSERSTACK_APP = getEnv('BROWSERSTACK_APP')
-const MOBILE_PLATFORM = getEnv('MOBILE_PLATFORM', 'android')
+const BROWSERSTACK_USER = getEnv("BROWSERSTACK_USER");
+const BROWSERSTACK_KEY = getEnv("BROWSERSTACK_KEY");
+const BROWSERSTACK_APP = getEnv("BROWSERSTACK_APP");
+const MOBILE_PLATFORM = getEnv("MOBILE_PLATFORM", "android");
 
 exports.config = {
   seleniumAddress: "http://hub.browserstack.com/wd/hub",
