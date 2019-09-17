@@ -9,14 +9,17 @@ pipeline {
     stages {
         stage("install") {
             steps {
-                sh "npm install"
-                unstash 'package-lock'
+                dir("showcase") {
+                    sh "npm install"
+                }
             }
         }
         stage("test") {
             steps {
-                sh "npm run lint"
-                sh "npm run prettier:check"
+                dir("showcase") {
+                    sh "npm run lint"
+                    sh "npm run prettier:check"
+                }
             }
         }
     }
