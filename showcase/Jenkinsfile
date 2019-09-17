@@ -1,0 +1,22 @@
+pipeline {
+    agent {
+        docker {
+            image "node:10"
+            label "psi_rhel8"
+            args  "-u root:root"
+        }
+    }
+    stages {
+        stage("install") {
+            steps {
+                sh "npm install"
+            }
+        }
+        stage("test") {
+            steps {
+                sh "npm run lint"
+                sh "npm run prettier:check"
+            }
+        }
+    }
+}
