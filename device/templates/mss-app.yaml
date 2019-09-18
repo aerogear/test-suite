@@ -1,0 +1,13 @@
+apiVersion: mobile-security-service.aerogear.org/v1alpha1
+kind: MobileSecurityServiceApp
+metadata:
+  name: ${APP_NAME}-security
+  ownerReferences:
+  - apiVersion: mdc.aerogear.org/v1alpha1
+    blockOwnerDeletion: false
+    kind: MobileClient
+    name: ${APP_NAME}
+    uid: ${APP_UID}
+spec:
+  appId: org.aerogear.integrationtests
+  appName: ${APP_NAME}

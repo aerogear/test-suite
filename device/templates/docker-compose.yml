@@ -66,3 +66,21 @@ services:
     restart: always
     depends_on:
       - datasyncdb
+  mssdb:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: mss
+      POSTGRES_PASSWORD: mss
+      POSTGRES_DB: mss
+  mss:
+    image: quay.io/aerogear/mobile-security-service:${MSS_VERSION}
+    ports:
+      - "3001:3000"
+    environment:
+      PGHOST: mssdb
+      PGUSER: mss
+      PGPASSWORD: mss
+      PGDATABASE: mss
+    restart: always
+    depends_on:
+      - mssdb

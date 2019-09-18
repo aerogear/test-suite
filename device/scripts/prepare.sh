@@ -6,6 +6,9 @@ APP_NAME="test"
 SYNC_NAMESPACE_PREFIX="test"
 SYNC_NAMESPACE="$SYNC_NAMESPACE_PREFIX-$RANDOM"
 
+# login to cluster as evals user
+oc login $OPENSHIFT_HOST -u $OPENSHIFT_USER -p $OPENSHIFT_PASS
+
 # find mdc namespace
 if oc get mobileclients -n openshift-mobile-developer-console &>/dev/null; then
   MDC_NAMESPACE=openshift-mobile-developer-console
@@ -60,6 +63,12 @@ sed -e "s/\${APP_NAME}/$APP_NAME/" \
   -e "s/\${FIREBASE_SERVER_KEY}/$FIREBASE_SERVER_KEY/" \
   templates/android-variant.yaml >tmp/android-variant.yaml
 oc create -f tmp/android-variant.yaml -n $MDC_NAMESPACE
+
+# bind with mss
+sed -e "s/\${APP_NAME}/$APP_NAME/" \
+  -e "s/\${APP_UID}/$APP_UID/" \
+  templates/mss-app.yaml >tmp/mss-app.yaml
+oc create -f tmp/mss-app.yaml -n $MDC_NAMESPACE
 
 # wait for bindings
 sleep 10
