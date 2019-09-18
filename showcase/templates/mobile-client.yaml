@@ -1,0 +1,10 @@
+apiVersion: mdc.aerogear.org/v1alpha1
+kind: MobileClient
+metadata:
+  name: ${APP_NAME}
+spec:
+  name: ${APP_NAME}
+status:
+  clientId: ${APP_NAME}
+  namespace: openshift-mobile-developer-console
+  services: []
