@@ -3,7 +3,11 @@ const { expect } = require('chai')
 
 const opts = {
     ignoreHTTPSErrors: true,
-    headless: process.env.HEADLESS !== 'false'
+    headless: process.env.HEADLESS !== 'false',
+    // Uncommenting the next line will slow down all actions
+    // performed by the Puppeteer by <value> milliseconds.
+    // Pretty useful when fixing/writing a test
+    // slowMo: 50
 }
 
 before(async () => {
