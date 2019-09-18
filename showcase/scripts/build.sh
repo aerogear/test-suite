@@ -24,7 +24,7 @@ function buildIOS() {
         -scheme "AeroGear Ionic Showcase" \
         -configuration Debug \
         -derivedDataPath ./derived \
-        CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
     # create the .ipa file
     mkdir -p package/Payload
