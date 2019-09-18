@@ -1,10 +1,8 @@
 {
   "name": "aerogear-browser-tests",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "mocha --file utils/bootstrap.js --recursive test --timeout 60000"
+    "test": "mocha"
   },
   "author": "",
   "license": "Apache-2.0",

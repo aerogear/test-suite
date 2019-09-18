@@ -1,0 +1,4 @@
+---
+file: "utils/bootstrap.js"
+spec: "test/**/*.js"
+timeout: 60000
