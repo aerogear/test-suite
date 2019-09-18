@@ -23,7 +23,7 @@ describe('Test MDC Login and Logout', () => {
     
     const logoutButton = await page.$('[href="/oauth/sign_in"]')
     await Promise.all([
-      await logoutButton.click(),
+      logoutButton.click(),
       page.waitForNavigation()
     ]);
     expect(await page.title()).to.eql('Log In')
