@@ -1,0 +1,25 @@
+pipeline {
+    agent {
+        dockerfile {
+            dir "device/containers/node"
+            label "psi_rhel8"
+        }
+    }
+    stages {
+        stage("install") {
+            steps {
+                dir("showcase") {
+                    sh "npm install"
+                }
+            }
+        }
+        stage("test") {
+            steps {
+                dir("showcase") {
+                    sh "npm run lint"
+                    sh "npm run prettier:check"
+                }
+            }
+        }
+    }
+}
