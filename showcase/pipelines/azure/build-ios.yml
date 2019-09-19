@@ -18,25 +18,31 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: 10.x
+
   - task: CmdLine@2
     inputs:
       script: npm install -g ionic@4 cordova@8
+
   - task: CmdLine@2
     inputs:
       workingDirectory: showcase/
       script: ./scripts/build.sh ios --clone-only --workspace $(BUILD_WORKSPACE)
+
   - task: CacheBeta@0
     inputs:
-      key: node-modules | $(BUILD_WORKSPACE)/package-lock.json
+      key: node-modules | $(BUILD_WORKSPACE)/package.json
       path: $(BUILD_WORKSPACE)/node_modules
+
   - task: CacheBeta@0
     inputs:
-      key: cordova-plugins | $(BUILD_WORKSPACE)/package-lock.json | $(BUILD_WORKSPACE)/config.xml
+      key: cordova-plugins | $(BUILD_WORKSPACE)/package.json | $(BUILD_WORKSPACE)/config.xml
       path: $(BUILD_WORKSPACE)/plugins
+
   - task: CmdLine@2
     inputs:
       workingDirectory: showcase/
       script: ./scripts/build.sh ios --workspace $(BUILD_WORKSPACE)
+
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: showcase/apps/ionic-showcase.ipa
