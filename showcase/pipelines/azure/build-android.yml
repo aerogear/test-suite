@@ -1,0 +1,26 @@
+# do not build for branch and tags
+trigger: none
+
+pr:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - showcase/*
+
+pool:
+  vmImage: macos-latest
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: 10.x
+  - task: CmdLine@2
+    inputs:
+      workingDirectory: showcase/
+      script: |
+        npm install -g ionic@4 cordova@8
+        ./scripts/build.sh android
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: showcase/apps/ionic-showcase.apk
