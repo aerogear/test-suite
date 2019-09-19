@@ -5,7 +5,6 @@
 set -e
 
 SCRIPT=${0}
-DEBUG=false
 ORGANIZATION=https://dev.azure.com/aerogear/
 PROJECT=test-suite
 PIPELINE=showcase.build
@@ -15,7 +14,7 @@ APP_EXT=
 MOBILE_PLATFORM=${MOBILE_PLATFORM:-}
 BUILD_ID=
 
-help() { echo "Usage ${SCRIPT} MOBILE_PLATFORM [--debug] [--build-id BUILD_ID]"; }
+help() { echo "Usage ${SCRIPT} MOBILE_PLATFORM [--build-id BUILD_ID]"; }
 
 POSITIONALS=()
 while [[ $# -gt 0 ]]; do
@@ -23,10 +22,6 @@ while [[ $# -gt 0 ]]; do
     -h | --help)
         help
         exit 0
-        ;;
-    --debug)
-        DEBUG=true
-        shift
         ;;
     --build-id)
         BUILD_ID=${2}
@@ -60,9 +55,7 @@ ios)
     ;;
 esac
 
-if [[ ${DEBUG} == "true" ]]; then
-    set -x
-fi
+mkdir -p ${APPS_DIR}
 
 az account show >/dev/null
 
@@ -97,7 +90,7 @@ while true; do
     status=$(echo ${out} | jq -r ".status")
     if [[ ${status} != ${STATUS} ]]; then
         echo
-        echo " - build status: ${status} "
+        echo -n " - build status: ${status} "
     fi
     STATUS=${status}
 
