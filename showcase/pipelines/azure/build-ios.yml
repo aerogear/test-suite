@@ -9,6 +9,9 @@ pr:
     include:
       - showcase/*
 
+variables:
+  BUILD_WORKSPACE: /tmp/showcase-$(Build.BuildNumber)
+
 pool:
   vmImage: macos-latest
 steps:
@@ -17,10 +20,23 @@ steps:
       versionSpec: 10.x
   - task: CmdLine@2
     inputs:
+      script: npm install -g ionic@4 cordova@8
+  - task: CmdLine@2
+    inputs:
       workingDirectory: showcase/
-      script: |
-        npm install -g ionic@4 cordova@8
-        ./scripts/build.sh ios
+      script: ./scripts/build.sh ios --clone-only --workspace $(BUILD_WORKSPACE)
+  - task: CacheBeta@0
+    inputs:
+      key: node-modules | $(BUILD_WORKSPACE)/package-lock.json
+      path: $(BUILD_WORKSPACE)/node_modules
+  - task: CacheBeta@0
+    inputs:
+      key: cordova-plugins | $(BUILD_WORKSPACE)/package-lock.json | $(BUILD_WORKSPACE)/config.xml
+      path: $(BUILD_WORKSPACE)/plugins
+  - task: CmdLine@2
+    inputs:
+      workingDirectory: showcase/
+      script: ./scripts/build.sh ios --workspace $(BUILD_WORKSPACE)
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: showcase/apps/ionic-showcase.ipa
