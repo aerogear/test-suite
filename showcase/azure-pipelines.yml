@@ -1,0 +1,43 @@
+pr:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - showcase/*
+
+jobs:
+  - job: iOS
+    pool:
+      vmImage: macos-latest
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: 10.x
+      - task: CmdLine@2
+        inputs:
+          workingDirectory: showcase/
+          script: |
+            sudo xcode-select --switch /Applications/Xcode_9.4.1.app
+            npm install -g ionic@4 cordova@8
+            ./scripts/build.sh ios
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: showcase/apps/ionic-showcase.ipa
+
+  - job: Android
+    pool:
+      vmImage: macos-latest
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: 10.x
+      - task: CmdLine@2
+        inputs:
+          workingDirectory: showcase/
+          script: |
+            npm install -g ionic@4 cordova@8
+            ./scripts/build.sh android
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathToPublish: showcase/apps/ionic-showcase.apk
