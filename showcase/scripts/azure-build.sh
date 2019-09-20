@@ -4,44 +4,44 @@
 
 set -e
 
-SCRIPT=${0}
-ORGANIZATION=https://dev.azure.com/aerogear/
-PROJECT=test-suite
-PIPELINE=showcase.build
-APPS_DIR=${PWD}/apps
-APP_NAME=ionic-showcase
+SCRIPT="${0}"
+ORGANIZATION="https://dev.azure.com/aerogear/"
+PROJECT="test-suite"
+PIPELINE="showcase.build"
+APPS_DIR="${PWD}/apps"
+APP_NAME="ionic-showcase"
 APP_EXT=
-MOBILE_PLATFORM=${MOBILE_PLATFORM:-}
+MOBILE_PLATFORM="${MOBILE_PLATFORM:-}"
 BUILD_ID=
 
 help() { echo "Usage ${SCRIPT} MOBILE_PLATFORM [--build-id BUILD_ID]"; }
 
 POSITIONALS=()
 while [[ $# -gt 0 ]]; do
-    case ${1} in
+    case "${1}" in
     -h | --help)
         help
         exit 0
         ;;
     --build-id)
-        BUILD_ID=${2}
+        BUILD_ID="${2}"
         shift
         shift
         ;;
     *)
-        POSITIONALS+=(${1})
+        POSITIONALS+=("${1}")
         shift
         ;;
     esac
 done
-MOBILE_PLATFORM=${POSITIONALS[0]:-$MOBILE_PLATFORM}
+MOBILE_PLATFORM="${POSITIONALS[0]:-$MOBILE_PLATFORM}"
 
-if [[ -z ${MOBILE_PLATFORM} ]]; then
+if [[ -z "${MOBILE_PLATFORM}" ]]; then
     echo "error: MOBILE_PLATFORM is not defined"
     exit 1
 fi
 
-case ${MOBILE_PLATFORM} in
+case "${MOBILE_PLATFORM}" in
 android)
     APP_EXT="apk"
     ;;
@@ -55,23 +55,23 @@ ios)
     ;;
 esac
 
-mkdir -p ${APPS_DIR}
+mkdir -p "${APPS_DIR}"
 
 az account show >/dev/null
 
-if [[ -z ${BUILD_ID} ]]; then
+if [[ -z "${BUILD_ID}" ]]; then
     echo " - start ${MOBILE_PLATFORM} build"
 
     COMMIT_ID="$(git rev-parse HEAD)"
 
-    out=$(az pipelines run \
-        --commit-id ${COMMIT_ID} \
-        --name ${PIPELINE}.${MOBILE_PLATFORM} \
-        --organization ${ORGANIZATION} \
-        --project ${PROJECT} \
-        --output json)
+    out="$(az pipelines run \
+        --commit-id "${COMMIT_ID}" \
+        --name "${PIPELINE}.${MOBILE_PLATFORM}" \
+        --organization "${ORGANIZATION}" \
+        --project "${PROJECT}" \
+        --output json)"
 
-    BUILD_ID=$(echo ${out} | jq -r ".id")
+    BUILD_ID="$(echo "${out}" | jq -r ".id")"
 
     echo -n " - build started: ${ORGANIZATION}${PROJECT}/_build/results?buildId=${BUILD_ID}"
 else
@@ -81,20 +81,20 @@ fi
 STATUS=
 while true; do
 
-    out=$(az pipelines runs show \
-        --id ${BUILD_ID} \
-        --organization ${ORGANIZATION} \
-        --project ${PROJECT} \
-        --output json)
+    out="$(az pipelines runs show \
+        --id "${BUILD_ID}" \
+        --organization "${ORGANIZATION}" \
+        --project "${PROJECT}" \
+        --output json)"
 
-    status=$(echo ${out} | jq -r ".status")
-    if [[ ${status} != ${STATUS} ]]; then
+    status="$(echo "${out}" | jq -r ".status")"
+    if [[ "${status}" != "${STATUS}" ]]; then
         echo
         echo -n " - build status: ${status} "
     fi
-    STATUS=${status}
+    STATUS="${status}"
 
-    if [[ ${status} == "completed" ]]; then
+    if [[ "${STATUS}" == "completed" ]]; then
         break
     fi
 
@@ -106,17 +106,17 @@ done
 echo " - build completed"
 echo " - download the ${MOBILE_PLATFORM} application"
 
-out=$(az pipelines runs artifact list \
-    --run-id ${BUILD_ID} \
-    --organization ${ORGANIZATION} \
-    --project ${PROJECT} \
-    --output json)
+out="$(az pipelines runs artifact list \
+    --run-id "${BUILD_ID}" \
+    --organization "${ORGANIZATION}" \
+    --project "${PROJECT}" \
+    --output json)"
 
-DOWNLOAD_URL=$(echo ${out} | jq -r ".[0].resource.downloadUrl")
+DOWNLOAD_URL="$(echo "${out}" | jq -r ".[0].resource.downloadUrl")"
 
-cd $(mktemp -d)
-wget -O artifact.zip ${DOWNLOAD_URL}
+cd "$(mktemp -d)"
+wget -O artifact.zip "${DOWNLOAD_URL}"
 unzip artifact.zip
-cp -f drop/${APP_NAME}.${APP_EXT} ${APPS_DIR}/${APP_NAME}.${APP_EXT}
+cp -f "drop/${APP_NAME}.${APP_EXT}" "${APPS_DIR}/${APP_NAME}.${APP_EXT}"
 
 echo " - application downloaded: ${APPS_DIR}/${APP_NAME}.${APP_EXT}"
