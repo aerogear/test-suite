@@ -7,7 +7,7 @@ const opts = {
     // Uncommenting the next line will slow down all actions
     // performed by the Puppeteer by <value> milliseconds.
     // Pretty useful when fixing/writing a test
-    slowMo: 10,
+    slowMo: 50,
     defaultViewport: null
 }
 
