@@ -10,7 +10,7 @@ pr:
       - showcase/*
 
 variables:
-  BUILD_WORKSPACE: /tmp/showcase-$(Build.BuildNumber)
+  BUILD_WORKSPACE: $(Pipeline.Workspace)/ionic-showcase
 
 pool:
   vmImage: macos-latest
@@ -21,7 +21,9 @@ steps:
 
   - task: CmdLine@2
     inputs:
-      script: npm install -g ionic@4 cordova@8
+      script: |
+        pwd
+        npm install -g ionic@4 cordova@8
 
   - task: CmdLine@2
     inputs:
