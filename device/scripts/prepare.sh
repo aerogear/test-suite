@@ -79,3 +79,5 @@ node -pe 'JSON.stringify(JSON.parse(process.argv[1]).status, null, 2)' \
 
 # get push app config
 oc get pushapplication $APP_NAME -n $MDC_NAMESPACE -o json >push-app.json
+
+echo "Setup successful"
