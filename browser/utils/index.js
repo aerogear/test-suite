@@ -1,5 +1,6 @@
 exports.bindServiceToApp = require('./bindServiceToApp')
 exports.createApp = require('./createApp')
+exports.deleteApp = require('./deleteApp')
 exports.login = require('./login')
 exports.openApp = require('./openApp')
 exports.unbindServiceFromApp = require('./unbindServiceFromApp')

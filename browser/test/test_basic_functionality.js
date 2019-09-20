@@ -1,5 +1,6 @@
 const {
     createApp,
+    deleteApp,
     openApp,
     bindServiceToApp,
     login,
@@ -52,5 +53,8 @@ describe('Basic MDC test', () => {
     })
     it('unbinding Data Sync service should complete successfully', async () => {
         await unbindServiceFromApp(appName, syncServiceName)
+    })
+    it('deleting app should work', async () => {
+        await deleteApp(appName)
     })
 })
