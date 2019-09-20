@@ -10,7 +10,7 @@ pr:
       - showcase/*
 
 variables:
-  BUILD_WORKSPACE: $(Pipeline.Workspace)/ionic-showcase
+  BUILD_WORKSPACE: $(Pipeline.Workspace)/b/showcase
 
 pool:
   vmImage: macos-latest
