@@ -10,7 +10,13 @@ module.exports = async (appName) => {
     await page.evaluate(() => {
         document.querySelector('.dropdown.open a').click();
     });
+    // Confirm deletion
+    await page.evaluate(() => {
+        document.querySelector('.modal-footer .btn-danger').click();
+    });
     await page.waitForFunction(
-        appName => document.querySelector(`#${appName}`) === null
+        appName => document.querySelector(`#${appName}`) === null,
+        {},
+        appName
     );
 }
