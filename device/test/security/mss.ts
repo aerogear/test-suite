@@ -39,6 +39,13 @@ describe('Mobile Security Service', function () {
                 page.waitForNavigation(),
                 page.click('#kc-login')
             ]);
+            const approveButton = await page.$('input[name="approve"]');
+            if (approveButton) {
+                await Promise.all([
+                    page.waitForNavigation(),
+                    approveButton.click()
+                ]);
+            }
             const cookies = await page.cookies();
             const cookie = cookies.find(c => c.name === '_oauth_proxy').value;
             headers = { Cookie: `_oauth_proxy=${cookie}` };
