@@ -50,7 +50,10 @@ export DATASYNC_VERSION="..."
 To target OpenShift instance run:
 
 ```
-oc login <OPENSHIFT_HOST> # login as evals user
+export OPENSHIFT_HOST=<OPENSHIFT_HOST_URL>
+export OPENSHIFT_USER=<EVALS_USERNAME>
+export OPENSHIFT_PASS=<EVALS_PASSWORD>
+
 ./scripts/prepare.sh
 ```
 

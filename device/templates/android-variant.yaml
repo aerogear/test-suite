@@ -1,7 +1,7 @@
 apiVersion: push.aerogear.org/v1alpha1
 kind: AndroidVariant
 metadata:
-  name: test-android-ups-variant
+  name: ${APP_NAME}-android-ups-variant
   ownerReferences:
     - apiVersion: mdc.aerogear.org/v1alpha1
       blockOwnerDeletion: false

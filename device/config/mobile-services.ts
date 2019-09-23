@@ -6,6 +6,7 @@ const keycloakUrl = `http://${process.env.KEYCLOAK_HOST}:${process.env.KEYCLOAK_
 const syncUrl = `${process.env.SYNC_HOST}:${process.env.SYNC_PORT}/graphql`;
 const metricsUrl = `http://${process.env.METRICS_HOST}:${process.env.METRICS_PORT}/metrics`;
 const upsUrl = `http://${process.env.UPS_HOST}:${process.env.UPS_PORT}`;
+const mssUrl = `http://${process.env.MSS_HOST}:${process.env.MSS_PORT}`;
 
 let mobileServices;
 let dockerComposeConfig = true;
@@ -65,5 +66,11 @@ export const config: AeroGearConfiguration = mobileServices || {
                 },
             },
         },
+        {
+            id: "5098bad7-d628-11e9-b6f5-0242528703e6",
+            name: "security",
+            type: "security",
+            url: mssUrl
+        }
     ],
 };

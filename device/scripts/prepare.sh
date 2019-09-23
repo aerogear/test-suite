@@ -5,10 +5,17 @@ set -e
 APP_NAME="test"
 SYNC_NAMESPACE_PREFIX="test"
 SYNC_NAMESPACE="$SYNC_NAMESPACE_PREFIX-$RANDOM"
+TEST_APP_NAME="test-$RANDOM"
+
+# login to cluster as evals user
+oc login $OPENSHIFT_HOST -u $OPENSHIFT_USER -p $OPENSHIFT_PASS
 
 # find mdc namespace
-if oc get mobileclients -n openshift-mobile-developer-console &>/dev/null; then
+mkdir -p tmp
+sed -e "s/\${APP_NAME}/$TEST_APP_NAME/" templates/mobile-client.yaml >tmp/test-mobile-client.yaml
+if oc create -f tmp/test-mobile-client.yaml -n openshift-mobile-developer-console &>/dev/null; then
   MDC_NAMESPACE=openshift-mobile-developer-console
+  oc delete mobileclient $TEST_APP_NAME -n $MDC_NAMESPACE
 else
   MDC_NAMESPACE=mobile-developer-console
 fi
@@ -19,7 +26,6 @@ oc delete pushapplication $APP_NAME -n $MDC_NAMESPACE || true
 oc get projects | grep "$SYNC_NAMESPACE_PREFIX-" | awk '{print $1}' | xargs -L1 oc delete project
 
 # create mobile app
-mkdir -p tmp
 sed -e "s/\${APP_NAME}/$APP_NAME/" templates/mobile-client.yaml >tmp/mobile-client.yaml
 oc create -f tmp/mobile-client.yaml -n $MDC_NAMESPACE
 APP_UID=$(node -pe 'JSON.parse(process.argv[1]).metadata.uid' \
@@ -61,6 +67,12 @@ sed -e "s/\${APP_NAME}/$APP_NAME/" \
   templates/android-variant.yaml >tmp/android-variant.yaml
 oc create -f tmp/android-variant.yaml -n $MDC_NAMESPACE
 
+# bind with mss
+sed -e "s/\${APP_NAME}/$APP_NAME/" \
+  -e "s/\${APP_UID}/$APP_UID/" \
+  templates/mss-app.yaml >tmp/mss-app.yaml
+oc create -f tmp/mss-app.yaml -n $MDC_NAMESPACE
+
 # wait for bindings
 sleep 10
 
@@ -70,3 +82,5 @@ node -pe 'JSON.stringify(JSON.parse(process.argv[1]).status, null, 2)' \
 
 # get push app config
 oc get pushapplication $APP_NAME -n $MDC_NAMESPACE -o json >push-app.json
+
+echo "Setup successful"
