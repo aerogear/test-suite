@@ -4,11 +4,12 @@ const {
     openApp,
     bindServiceToApp,
     login,
-    unbindServiceFromApp
+    unbindServiceFromApp,
+    parseMobileServicesConfig
 } = require('../utils')
 const appName = `test-${Date.now()}`
 const syncServiceName = 'Data Sync'
-const syncUrl = "https://sync-url.com"
+const syncUrl = "sync-url.com"
 
 describe('Basic MDC test', () => {
 
@@ -25,17 +26,13 @@ describe('Basic MDC test', () => {
 
     it('mobile-services.json configuration should not contain config of any service', async () => {
         await openApp(appName)
-        // Get the content of mobile-services.json text area
-        await page.waitForSelector('.mobile-client-config pre')
-        const mobileServicesConfig = await page.$eval('.mobile-client-config pre', el => el.textContent);
-        expect(mobileServicesConfig).to.be.a('string')
-        const parsedMobileConfig = JSON.parse(mobileServicesConfig)
+        const parsedMobileConfig = await parseMobileServicesConfig()
         // Make sure the list of services in the config is empty
         expect(parsedMobileConfig.services).to.be.empty
     })
 
     it('binding Data Sync service should complete successfully', async () => {
-        await bindServiceToApp(appName, syncServiceName, { syncUrl })
+        await bindServiceToApp(appName, syncServiceName, { syncUrl: `https://${syncUrl}` })
     })
     it('mobile-services.json configuration should be updated with Data Sync config', async () => {
         await Promise.all([
@@ -50,6 +47,12 @@ describe('Basic MDC test', () => {
             {},
             syncUrl
         );
+        const parsedMobileConfig = await parseMobileServicesConfig()
+        // Make sure the config contains all required Data Sync properties
+        expect(parsedMobileConfig.services[0]).to.be.an('object')
+        expect(parsedMobileConfig.services[0]).to.include.all.keys('config', 'id', 'name', 'type', 'url')
+        expect(parsedMobileConfig.services[0]).to.have.property('url', `https://${syncUrl}/graphql`)
+        expect(parsedMobileConfig.services[0]).to.have.deep.property('config', { websocketUrl: `wss://${syncUrl}/graphql` })
     })
     it('unbinding Data Sync service should complete successfully', async () => {
         await unbindServiceFromApp(appName, syncServiceName)
