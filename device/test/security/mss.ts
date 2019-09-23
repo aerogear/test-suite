@@ -97,7 +97,7 @@ describe('Mobile Security Service', function () {
         app = result.data.deployedVersions[0];
     });
 
-    it('should be possilbe to disable app', async () => {
+    it('should be possible to disable app', async () => {
         await axios.request({
             url: `${mssUrl}/api/apps/${appId}/versions/disable`,
             headers,
