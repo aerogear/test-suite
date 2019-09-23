@@ -116,7 +116,7 @@ describe('Mobile Security Service', function () {
         result.data.disabled.should.equal(true);
     });
 
-    it('should be possilbe to enable app', async () => {
+    it('should be possible to enable app', async () => {
         app.disabled = false;
 
         await axios.request({
