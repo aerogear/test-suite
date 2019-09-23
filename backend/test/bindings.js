@@ -9,6 +9,8 @@ const getAndroidVariantCr = require('../templates/android-variant');
 const getIosVariantCr = require('../templates/ios-variant');
 const getSyncConfigMap = require('../templates/data-sync');
 
+const SLEEP_MS = 10000;
+
 describe('Bindings', async function() {
   this.timeout(0);
 
@@ -55,7 +57,7 @@ describe('Bindings', async function() {
       .keycloakrealms
       .post({ body: cr })).body;
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -71,7 +73,7 @@ describe('Bindings', async function() {
       .keycloakrealms(keycloakRealm.metadata.name)
       .delete();
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -88,7 +90,7 @@ describe('Bindings', async function() {
       .mobilesecurityserviceapps
       .post({ body: cr })).body;
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -104,7 +106,7 @@ describe('Bindings', async function() {
       .mobilesecurityserviceapps(mssApp.metadata.name)
       .delete();
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -121,7 +123,7 @@ describe('Bindings', async function() {
       .pushapplications
       .post({ body: pushAppCr })).body;
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     pushApp = (await client
       .apis['push.aerogear.org']
@@ -146,7 +148,7 @@ describe('Bindings', async function() {
       .androidvariants
       .post({ body: variantCr })).body;
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -162,7 +164,7 @@ describe('Bindings', async function() {
       .androidvariants(androidVariant.metadata.name)
       .delete();
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -185,7 +187,7 @@ describe('Bindings', async function() {
       .iosvariants
       .post({ body: variantCr })).body;
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -201,7 +203,7 @@ describe('Bindings', async function() {
       .iosvariants(iosVariant.metadata.name)
       .delete();
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -215,12 +217,12 @@ describe('Bindings', async function() {
       process.env.SYNC_URL
     );
 
-    dataSync = (await client.apis.apps.v1
+    dataSync = (await client.api.v1
       .namespaces(process.env.MDC_NAMESPACE)
       .configmaps
       .post({ body: configMap })).body;
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 
@@ -229,12 +231,12 @@ describe('Bindings', async function() {
   });
 
   it('should delete sync binding', async function() {
-    await client.apis.apps.v1
+    await client.api.v1
       .namespaces(process.env.MDC_NAMESPACE)
       .configmaps(dataSync.metadata.name)
       .delete();
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, SLEEP_MS));
 
     const app = await getMobileApp();
 

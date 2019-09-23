@@ -1,11 +1,15 @@
 SYNC_NAMESPACE_PREFIX="test"
 SYNC_NAMESPACE="$SYNC_NAMESPACE_PREFIX-$RANDOM"
+TEST_APP_NAME="test-$RANDOM"
 
 oc login $OPENSHIFT_HOST -u $OPENSHIFT_USER -p $OPENSHIFT_PASS
 
 # determine MDC namespace
-if oc get mobileclients -n openshift-mobile-developer-console &>/dev/null; then
+mkdir -p tmp
+sed -e "s/\${APP_NAME}/$TEST_APP_NAME/" templates/mobile-client.yaml >tmp/test-mobile-client.yaml
+if oc create -f tmp/test-mobile-client.yaml -n openshift-mobile-developer-console &>/dev/null; then
   export MDC_NAMESPACE=openshift-mobile-developer-console
+  oc delete mobileclient $TEST_APP_NAME -n $MDC_NAMESPACE
 else
   export MDC_NAMESPACE=mobile-developer-console
 fi
