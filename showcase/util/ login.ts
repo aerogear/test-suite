@@ -1,42 +1,43 @@
+import { MOBILE_PLATFORM, MobilePlatform } from "./config";
 import { device } from "./device";
 import { log } from "./log";
 
-const MAIN_WINDOW_URL = "http://localhost/";
+const MAIN_WINDOW_URL = /(http|ionic):\/\/localhost\/?/;
 const BLANK_WINDOW_URL = "about:blank";
 
 async function switchWindow() {
   const handles = await device.getWindowHandles();
-  if (handles.length !== 2) {
+  if (handles.length === 1) {
+    await device.switchToWindow(handles[0]);
+  } else if (handles.length === 2) {
+    const current = await device.getWindowHandle();
+    const switchTo = handles.find(h => h !== current);
+    await device.switchToWindow(switchTo);
+  } else {
     throw new Error(
-      `in order to switch windows there must be two windows` +
+      `in order to switch windows there must be one or two windows` +
         `but there are ${handles.length} windows`
     );
   }
-  const current = await device.getWindowHandle();
-  const switchTo = handles.find(h => h !== current);
-  await device.switchToWindow(switchTo);
 }
 
 async function isMainWindow(): Promise<boolean> {
-  return (await device.getUrl()) === MAIN_WINDOW_URL;
+  return MAIN_WINDOW_URL.test(await device.getUrl());
 }
 
-async function isBlankWindow(): Promise<boolean> {
-  return (await device.getUrl()) === BLANK_WINDOW_URL;
-}
-
-async function waitUntilLoggedIn(): Promise<boolean> {
-  try {
-    // wait for the window to be redirected to nothing
-    await device.waitUntil(isBlankWindow, undefined, "timeout");
-  } catch (e) {
-    if (e.message === "timeout") {
-      return false;
-    }
-    throw e;
-  }
-
-  return true;
+async function waitForLoggedIn(timeout?: number, timeoutMsg?: string) {
+  await device.waitUntil(
+    async () => {
+      switch (MOBILE_PLATFORM) {
+        case MobilePlatform.ANDROID:
+          return (await device.getUrl()) === BLANK_WINDOW_URL;
+        case MobilePlatform.IOS:
+          return (await device.getWindowHandles()).length === 1;
+      }
+    },
+    timeout,
+    timeoutMsg
+  );
 }
 
 export async function login(username: string, password: string) {
@@ -68,22 +69,21 @@ export async function login(username: string, password: string) {
   await loginEl.waitForDisplayed();
   await loginEl.click();
 
-  if (!(await waitUntilLoggedIn())) {
-    // if the login fill up and submit is to fast it could happened
-    // that when clicking login nothing happened for this reason
-    // we want to try to login again
-    log.warning("failed to login, retry again");
+  try {
+    await waitForLoggedIn(undefined, "timeout");
+  } catch (e) {
+    if (e.message === "timeout") {
+      log.warning("retry to login");
 
-    await loginEl.click();
-    if (!(await waitUntilLoggedIn())) {
-      throw new Error(`failed to login with username: "${username}"`);
+      await loginEl.click();
+
+      await waitForLoggedIn();
+    } else {
+      throw e;
     }
   }
 
   // switch back to the main window
   await switchWindow();
-
   await device.waitUntil(isMainWindow);
-
-  log.success("logged in");
 }

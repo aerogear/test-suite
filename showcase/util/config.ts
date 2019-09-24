@@ -19,7 +19,18 @@ function getEnv(name: string, fallback?: string) {
   return value;
 }
 
+export enum MobilePlatform {
+  IOS = "ios",
+  ANDROID = "android"
+}
+
 export const BROWSERSTACK_USER = getEnv("BROWSERSTACK_USER");
 export const BROWSERSTACK_KEY = getEnv("BROWSERSTACK_KEY");
 export const BROWSERSTACK_APP = getEnv("BROWSERSTACK_APP");
-export const MOBILE_PLATFORM = getEnv("MOBILE_PLATFORM", "android");
+export const MOBILE_PLATFORM = getEnv(
+  "MOBILE_PLATFORM",
+  "android"
+) as MobilePlatform;
+
+export const KEYCLOAK_USERNAME = "admin";
+export const KEYCLOAK_PASSWORD = "admin";

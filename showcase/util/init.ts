@@ -1,5 +1,6 @@
 import { login } from "./ login";
 import { getAutomationSession } from "./browserstack";
+import { KEYCLOAK_PASSWORD, KEYCLOAK_USERNAME } from "./config";
 import { device, init } from "./device";
 import { log } from "./log";
 
@@ -13,7 +14,7 @@ before("Initialize device", async function() {
 });
 
 before("Login", async () => {
-  await login("admin", "admin");
+  await login(KEYCLOAK_USERNAME, KEYCLOAK_PASSWORD);
 });
 
 after("Close device", async () => {
