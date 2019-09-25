@@ -2,14 +2,13 @@ const login = require('../utils/login')
 const openshift_username = process.env.OPENSHIFT_USERNAME
 
 describe('Test MDC Login and Logout', () => {
-  let page
 
   after(async () => {
     await page.close()
   })
 
   it('should successfully login to MDC via oAuth Proxy', async () => {
-    page = await login()
+    await login()
   })
 
   it('should display correct username in top right corner', async () => {

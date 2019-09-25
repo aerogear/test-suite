@@ -5,7 +5,7 @@ const mdcLoginPageUrl = process.env.MDC_URL
 module.exports = async () => {
     // Create anonymous browser window to keep tests isolated
     const context = await browser.createIncognitoBrowserContext();
-    const page = await context.newPage();
+    page = await context.newPage();
 
     await page.goto(mdcLoginPageUrl)
     
@@ -29,6 +29,4 @@ module.exports = async () => {
     
     // MDC main page
     expect(await page.title()).to.eql('Mobile Client')
-
-    return page
 }
