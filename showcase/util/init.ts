@@ -1,8 +1,8 @@
-import { login } from "./ login";
 import { getAutomationSession } from "./browserstack";
 import { KEYCLOAK_PASSWORD, KEYCLOAK_USERNAME } from "./config";
 import { device, init } from "./device";
 import { log } from "./log";
+import { login } from "./login";
 
 before("Initialize device", async function() {
   this.timeout(0);
