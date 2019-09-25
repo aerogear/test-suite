@@ -15,7 +15,7 @@ fi
 
 # cleanup
 oc delete mobileclient $APP_NAME -n $MDC_NAMESPACE || true
-oc get projects | grep "$SYNC_NAMESPACE_PREFIX-" | awk '{print $1}' | xargs -r -L1 oc delete project
+oc get projects | grep "$SYNC_NAMESPACE_PREFIX-" | awk '{print $1}' | xargs -L1 oc delete project || true
 
 # create mobile app
 mkdir -p tmp
