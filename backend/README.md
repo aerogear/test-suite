@@ -1,8 +1,6 @@
 # AeroGear Backend Tests
 
-```
-
-## Install dependencies 
+## Install dependencies
 
 ```
 npm install
