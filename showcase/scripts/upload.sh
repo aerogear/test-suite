@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 set -e
 
 MOBILE_PLATFORM="${1:-$MOBILE_PLATFORM}"

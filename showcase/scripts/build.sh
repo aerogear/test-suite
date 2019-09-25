@@ -83,6 +83,11 @@ if [[ -z "${MOBILE_PLATFORM}" ]]; then
     exit 1
 fi
 
+if [[ ! -f ./mobile-services.json ]]; then
+    echo "error: mobile-services.json dosn't exists"
+    exit 1
+fi
+
 mkdir -p "${APPS_DIR}"
 
 WORKSPACE="${WORKSPACE:-$(mktemp -d)}"
@@ -98,6 +103,10 @@ fi
 if [[ "${CLONE_ONLY}" == "true" ]]; then
     exit 0
 fi
+
+echo " - copy mobile-services.json"
+
+cp -f ./mobile-services.json ${WORKSPACE}/src/mobile-services.json
 
 echo " - build ionic showcase"
 

@@ -2,7 +2,7 @@
 
 This are happy path tests to verify that the Ionic Showcase app is working correctly.
 
-## Run the tests locally
+## Test
 
 Prepare the environment:
 
@@ -15,6 +15,13 @@ set the BrowserStack user and key:
 ```bash
 export BROWSERSTACK_USER=myuser
 export BROWSERSTACK_KEY=mykeybalblabla
+```
+
+prepare the cluster and generate the `mobile-services.json`
+
+```bash
+oc login ...
+./scripts/prepare.sh
 ```
 
 build and upload the testing app to BrowserStack:

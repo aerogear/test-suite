@@ -1,2 +1,4 @@
 node_modules/
 apps/
+tmp/
+mobile-services.json
