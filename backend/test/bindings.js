@@ -2,8 +2,8 @@ require('chai').should();
 
 const { initKubeClient } = require('../util/init');
 const getMobileClientCr = require('../templates/mobile-client');
-const getPushAppCr = require('../templates/push-app');
 const {
+  getMobileApp,
   bindKeycloak,
   unbindKeycloak,
   bindMss,
@@ -13,8 +13,9 @@ const {
   bindPushIos,
   unbindPushIos,
   bindSync,
-  unbindSync
-} = require('../util/bindings');
+  unbindSync,
+  createPushApp
+} = require('../util/kubernetes');
 const waitFor = require('../util/waitFor');
 
 const TIMEOUT = 20000;
@@ -31,17 +32,17 @@ describe('Bindings', async function() {
   let iosVariant;
   let dataSync;
 
-  const getMobileApp = async () => {
-    return (await client
+  before('init kube client', async function() {
+    client = await initKubeClient();
+  });
+
+  after('delete mobile app', async function() {
+    await client
       .apis['mdc.aerogear.org']
       .v1alpha1
       .namespaces(process.env.MDC_NAMESPACE)
       .mobileclients(mobileApp.metadata.name)
-      .get()).body;
-  };
-
-  before('init kube client', async function() {
-    client = await initKubeClient();
+      .delete();
   });
 
   it('should create mobile app', async function() {
@@ -63,11 +64,11 @@ describe('Bindings', async function() {
     );
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 1,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(1);
     app.status.services[0].type.should.equal('keycloak');
@@ -77,11 +78,11 @@ describe('Bindings', async function() {
     await unbindKeycloak(client, keycloakRealm.metadata.name);
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 0,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(0);
   });
@@ -94,11 +95,11 @@ describe('Bindings', async function() {
     );
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 1,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(1);
     app.status.services[0].type.should.equal('security');
@@ -108,44 +109,17 @@ describe('Bindings', async function() {
     await unbindMss(client, mssApp.metadata.name);
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 0,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(0);
   });
 
   it('should create push app', async function() {
-    const pushAppCr = getPushAppCr('test');
-
-    pushApp = (await client
-      .apis['push.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .pushapplications
-      .post({ body: pushAppCr })).body;
-
-    await waitFor(async () => {
-        pushApp = (await client
-          .apis['push.aerogear.org']
-          .v1alpha1
-          .namespaces(process.env.MDC_NAMESPACE)
-          .pushapplications(pushApp.metadata.name)
-          .get()).body;
-
-        return pushApp.status.pushApplicationId
-      },
-      TIMEOUT
-    );
-
-    pushApp = (await client
-      .apis['push.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .pushapplications(pushApp.metadata.name)
-      .get()).body;
+    pushApp = await createPushApp(client);
   });
 
   it('should create push android binding', async function() {
@@ -158,11 +132,11 @@ describe('Bindings', async function() {
     );
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 1,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(1);
     app.status.services[0].type.should.equal('push');
@@ -172,11 +146,11 @@ describe('Bindings', async function() {
     await unbindPushAndroid(client, androidVariant.metadata.name);
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 0,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(0);
   });
@@ -192,11 +166,11 @@ describe('Bindings', async function() {
     );
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 1,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(1);
     app.status.services[0].type.should.equal('push');
@@ -206,11 +180,11 @@ describe('Bindings', async function() {
     await unbindPushIos(client, iosVariant.metadata.name);
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 0,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(0);
   });
@@ -224,11 +198,11 @@ describe('Bindings', async function() {
     );
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 1,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(1);
     app.status.services[0].type.should.equal('sync-app');
@@ -238,11 +212,11 @@ describe('Bindings', async function() {
     await unbindSync(client, dataSync.metadata.name);
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 0,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(0);
   });
@@ -281,7 +255,7 @@ describe('Bindings', async function() {
     );
 
     await waitFor(async () => {
-        const app = await getMobileApp();
+        const app = await getMobileApp(client, mobileApp.metadata.name);
         if (app.status.services.length === 4) {
           const pushConfig = app.status.services.find(s => s.type === 'push');
           return pushConfig && pushConfig.config.android && pushConfig.config.ios;
@@ -290,7 +264,7 @@ describe('Bindings', async function() {
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(4);
     app.status.services.find(s => s.type === 'keycloak').should.exist;
@@ -310,11 +284,11 @@ describe('Bindings', async function() {
     await unbindSync(client, dataSync.metadata.name);
 
     await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
+      (await getMobileApp(client, mobileApp.metadata.name)).status.services.length === 0,
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await getMobileApp(client, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(0);
   });

@@ -1,8 +1,21 @@
 const getKeycloakRealmCr = require('../templates/keycloak-realm');
 const getMssAppCr = require('../templates/mss-app');
+const getPushAppCr = require('../templates/push-app');
 const getAndroidVariantCr = require('../templates/android-variant');
 const getIosVariantCr = require('../templates/ios-variant');
 const getSyncConfigMap = require('../templates/data-sync');
+const waitFor = require('./waitFor');
+
+const TIMEOUT = 20000;
+
+const getMobileApp = async (client, name) => {
+  return (await client
+    .apis['mdc.aerogear.org']
+    .v1alpha1
+    .namespaces(process.env.MDC_NAMESPACE)
+    .mobileclients(name)
+    .get()).body;
+};
 
 const bindKeycloak = async (client, appName, appUid) => {
   const cr = getKeycloakRealmCr(appName, appUid);
@@ -95,12 +108,52 @@ const bindSync = async (client, appName, appUid, syncUrl) => {
 
 const unbindSync = async (client, name) => {
   await client.api.v1
+    .namespaces(process.env.MDC_NAMESPACE)
+    .configmaps(name)
+    .delete();
+};
+
+const createPushApp = async (client) => {
+  let pushApp;
+  
+  try {
+    pushApp= (await client
+      .apis['push.aerogear.org']
+      .v1alpha1
       .namespaces(process.env.MDC_NAMESPACE)
-      .configmaps(name)
-      .delete();
+      .pushapplications('test')
+      .get()).body;
+
+    return pushApp;
+  } catch (_) {}
+
+  const pushAppCr = getPushAppCr('test');
+
+  pushApp = (await client
+    .apis['push.aerogear.org']
+    .v1alpha1
+    .namespaces(process.env.MDC_NAMESPACE)
+    .pushapplications
+    .post({ body: pushAppCr })).body;
+
+  await waitFor(async () => {
+      pushApp = (await client
+        .apis['push.aerogear.org']
+        .v1alpha1
+        .namespaces(process.env.MDC_NAMESPACE)
+        .pushapplications(pushApp.metadata.name)
+        .get()).body;
+
+      return pushApp.status.pushApplicationId
+    },
+    TIMEOUT
+  );
+
+  return pushApp;
 };
 
 module.exports = {
+  getMobileApp,
   bindKeycloak,
   unbindKeycloak,
   bindMss,
@@ -110,5 +163,6 @@ module.exports = {
   bindPushIos,
   unbindPushIos,
   bindSync,
-  unbindSync
+  unbindSync,
+  createPushApp
 };
