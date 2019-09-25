@@ -4,7 +4,7 @@ module.exports = async (appName, serviceName, params) => {
     await openApp(appName)
     await Promise.all([
         page.click('a[href="#services"]'),
-        page.waitForNavigation({ waitUntil: ['domcontentloaded', 'networkidle2'] })
+        page.waitForNavigation({ waitUntil: ['domcontentloaded', 'networkidle0'] })
     ])
     await page.waitForSelector('.unboundService button', {visible: true})
     // Find the service row index
