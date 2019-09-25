@@ -1,14 +1,16 @@
 require('chai').should();
 
-const { initKubeClient } = require('../util/init');
 const getMobileClientCr = require('../templates/mobile-client');
+const getKeycloakRealmCr = require('../templates/keycloak-realm');
+const getMssAppCr = require('../templates/mss-app');
+const getAndroidVariantCr = require('../templates/android-variant');
+const getIosVariantCr = require('../templates/ios-variant');
+const getSyncConfigMap = require('../templates/data-sync');
 const {
-  getMobileApp,
-  bindKeycloak,
-  bindMss,
-  bindPushAndroid,
-  bindPushIos,
-  bindSync,
+  initKubeClient,
+  TYPE,
+  ACTION,
+  resource,
   createPushApp
 } = require('../util/kubernetes');
 const waitFor = require('../util/waitFor');
@@ -18,7 +20,6 @@ const TIMEOUT = 20000;
 describe('App deletion', async function() {
   this.timeout(0);
 
-  let client;
   let mobileApp;
   let keycloakRealm;
   let mssApp;
@@ -27,57 +28,62 @@ describe('App deletion', async function() {
   let iosVariant;
   let dataSync;
 
+  const checkResourcesDeleted = async (resourceType, res) => {
+    await waitFor(async () => {
+        try {
+          await resource(resourceType, ACTION.GET, res.metadata.name);
+          return false;
+        } catch (_) {
+          return true;
+        }
+      }, TIMEOUT
+    );
+  };
+
   before('init kube client', async function() {
-    client = await initKubeClient();
+    await initKubeClient(process.env.MDC_NAMESPACE);
   });
 
   it('should create mobile app', async function() {
     const cr = getMobileClientCr('test');
-
-    mobileApp = (await client
-      .apis['mdc.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .mobileclients
-      .post({ body: cr })).body;
+    mobileApp = await resource(TYPE.MOBILE_APP, ACTION.CREATE, cr);
   });
 
   it('should bind all services', async function() {
-    keycloakRealm = await bindKeycloak(
-      client,
-      mobileApp.metadata.name,
-      mobileApp.metadata.uid
-    );
-    mssApp = await bindMss(
-      client,
-      mobileApp.metadata.name,
-      mobileApp.metadata.uid
-    );
-    pushApp = await createPushApp(client);
-    androidVariant = await bindPushAndroid(
-      client,
+    let cr = getKeycloakRealmCr(mobileApp.metadata.name, mobileApp.metadata.uid);
+    keycloakRealm = await resource(TYPE.KEYCLOAK_REALM, ACTION.CREATE, cr);
+
+    cr = getMssAppCr(mobileApp.metadata.name, mobileApp.metadata.uid);
+    mssApp = await resource(TYPE.MSS_APP, ACTION.CREATE, cr);
+
+    pushApp = await createPushApp('test');
+
+    cr = getAndroidVariantCr(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       pushApp.status.pushApplicationId,
       process.env.FIREBASE_SERVER_KEY
     );
-    iosVariant = await bindPushIos(
-      client,
+    androidVariant = await resource(TYPE.ANDROID_VARIANT, ACTION.CREATE, cr);
+
+    cr = getIosVariantCr(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       pushApp.status.pushApplicationId,
       process.env.IOS_CERTIFICATE,
       process.env.IOS_PASSPHRASE
     );
-    dataSync = await bindSync(
-      client,
+    iosVariant = await resource(TYPE.IOS_VARIANT, ACTION.CREATE, cr);
+
+    const res = getSyncConfigMap(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       process.env.SYNC_URL
     );
+    dataSync = await resource(TYPE.CONFIG_MAP, ACTION.CREATE, res);
 
     await waitFor(async () => {
-        const app = await getMobileApp(client, mobileApp.metadata.name);
+        const app = await resource(TYPE.MOBILE_APP, ACTION.GET, mobileApp.metadata.name);
         if (app.status.services.length === 4) {
           const pushConfig = app.status.services.find(s => s.type === 'push');
           return pushConfig && pushConfig.config.android && pushConfig.config.ios;
@@ -86,7 +92,7 @@ describe('App deletion', async function() {
       TIMEOUT
     );
 
-    const app = await getMobileApp(client, mobileApp.metadata.name);
+    const app = await resource(TYPE.MOBILE_APP, ACTION.GET, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(4);
     app.status.services.find(s => s.type === 'keycloak').should.exist;
@@ -99,86 +105,14 @@ describe('App deletion', async function() {
   });
 
   it('should delete mobile app', async function() {
-    await client
-      .apis['mdc.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .mobileclients(mobileApp.metadata.name)
-      .delete();
+    await resource(TYPE.MOBILE_APP, ACTION.DELETE, mobileApp.metadata.name);
   });
 
   it('should delete all binding CRs', async function() {
-    await waitFor(async () => {
-        try {
-          await client
-            .apis['aerogear.org']
-            .v1alpha1
-            .namespaces(process.env.MDC_NAMESPACE)
-            .keycloakrealms(keycloakRealm.metadata.name)
-            .get();
-          return false;
-        } catch (_) {
-          return true;
-        }
-      }, TIMEOUT
-    );
-
-    await waitFor(async () => {
-        try {
-          await client
-            .apis['mobile-security-service.aerogear.org']
-            .v1alpha1
-            .namespaces(process.env.MDC_NAMESPACE)
-            .mobilesecurityserviceapps(mssApp.metadata.name)
-            .get();
-          return false;
-        } catch (_) {
-          return true;
-        }
-      }, TIMEOUT
-    );
-
-    await waitFor(async () => {
-        try {
-          await client
-            .apis['push.aerogear.org']
-            .v1alpha1
-            .namespaces(process.env.MDC_NAMESPACE)
-            .androidvariants(androidVariant.metadata.name)
-            .get();
-          return false;
-        } catch (_) {
-          return true;
-        }
-      }, TIMEOUT
-    );
-    
-    await waitFor(async () => {
-        try {
-          await client
-            .apis['push.aerogear.org']
-            .v1alpha1
-            .namespaces(process.env.MDC_NAMESPACE)
-            .iosvariants(iosVariant.metadata.name)
-            .get();
-          return false;
-        } catch (_) {
-          return true;
-        }
-      }, TIMEOUT
-    );
-
-    await waitFor(async () => {
-        try {
-          await client.api.v1
-            .namespaces(process.env.MDC_NAMESPACE)
-            .configmaps(dataSync.metadata.name)
-            .get();
-          return false;
-        } catch (_) {
-          return true;
-        }
-      }, TIMEOUT
-    );
+    await checkResourcesDeleted(TYPE.KEYCLOAK_REALM, keycloakRealm);
+    await checkResourcesDeleted(TYPE.MSS_APP, mssApp);
+    await checkResourcesDeleted(TYPE.ANDROID_VARIANT, androidVariant);
+    await checkResourcesDeleted(TYPE.IOS_VARIANT, iosVariant);
+    await checkResourcesDeleted(TYPE.CONFIG_MAP, dataSync);
   });
 });
