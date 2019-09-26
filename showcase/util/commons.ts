@@ -18,15 +18,3 @@ export async function shadowClick(
     selector
   );
 }
-
-export async function asyncFind<T>(
-  array: T[],
-  predicate: (value: T) => Promise<boolean>
-): Promise<T | null> {
-  for (const value of array) {
-    if (await predicate(value)) {
-      return value;
-    }
-  }
-  return null;
-}
