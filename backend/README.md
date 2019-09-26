@@ -6,17 +6,17 @@
 npm install
 ```
 
+## Target OpenShift
+
+Tests need to target OpenShift instance with RHMI. For this use:
+
+```
+oc login ...
+```
+
 ## Setup environment variables
 
-Tests can target OpenShift instance with RHMI. Export these variables:
-
-```
-export OPENSHIFT_HOST=<OPENSHIFT_HOST_URL>
-export OPENSHIFT_USER=<EVALS_USERNAME>
-export OPENSHIFT_PASS=<EVALS_PASSWORD>
-```
-
-These additional variables for testing UPS are required:
+These variables for testing UPS are required:
 
 ```
 export FIREBASE_SERVER_KEY=...

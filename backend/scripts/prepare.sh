@@ -2,8 +2,6 @@ SYNC_NAMESPACE_PREFIX="test"
 SYNC_NAMESPACE="$SYNC_NAMESPACE_PREFIX-$RANDOM"
 TEST_APP_NAME="test-$RANDOM"
 
-oc login $OPENSHIFT_HOST -u $OPENSHIFT_USER -p $OPENSHIFT_PASS
-
 # determine MDC namespace
 mkdir -p tmp
 sed -e "s/\${APP_NAME}/$TEST_APP_NAME/" templates/mobile-client.yaml >tmp/test-mobile-client.yaml
