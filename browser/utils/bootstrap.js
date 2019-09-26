@@ -8,13 +8,15 @@ const opts = {
     // performed by the Puppeteer by <value> milliseconds.
     // Pretty useful when fixing/writing a test
     slowMo: 50,
-    defaultViewport: null
+    defaultViewport: null,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
 }
 
 before(async () => {
     global.expect = expect
     global.browser = await puppeteer.launch(opts)
     global.page
+    global.context
 })
 
 after(() => {

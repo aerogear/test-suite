@@ -1,5 +1,5 @@
-const login = require('../utils/login')
-const openshift_username = process.env.OPENSHIFT_USERNAME
+const { login } = require('../utils/mdc')
+const openshiftUsername = process.env.OPENSHIFT_USERNAME
 
 describe('Test MDC Login and Logout', () => {
 
@@ -13,7 +13,7 @@ describe('Test MDC Login and Logout', () => {
 
   it('should display correct username in top right corner', async () => {
     const username = await page.$eval('#app-user-dropdown > span.dropdown-title', el => el.textContent);
-    expect(username).to.eql(openshift_username)
+    expect(username).to.eql(openshiftUsername)
   })
 
   it('should successfully logout from MDC', async () => {

@@ -4,7 +4,7 @@ const mdcLoginPageUrl = process.env.MDC_URL
 
 module.exports = async () => {
     // Create anonymous browser window to keep tests isolated
-    const context = await browser.createIncognitoBrowserContext();
+    context = await browser.createIncognitoBrowserContext();
     page = await context.newPage();
 
     await page.goto(mdcLoginPageUrl)
