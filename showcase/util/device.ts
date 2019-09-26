@@ -14,8 +14,6 @@ const capabilities = {
   device: MOBILE_PLATFORM === "ios" ? "iPhone XS" : "Google Pixel 3",
   real_mobile: true,
   app: BROWSERSTACK_APP,
-  autoWebview: true,
-  // "browserstack.local": "true",
   "browserstack.user": BROWSERSTACK_USER,
   "browserstack.key": BROWSERSTACK_KEY,
   "browserstack.debug": true,
@@ -30,8 +28,20 @@ const options: WebdriverIO.RemoteOptions = {
   capabilities
 };
 
-export let device: BrowserObject;
+export let device: BrowserObject = null;
+
+async function switchToWebview() {
+  await device.switchContext(
+    (await device.getContexts()).find(c => /^WEBVIEW_/.test(c))
+  );
+}
 
 export async function init() {
   device = await remote(options as any);
+  await switchToWebview();
+}
+
+export async function reset() {
+  await device.reset();
+  await switchToWebview();
 }

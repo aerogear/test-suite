@@ -1,4 +1,5 @@
 import { device } from "./device";
+import { slowdown } from "./timing";
 
 /**
  * On Safari when a button or link is inside a shadowRoot click on the
@@ -17,4 +18,14 @@ export async function shadowClick(
     element,
     selector
   );
+}
+
+export async function interact(
+  element: WebdriverIOAsync.Element,
+  interaction: (element: WebdriverIOAsync.Element) => Promise<void>
+) {
+  await element.waitForDisplayed();
+  await element.scrollIntoView();
+  await slowdown();
+  await interaction(element);
 }

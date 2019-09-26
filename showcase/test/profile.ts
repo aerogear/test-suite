@@ -1,35 +1,32 @@
-import { shadowClick } from "../util/commons";
+import { interact, shadowClick } from "../util/commons";
 import { KEYCLOAK_USERNAME } from "../util/config";
-import { device } from "../util/device";
-import { log } from "../util/log";
+import { device, reset } from "../util/device";
+import { login } from "../util/login";
 
-describe("Profile", () => {
-  it(`should be logged in as ${KEYCLOAK_USERNAME}`, async () => {
+describe("Profile", function() {
+  // always add a retries policy so that
+  // we avoid to fail because of flaky tests
+  this.retries(3);
+
+  afterEach(async () => {
+    // always reset the device after each tests
+    // - if the test fail we can retry from a predictable point
+    // - other tests will not influence this test
+    await reset();
+  });
+
+  it.only(`should be logged in as ${KEYCLOAK_USERNAME}`, async () => {
+    // always login before start testing
+    await login();
+
     // Open Menu
     const menuButton = await device.$("ion-menu-button");
-    await menuButton.waitForDisplayed();
-    shadowClick(menuButton, "button");
+    await interact(menuButton, e => shadowClick(e, "button"));
 
     // Go to Profile
     const profileItem = await device.$("#e2e-menu-item-profile");
-    await profileItem.waitForDisplayed();
-    await profileItem.click();
-
-    // It could happened that the click is faster than the js
-    try {
-      await profileItem.waitForDisplayed(undefined, true, "timeout");
-    } catch (e) {
-      if (e.message === "timeout") {
-        log.warning("retry to click");
-
-        // try to manually close the menu
-        await profileItem.click();
-
-        await profileItem.waitForDisplayed(undefined, true);
-      } else {
-        throw e;
-      }
-    }
+    await interact(profileItem, e => e.click());
+    await profileItem.waitForDisplayed(undefined, true, "timeout");
 
     // Wait for profile page
     const profilePage = await device.$("app-profile");
