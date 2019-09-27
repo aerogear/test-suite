@@ -1,28 +1,25 @@
 require('chai').should();
 
-const { initKubeClient } = require('../util/init');
 const getMobileClientCr = require('../templates/mobile-client');
-const getPushAppCr = require('../templates/push-app');
+const getKeycloakRealmCr = require('../templates/keycloak-realm');
+const getMssAppCr = require('../templates/mss-app');
+const getAndroidVariantCr = require('../templates/android-variant');
+const getIosVariantCr = require('../templates/ios-variant');
+const getSyncConfigMap = require('../templates/data-sync');
 const {
-  bindKeycloak,
-  unbindKeycloak,
-  bindMss,
-  unbindMss,
-  bindPushAndroid,
-  unbindPushAndroid,
-  bindPushIos,
-  unbindPushIos,
-  bindSync,
-  unbindSync
-} = require('../util/bindings');
+  initKubeClient,
+  TYPE,
+  ACTION,
+  resource,
+  createPushApp
+} = require('../util/kubernetes');
 const waitFor = require('../util/waitFor');
 
-const TIMEOUT = 20000;
+const TIMEOUT = 60000;
 
 describe('Bindings', async function() {
   this.timeout(0);
 
-  let client;
   let mobileApp;
   let keycloakRealm;
   let mssApp;
@@ -31,257 +28,173 @@ describe('Bindings', async function() {
   let iosVariant;
   let dataSync;
 
-  const getMobileApp = async () => {
-    return (await client
-      .apis['mdc.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .mobileclients(mobileApp.metadata.name)
-      .get()).body;
+  const getUpdatedServices = async expectedNumServices => {
+    await waitFor(async () =>
+      (await resource(TYPE.MOBILE_APP, ACTION.GET, mobileApp.metadata.name))
+        .status.services.length === expectedNumServices,
+      TIMEOUT
+    );
+
+    const app = await resource(TYPE.MOBILE_APP, ACTION.GET, mobileApp.metadata.name);
+
+    return app.status.services;
   };
 
   before('init kube client', async function() {
-    client = await initKubeClient();
+    await initKubeClient(process.env.MDC_NAMESPACE);
+  });
+
+  after('delete mobile app', async function() {
+    await resource(TYPE.MOBILE_APP, ACTION.DELETE, mobileApp.metadata.name);
   });
 
   it('should create mobile app', async function() {
     const cr = getMobileClientCr('test');
-
-    mobileApp = (await client
-      .apis['mdc.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .mobileclients
-      .post({ body: cr })).body;
+    mobileApp = await resource(TYPE.MOBILE_APP, ACTION.CREATE, cr);
   });
 
   it('should create keycloak binding', async function() {
-    keycloakRealm = await bindKeycloak(
-      client,
-      mobileApp.metadata.name,
-      mobileApp.metadata.uid
-    );
+    const cr = getKeycloakRealmCr(mobileApp.metadata.name, mobileApp.metadata.uid);
+    keycloakRealm = await resource(TYPE.KEYCLOAK_REALM, ACTION.CREATE, cr);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(1);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(1);
-    app.status.services[0].type.should.equal('keycloak');
+    services.length.should.equal(1);
+    services[0].type.should.equal('keycloak');
   });
 
   it('should delete keycloak binding', async function() {
-    await unbindKeycloak(client, keycloakRealm.metadata.name);
+    await resource(TYPE.KEYCLOAK_REALM, ACTION.DELETE, keycloakRealm.metadata.name);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(0);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(0);
+    services.length.should.equal(0);
   });
 
   it('should create mss binding', async function() {
-    mssApp = await bindMss(
-      client,
-      mobileApp.metadata.name,
-      mobileApp.metadata.uid
-    );
+    const cr = getMssAppCr(mobileApp.metadata.name, mobileApp.metadata.uid);
+    mssApp = await resource(TYPE.MSS_APP, ACTION.CREATE, cr);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(1);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(1);
-    app.status.services[0].type.should.equal('security');
+    services.length.should.equal(1);
+    services[0].type.should.equal('security');
   });
 
   it('should delete mss binding', async function() {
-    await unbindMss(client, mssApp.metadata.name);
+    await resource(TYPE.MSS_APP, ACTION.DELETE, mssApp.metadata.name);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(0);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(0);
+    services.length.should.equal(0);
   });
 
   it('should create push app', async function() {
-    const pushAppCr = getPushAppCr('test');
-
-    pushApp = (await client
-      .apis['push.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .pushapplications
-      .post({ body: pushAppCr })).body;
-
-    await waitFor(async () => {
-        pushApp = (await client
-          .apis['push.aerogear.org']
-          .v1alpha1
-          .namespaces(process.env.MDC_NAMESPACE)
-          .pushapplications(pushApp.metadata.name)
-          .get()).body;
-
-        return pushApp.status.pushApplicationId
-      },
-      TIMEOUT
-    );
-
-    pushApp = (await client
-      .apis['push.aerogear.org']
-      .v1alpha1
-      .namespaces(process.env.MDC_NAMESPACE)
-      .pushapplications(pushApp.metadata.name)
-      .get()).body;
+    pushApp = await createPushApp('test');
   });
 
   it('should create push android binding', async function() {
-    androidVariant = await bindPushAndroid(
-      client,
+    const cr = getAndroidVariantCr(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       pushApp.status.pushApplicationId,
       process.env.FIREBASE_SERVER_KEY
     );
+    androidVariant = await resource(TYPE.ANDROID_VARIANT, ACTION.CREATE, cr);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(1);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(1);
-    app.status.services[0].type.should.equal('push');
+    services.length.should.equal(1);
+    services[0].type.should.equal('push');
   });
 
   it('should delete push android binding', async function() {
-    await unbindPushAndroid(client, androidVariant.metadata.name);
+    await resource(TYPE.ANDROID_VARIANT, ACTION.DELETE, androidVariant.metadata.name);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(0);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(0);
+    services.length.should.equal(0);
   });
 
   it('should create push ios binding', async function() {
-    iosVariant = await bindPushIos(
-      client,
+    const cr = getIosVariantCr(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       pushApp.status.pushApplicationId,
       process.env.IOS_CERTIFICATE,
       process.env.IOS_PASSPHRASE
     );
+    iosVariant = await resource(TYPE.IOS_VARIANT, ACTION.CREATE, cr);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(1);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(1);
-    app.status.services[0].type.should.equal('push');
+    services.length.should.equal(1);
+    services[0].type.should.equal('push');
   });
 
   it('should delete push ios binding', async function() {
-    await unbindPushIos(client, iosVariant.metadata.name);
+    await resource(TYPE.IOS_VARIANT, ACTION.DELETE, iosVariant.metadata.name);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(0);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(0);
+    services.length.should.equal(0);
   });
 
   it('should create sync binding', async function() {
-    dataSync = await bindSync(
-      client,
+    const res = getSyncConfigMap(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       process.env.SYNC_URL
     );
+    dataSync = await resource(TYPE.CONFIG_MAP, ACTION.CREATE, res);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 1,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(1);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(1);
-    app.status.services[0].type.should.equal('sync-app');
+    services.length.should.equal(1);
+    services[0].type.should.equal('sync-app');
   });
 
   it('should delete sync binding', async function() {
-    await unbindSync(client, dataSync.metadata.name);
+    await resource(TYPE.CONFIG_MAP, ACTION.DELETE, dataSync.metadata.name);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(0);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(0);
+    services.length.should.equal(0);
   });
 
   it('should bind all services', async function() {
-    keycloakRealm = await bindKeycloak(
-      client,
-      mobileApp.metadata.name,
-      mobileApp.metadata.uid
-    );
-    mssApp = await bindMss(
-      client,
-      mobileApp.metadata.name,
-      mobileApp.metadata.uid
-    );
-    androidVariant = await bindPushAndroid(
-      client,
+    let cr = getKeycloakRealmCr(mobileApp.metadata.name, mobileApp.metadata.uid);
+    keycloakRealm = await resource(TYPE.KEYCLOAK_REALM, ACTION.CREATE, cr);
+
+    cr = getMssAppCr(mobileApp.metadata.name, mobileApp.metadata.uid);
+    mssApp = await resource(TYPE.MSS_APP, ACTION.CREATE, cr);
+
+    cr = getAndroidVariantCr(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       pushApp.status.pushApplicationId,
       process.env.FIREBASE_SERVER_KEY
     );
-    iosVariant = await bindPushIos(
-      client,
+    androidVariant = await resource(TYPE.ANDROID_VARIANT, ACTION.CREATE, cr);
+
+    cr = getIosVariantCr(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       pushApp.status.pushApplicationId,
       process.env.IOS_CERTIFICATE,
       process.env.IOS_PASSPHRASE
     );
-    dataSync = await bindSync(
-      client,
+    iosVariant = await resource(TYPE.IOS_VARIANT, ACTION.CREATE, cr);
+
+    const res = getSyncConfigMap(
       mobileApp.metadata.name,
       mobileApp.metadata.uid,
       process.env.SYNC_URL
     );
+    dataSync = await resource(TYPE.CONFIG_MAP, ACTION.CREATE, res);
 
     await waitFor(async () => {
-        const app = await getMobileApp();
+        const app = await resource(TYPE.MOBILE_APP, ACTION.GET, mobileApp.metadata.name);
         if (app.status.services.length === 4) {
           const pushConfig = app.status.services.find(s => s.type === 'push');
           return pushConfig && pushConfig.config.android && pushConfig.config.ios;
@@ -290,7 +203,7 @@ describe('Bindings', async function() {
       TIMEOUT
     );
 
-    const app = await getMobileApp();
+    const app = await resource(TYPE.MOBILE_APP, ACTION.GET, mobileApp.metadata.name);
 
     app.status.services.length.should.equal(4);
     app.status.services.find(s => s.type === 'keycloak').should.exist;
@@ -303,19 +216,14 @@ describe('Bindings', async function() {
   });
 
   it('should unbind all services', async function() {
-    await unbindKeycloak(client, keycloakRealm.metadata.name);
-    await unbindMss(client, mssApp.metadata.name);
-    await unbindPushAndroid(client, androidVariant.metadata.name);
-    await unbindPushIos(client, iosVariant.metadata.name);
-    await unbindSync(client, dataSync.metadata.name);
+    await resource(TYPE.KEYCLOAK_REALM, ACTION.DELETE, keycloakRealm.metadata.name);
+    await resource(TYPE.MSS_APP, ACTION.DELETE, mssApp.metadata.name);
+    await resource(TYPE.ANDROID_VARIANT, ACTION.DELETE, androidVariant.metadata.name);
+    await resource(TYPE.IOS_VARIANT, ACTION.DELETE, iosVariant.metadata.name);
+    await resource(TYPE.CONFIG_MAP, ACTION.DELETE, dataSync.metadata.name);
 
-    await waitFor(async () =>
-      (await getMobileApp()).status.services.length === 0,
-      TIMEOUT
-    );
+    const services = await getUpdatedServices(0);
 
-    const app = await getMobileApp();
-
-    app.status.services.length.should.equal(0);
+    services.length.should.equal(0);
   });
 });
