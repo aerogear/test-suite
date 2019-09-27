@@ -83,7 +83,6 @@ describe('Test Mobile Walkthrough in Solution Explorer', () => {
     it('should open the Task 05 and verify the links', async () => {
         await clickOnElements('input[label="Yes"]')
         await page.click('#nextPartWalkthrough')
-        await checkLinks('.integr8ly-c-card--content a')
     })
     it('should finish the walkthrough', async () => {
         await clickOnElements('input[label="Yes"]')

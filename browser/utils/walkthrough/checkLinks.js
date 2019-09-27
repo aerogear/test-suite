@@ -24,6 +24,9 @@ module.exports = async (selector)  => {
             if (cookieHeader && cookieHeader.includes('oauth_proxy')) {
                 // oAuth Proxy login page returns 403
                 expectedStatus = 403
+            } else if (response._url.includes('codeready')) {
+                // codeready console returns 304
+                expectedStatus = 304
             }
             await newPage.close()
             expect(response).to.be.an('object', `Did not get a valid reponse after loading ${link}`)
