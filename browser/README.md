@@ -9,6 +9,8 @@ export OPENSHIFT_USERNAME=<REPLACE_ME>
 export OPENSHIFT_PASSWORD=<REPLACE_ME>
 # URL to MDC instance
 export MDC_URL="https://<REPLACE_ME>"
+# URL to OpenShift Console
+export OPENSHIFT_URL="https://<REPLACE_ME>/console"
 npm test
 ```
 

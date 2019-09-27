@@ -6,7 +6,7 @@ const {
     login,
     unbindServiceFromApp,
     parseMobileServicesConfig
-} = require('../utils')
+} = require('../utils/mdc')
 const appName = `test-${Date.now()}`
 const syncServiceName = 'Data Sync'
 const syncUrl = "sync-url.com"
