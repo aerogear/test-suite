@@ -1,6 +1,7 @@
 import { interact, shadowClick } from "../util/commons";
 import { KEYCLOAK_USERNAME } from "../util/config";
 import { device, reset } from "../util/device";
+import { log } from "../util/log";
 import { login } from "../util/login";
 
 describe("Profile", function() {
@@ -8,15 +9,18 @@ describe("Profile", function() {
   // we avoid to fail because of flaky tests
   this.retries(3);
 
-  afterEach(async () => {
-    // always reset the device after each tests
-    // - if the test fail we can retry from a predictable point
-    // - other tests will not influence this test
-    await reset();
+  afterEach(async function() {
+    if (!this.currentTest.isPassed()) {
+      log.warning(`retry test: ${this.currentTest.title}`);
+
+      // always reset the device if one test fails
+      // so that we can retry the test from a predictable point
+      await reset();
+    }
   });
 
   it.only(`should be logged in as ${KEYCLOAK_USERNAME}`, async () => {
-    // always login before start testing
+    // Login if necessary
     await login();
 
     // Open Menu
