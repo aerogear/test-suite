@@ -13,14 +13,14 @@ describe("Profile", function() {
     if (!this.currentTest.isPassed()) {
       log.warning(`retry test: ${this.currentTest.title}`);
 
-      // always reset the device if one test fails
+      // always reset the device if the test fails
       // so that we can retry the test from a predictable point
       await reset();
     }
   });
 
-  it.only(`should be logged in as ${KEYCLOAK_USERNAME}`, async () => {
-    // Login if necessary
+  it(`should be logged in as ${KEYCLOAK_USERNAME}`, async () => {
+    // always try to login again
     await login();
 
     // Open Menu
