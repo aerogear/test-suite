@@ -1,8 +1,21 @@
 import { shadowClick } from "../util/commons";
-import { device } from "../util/device";
+import { device, reset } from "../util/device";
+import { log } from "../util/log";
+import { login } from "../util/login";
 
-describe("Security", () => {
+describe("Security", function() {
+  this.retries(3);
+
+  afterEach(async function() {
+    if (!this.currentTest.isPassed()) {
+      log.warning(`retry test: ${this.currentTest.title}`);
+      await reset();
+    }
+  });
+
   it("should display number of passed checks", async () => {
+    await login();
+
     // Open Menu
     const menuButton = await device.$("ion-menu-button");
     await menuButton.waitForDisplayed();
