@@ -17,7 +17,7 @@ module.exports = async (appName, serviceName) => {
     // Make sure the row with required Service was found
     expect(serviceIndex).to.be.a('number')
     // Find Service's "Dropdown" button and click on it
-    const unboundDropdownButtons = await page.$$('.boundService button')
+    const unboundDropdownButtons = await page.$$('.boundService button#delete-binding-id')
     await unboundDropdownButtons[serviceIndex].click()
     // Wait until the "dropdown" will expand
     await page.waitForSelector('.boundService button[aria-expanded="true"]')
