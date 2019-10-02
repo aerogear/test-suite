@@ -7,9 +7,11 @@ const {
     unbindServiceFromApp,
     parseMobileServicesConfig
 } = require('../utils/mdc')
-const appName = `test-${Date.now()}`
-const syncServiceName = 'Data Sync'
-const syncUrl = "sync-url.com"
+const { 
+    appName,
+    syncServiceName,
+    syncUrl
+} = require('../config')
 
 describe('Basic MDC test', () => {
 
@@ -32,7 +34,7 @@ describe('Basic MDC test', () => {
     })
 
     it('binding Data Sync service should complete successfully', async () => {
-        await bindServiceToApp(appName, syncServiceName, { syncUrl: `https://${syncUrl}` })
+        await bindServiceToApp(appName, syncServiceName, { syncUrl })
     })
     it('mobile-services.json configuration should be updated with Data Sync config', async () => {
         await Promise.all([
