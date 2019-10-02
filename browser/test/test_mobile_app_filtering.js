@@ -35,7 +35,7 @@ describe('Testing MDC Apps filtering', () => {
         await page.waitForSelector('.toolbar-pf-filter input.toolbarFilter')
         await page.type('input.toolbarFilter', "test")
         await page.waitForFunction(
-            filter1 => [...document.querySelectorAll('.card-pf-title > h1')].every(el => (el.innerText).slice(0, 4) === filter2), {},
+            filter1 => [...document.querySelectorAll('.card-pf-title > h1')].every(el => (el.innerText).slice(0, 4) === filter1), {},
             filter1
         )
     })
