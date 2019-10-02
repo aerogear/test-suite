@@ -64,8 +64,9 @@ module.exports = async (appName, serviceName, params) => {
             await page.type('#root_platformConfig_projectNumber', params.upsAndroidSenderId)
             break
         default:
-            console.error('Unknown service name')
-            process.exit(1)
+            throw new Error(`Unknown service name "${serviceName}"
+            Valid services' names: ${syncServiceName}, ${idmServiceName}, ${mssServiceName}, ${upsServiceName}
+            `)
     }
     // Click on Create
     await page.click('.wizard-pf-footer .btn-primary')

@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer')
 const { expect } = require('chai')
+const FAILED_TESTS = {};
 
 const opts = {
     ignoreHTTPSErrors: true,
@@ -22,3 +23,16 @@ before(async () => {
 after(() => {
     browser.close()
 })
+
+// Skip test if first test from folder failed
+beforeEach(function() {
+  if (FAILED_TESTS[this.currentTest.file]) {
+    this.skip();
+  }
+});
+
+afterEach(function() {
+  if (this.currentTest.state === "failed") {
+    FAILED_TESTS[this.currentTest.file] = true;
+  }
+});
