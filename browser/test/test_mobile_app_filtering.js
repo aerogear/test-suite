@@ -24,18 +24,17 @@ describe('Testing MDC Apps filtering', () => {
         await deleteApp(appName2)
         await deleteApp(appName3)
         await deleteApp(appName4)
-        browser.close()
+        page.close()
     })
     afterEach(async() => {
-        const filterHandle = await page.$('.toolbar-pf-filter input.toolbarFilter')
-        await page.evaluate(filter => filter.value = "", filterHandle)
+        await page.$eval('.toolbar-pf-filter input.toolbarFilter', el => el.value = "")
     })
 
     it("MDC overview page should display only Test* apps", async() => {
         await page.waitForSelector('.toolbar-pf-filter input.toolbarFilter')
         await page.type('input.toolbarFilter', "test")
         await page.waitForFunction(
-            filter1 => [...document.querySelectorAll('.card-pf-title > h1')].every(el => (el.innerText).slice(0, 4) === filter2), {},
+            filter1 => [...document.querySelectorAll('.card-pf-title > h1')].every(el => (el.innerText).slice(0, 4) === filter1), {},
             filter1
         )
     })
