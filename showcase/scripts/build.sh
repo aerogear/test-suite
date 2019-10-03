@@ -8,7 +8,6 @@ APPS_DIR="${PWD}/apps"
 APP_NAME="ionic-showcase"
 CLONE_ONLY="false"
 WORKSPACE=
-MOBILE_PLATFORM="${1:-$MOBILE_PLATFORM}"
 CLEAN_UP="true"
 
 help() { echo "Usage ${SCRIPT} MOBILE_PLATFORM [--clone-only] [--workspace PATH]"; }
