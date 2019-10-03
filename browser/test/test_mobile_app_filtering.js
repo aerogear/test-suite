@@ -3,13 +3,6 @@ const {
     createApp,
     deleteApp
 } = require('../utils/mdc')
-    // const appName1 = `test1-${Date.now()}`,
-    //     appName2 = `test2-${Date.now()}`,
-    //     appName3 = `verification-${Date.now()}`,
-    //     appName4 = `testing-${Date.now()}`,
-    //     filter1 = "test",
-    //     filter2 = "verif",
-    //     filter3 = "testin"
 const appName1 = `test-${Math.ceil(Math.random()*1000)}`,
     appName2 = `test-${Math.ceil(Math.random()*1000)}`,
     appName3 = `verification-${Math.ceil(Math.random()*1000)}`,
@@ -31,7 +24,7 @@ describe('Testing MDC Apps filtering', () => {
         await deleteApp(appName2)
         await deleteApp(appName3)
         await deleteApp(appName4)
-        page.close()
+        await page.close()
     })
     afterEach(async() => {
         await page.$eval('.toolbar-pf-filter input.toolbarFilter', el => el.value = "")
