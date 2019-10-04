@@ -13,11 +13,11 @@ describe("Test MDC apps", () => {
     after(async() => {
         await page.close()
     })
-    describe("test create app modal dialog basic functions", async() => {
+    describe("test create app dialog basic functions", async() => {
         beforeEach(async() => {
             await page.waitForSelector('.toolbar-pf-actions button.btn-primary')
             await page.click('.toolbar-pf-actions button.btn-primary')
-            await page.$eval('.modal-title', el => el.innerText == "Create Mobile App")
+            await page.$eval('.modal-title', el => el.innerText === "Create Mobile App")
         })
         afterEach(async() => {
             await page.waitForSelector('.pficon-close')
@@ -27,14 +27,15 @@ describe("Test MDC apps", () => {
         it("Should display error with invalid app name", async() => {
             await page.waitForSelector('#name')
             await page.keyboard.type("hhh!!!!www.")
+            await page.waitForSelector(".help-block", { display: true })
         })
-        it("Should not create App with appname greater than 70 characters", async() => {
+        it("Should not create App with name greater than 70 characters", async() => {
             await page.waitForSelector("#name")
             await page.keyboard.type("abcdefg12345678901234567890abcdefg789012345678901234567890123456saaaaaaa")
             await page.waitForSelector(".help-block", { display: true })
         })
     })
-    describe("test mobile apps creation", async() => {
+    describe("test mobile app creation", async() => {
         before(async() => {
             await createApp("my-test-app-1230045")
         })
@@ -46,9 +47,7 @@ describe("Test MDC apps", () => {
             await createApp(appName1)
             await createApp(appName2)
             await openApp(appName1)
-            await closeApp()
             await openApp(appName2)
-            await closeApp()
         })
         it("Delete apps", async() => {
             await deleteApp(appName1)
@@ -58,7 +57,3 @@ describe("Test MDC apps", () => {
 
 
 })
-let closeApp = async() => {
-    await page.waitForSelector(".breadcrumb")
-    await page.click('[href="/overview"]')
-}
