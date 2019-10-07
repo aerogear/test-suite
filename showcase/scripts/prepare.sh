@@ -2,7 +2,7 @@
 
 set -ex
 
-APP_NAME="test"
+APP_NAME="showcase-test-suite-app"
 SYNC_NAMESPACE="showcase-test-suite-sync"
 
 # find mdc namespace
