@@ -20,7 +20,7 @@ const capabilities = {
   "browserstack.key": BROWSERSTACK_KEY,
   "browserstack.debug": true,
   "browserstack.networkLogs": true,
-  "browserstack.appium_version": "1.9.1"
+  "browserstack.appium_version": "1.14.0"
 };
 
 const options: WebdriverIO.RemoteOptions = {

@@ -2,9 +2,8 @@
 
 set -ex
 
-APP_NAME="test"
-SYNC_NAMESPACE_PREFIX="test"
-SYNC_NAMESPACE="$SYNC_NAMESPACE_PREFIX-$RANDOM"
+APP_NAME="showcase-test-suite-app"
+SYNC_NAMESPACE="showcase-test-suite-sync"
 
 # find mdc namespace
 if oc get mobileclients -n openshift-mobile-developer-console &>/dev/null; then
@@ -15,7 +14,7 @@ fi
 
 # cleanup
 oc delete mobileclient $APP_NAME -n $MDC_NAMESPACE || true
-oc get projects | grep "$SYNC_NAMESPACE_PREFIX-" | awk '{print $1}' | xargs -L1 oc delete project || true
+oc delete project $SYNC_NAMESPACE || true
 
 # create mobile app
 mkdir -p tmp
