@@ -22,7 +22,7 @@ export HEADLESS=false
 ## Debug tests in VS Code
 
 1. Open to the _Debug_ tab in the Activity Bar (`Ctrl + Shift + D`)
-2. Click on the gear icon (_open launch.json_) in the tob right corner of the tab
+2. Click on the gear icon (_open launch.json_) in the top right corner of the tab
 3. In the `launch.json` configuration file add the following configuration to the `configurations` section.
 
    > The below configuration assume that you have opened the whole test-suite repo using VS Code, if you have only opened the `browser` subdirectory remove `browsers/` from `program` and remove the `cwd` line.
