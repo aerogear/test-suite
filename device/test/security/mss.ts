@@ -26,6 +26,15 @@ describe('Mobile Security Service', function () {
         let browser;
 
         before('authenticate with oauth proxy', async () => {
+            const openshiftUser = process.env.OPENSHIFT_USER;
+            const openshiftPass = process.env.OPENSHIFT_PASS;
+
+            if (openshiftUser === undefined || openshiftPass === undefined) {
+                throw new Error(
+                    "OPENSHIFT_USER and/or OPENSHIFT_PASS are not defined"
+                );
+            }
+
             browser = await puppeteer.launch();
             const page = await browser.newPage();
             await page.goto(mssUrl);
@@ -33,8 +42,8 @@ describe('Mobile Security Service', function () {
                 page.waitForNavigation(),
                 page.click('button')
             ]);
-            await page.type('#username', process.env.OPENSHIFT_USER);
-            await page.type('#password', process.env.OPENSHIFT_PASS);
+            await page.type('#username', openshiftUser);
+            await page.type('#password', openshiftPass);
             await Promise.all([
                 page.waitForNavigation(),
                 page.click('#kc-login')
