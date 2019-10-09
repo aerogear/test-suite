@@ -41,7 +41,7 @@ describe('Bindings', async function() {
   };
 
   before('init kube client', async function() {
-    await init(process.env.MDC_NAMESPACE);
+    await init();
   });
 
   after('delete mobile app', async function() {
