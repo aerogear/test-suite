@@ -23,7 +23,7 @@ if (process.env.LOCAL_APPIUM === "true") {
         hostname: "hub-cloud.browserstack.com",
         logLevel: "error",
         capabilities: {
-            os_version: process.env.MOBILE_PLATFORM === "ios" ? "12" : "9.0",
+            os_version: process.env.MOBILE_PLATFORM === "ios" ? "13" : "9.0",
             device:
                 process.env.MOBILE_PLATFORM === "ios"
                     ? "iPhone XS"

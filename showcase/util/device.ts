@@ -10,7 +10,7 @@ const capabilities = {
   project: "AeroGear Test Suit",
   name: "Showcase",
   browserName: "",
-  os_version: MOBILE_PLATFORM === "ios" ? "12" : "9.0",
+  os_version: MOBILE_PLATFORM === "ios" ? "13" : "9.0",
   device: MOBILE_PLATFORM === "ios" ? "iPhone XS" : "Google Pixel 3",
   real_mobile: true,
   app: BROWSERSTACK_APP,
