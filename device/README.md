@@ -54,6 +54,7 @@ export OPENSHIFT_HOST=<OPENSHIFT_HOST_URL>
 export OPENSHIFT_USER=<EVALS_USERNAME>
 export OPENSHIFT_PASS=<EVALS_PASSWORD>
 
+oc login ...
 ./scripts/prepare.js
 ```
 
