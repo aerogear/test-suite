@@ -55,6 +55,8 @@ export OPENSHIFT_USER=<EVALS_USERNAME>
 export OPENSHIFT_PASS=<EVALS_PASSWORD>
 
 oc login ...
+
+cd .. && npm install && cd device
 ./scripts/prepare.js
 ```
 

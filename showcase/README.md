@@ -21,6 +21,8 @@ prepare the cluster and generate the `mobile-services.json`
 
 ```bash
 oc login ...
+
+cd .. && npm install && cd showcase
 ./scripts/prepare.js
 ```
 

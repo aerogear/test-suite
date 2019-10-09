@@ -5,12 +5,12 @@ const waitFor = async (check, timeout, pause = 4000) => {
 
     const t = setTimeout(() => {
       timedout = true;
-      reject();
+      reject(new Error('Timed out'));
     }, timeout);
     
     while (!timedout && !passed) {
-      await new Promise(resolve => setTimeout(resolve, pause));
       passed = await check();
+      await new Promise(resolve => setTimeout(resolve, pause));
     }
 
     clearTimeout(t);

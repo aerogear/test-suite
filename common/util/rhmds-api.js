@@ -3,6 +3,8 @@ const Request = require('kubernetes-client/backends/request');
 const { OpenshiftClient } = require('openshift-rest-client');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
+const fs = require('fs');
+const path = require('path');
 
 const mobileClientCrd = require('../crds/mobile-client');
 const keycloakRealmCrd = require('../crds/keycloak-realm');
@@ -12,6 +14,11 @@ const androidVariantCrd = require('../crds/android-variant');
 const iosVariantCrd = require('../crds/ios-variant');
 const getPushAppCr = require('../templates/push-app');
 const getMobileClientCr = require('../templates/mobile-client');
+const getKeycloakRealmCr = require('../templates/keycloak-realm');
+const getAndroidVariantCr = require('../templates/android-variant');
+const getIosVariantCr = require('../templates/ios-variant');
+const getMssAppCr = require('../templates/mss-app');
+const getSyncConfigMap = require('../templates/data-sync');
 const { waitFor, randomString } = require('./utils');
 
 const TIMEOUT = 20000;
@@ -30,6 +37,12 @@ const GET = 'get';
 const CREATE = 'create';
 const DELETE = 'delete';
 const GET_ALL = 'getAll';
+
+const DATA_SYNC = 'sync-app';
+const KEYCLOAK = 'keycloak';
+const PUSH_ANDROID = 'android';
+const PUSH_IOS = 'ios';
+const MSS = 'security';
 
 let mdcNamespace;
 let kubeClient;
@@ -171,6 +184,113 @@ const deleteProject = async name => {
   await exec(`oc delete project ${name}`);
 };
 
+const recreateMobileApp = async name => {
+  await resource(MOBILE_APP, DELETE, name).catch(() => {});
+  await resource(PUSH_APP, DELETE, name).catch(() => {});
+
+  const mobileClientCr = getMobileClientCr(name);
+  return await resource(MOBILE_APP, CREATE, mobileClientCr);
+};
+
+const redeployShowcase = async namePrefix => {
+  // Creating namespace with random string suffix is a workaround
+  // for some reason when deleting then creating namespace with
+  // same name in script, no matter how long it waits before
+  // creation, the creation always fails, saying that namespace
+  // with the name already exists.
+  const namespaces = await resource(PROJECT, GET_ALL);
+  for (const ns of namespaces.items) {
+    if (ns.metadata.name.startsWith(namePrefix)) {
+      await deleteProject(ns.metadata.name);
+    }
+  }
+
+  const name = `${namePrefix}-${randomString()}`;
+  await newProject(name);
+  await deployShowcaseServer(name, name);
+}
+
+const bind = async (app, services) => {
+  const bindings = [...services];
+
+  while (bindings.length > 0) {
+    const service = bindings.pop();
+
+    let pushApp;
+
+    switch (service) {
+      case DATA_SYNC:
+        const namespaces = await resource(PROJECT, GET_ALL);
+        const namespace = namespaces.items.find(ns => ns.metadata.name.startsWith(app.metadata.name));
+        const routes = await resource(ROUTE, GET_ALL, null, namespace.metadata.name);
+        const syncConfigMap = getSyncConfigMap(
+          app.metadata.name,
+          app.metadata.uid,
+          `https://${routes.items[0].spec.host}`
+        );
+        await resource(CONFIG_MAP, CREATE, syncConfigMap);
+        break;
+
+      case KEYCLOAK:
+        const keycloakRealmCr = getKeycloakRealmCr(app.metadata.name, app.metadata.uid);
+        await resource(KEYCLOAK_REALM, CREATE, keycloakRealmCr);
+        break;
+
+      case PUSH_ANDROID:
+        pushApp = await createPushApp(app.metadata.name);
+        const androidVariantCr = getAndroidVariantCr(
+          app.metadata.name,
+          app.metadata.uid,
+          pushApp.status.pushApplicationId,
+          process.env.FIREBASE_SERVER_KEY
+        );
+        await resource(ANDROID_VARIANT, CREATE, androidVariantCr);
+        break;
+
+      case PUSH_IOS:
+        pushApp = await createPushApp(app.metadata.name);
+        const iosVariantCr = getIosVariantCr(
+          app.metadata.name,
+          app.metadata.uid,
+          pushApp.status.pushApplicationId,
+          process.env.IOS_CERTIFICATE,
+          process.env.IOS_PASSPHRASE
+        );
+        await resource(IOS_VARIANT, CREATE, iosVariantCr);
+        break;
+
+      case MSS:
+        const mssAppCr = getMssAppCr(app.metadata.name, app.metadata.uid);
+        await resource(MSS_APP, CREATE, mssAppCr);
+        break;
+    
+      default:
+        break;
+    }
+  }
+
+  for (const service of services) {
+    await waitFor(async () => {
+      const mobileApp = await resource(MOBILE_APP, GET, app.metadata.name);
+      if (service === PUSH_ANDROID || service === PUSH_IOS) {
+        const pushService = mobileApp.status.services.find(s => s.name === 'push');
+        return pushService && pushService.config[service];
+      }
+      return mobileApp.status.services.find(s => s.name === service);
+    }, 30 * 1000);
+  }
+};
+
+const outputAppConfig = async (app, folder) => {
+  const mobileApp = await resource(MOBILE_APP, GET, app.metadata.name);
+  fs.writeFileSync(path.resolve(folder, 'mobile-services.json'), JSON.stringify(mobileApp.status, null, 2));
+};
+
+const outputPushConfig = async (app, folder) => {
+  const pushApp = await resource(PUSH_APP, GET, app.metadata.name);
+  fs.writeFileSync(path.resolve(folder, 'push-app.json'), JSON.stringify(pushApp, null, 2));
+};
+
 module.exports = {
   init,
   TYPE: {
@@ -190,9 +310,21 @@ module.exports = {
     DELETE,
     GET_ALL
   },
+  BINDING: {
+    DATA_SYNC,
+    KEYCLOAK,
+    PUSH_ANDROID,
+    PUSH_IOS,
+    MSS
+  },
   resource,
   createPushApp,
   deployShowcaseServer,
   newProject,
-  deleteProject
+  deleteProject,
+  recreateMobileApp,
+  redeployShowcase,
+  bind,
+  outputAppConfig,
+  outputPushConfig
 };
