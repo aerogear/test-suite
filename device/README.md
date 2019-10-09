@@ -54,7 +54,7 @@ export OPENSHIFT_HOST=<OPENSHIFT_HOST_URL>
 export OPENSHIFT_USER=<EVALS_USERNAME>
 export OPENSHIFT_PASS=<EVALS_PASSWORD>
 
-./scripts/prepare.sh
+./scripts/prepare.js
 ```
 
 Script will create mobile app and bindings via CRs and fetch mobile-services.json.
