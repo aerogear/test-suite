@@ -49,7 +49,7 @@ describe('Bindings', async function() {
   });
 
   it('should create mobile app', async function() {
-    const cr = getMobileClientCr('test');
+    const cr = getMobileClientCr(process.env['APP_NAME']);
     mobileApp = await resource(TYPE.MOBILE_APP, ACTION.CREATE, cr);
   });
 
@@ -90,7 +90,7 @@ describe('Bindings', async function() {
   });
 
   it('should create push app', async function() {
-    pushApp = await createPushApp('test');
+    pushApp = await createPushApp(process.env['APP_NAME']);
   });
 
   it('should create push android binding', async function() {

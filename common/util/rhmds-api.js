@@ -208,6 +208,8 @@ const redeployShowcase = async namePrefix => {
   const name = `${namePrefix}-${randomString()}`;
   await newProject(name);
   await deployShowcaseServer(name, name);
+
+  return name;
 }
 
 const bind = async (app, services) => {

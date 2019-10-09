@@ -11,7 +11,7 @@ const {
   outputAppConfig
 } = require('../../common/util/rhmds-api');
 
-const appName = 'device-test-suite';
+const appName = 'showcase-test-suite';
 
 (async () => {
   await init();

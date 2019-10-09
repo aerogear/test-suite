@@ -45,7 +45,7 @@ describe('App deletion', async function() {
   });
 
   it('should create mobile app', async function() {
-    const cr = getMobileClientCr('test');
+    const cr = getMobileClientCr(process.env['APP_NAME']);
     mobileApp = await resource(TYPE.MOBILE_APP, ACTION.CREATE, cr);
   });
 
@@ -56,7 +56,7 @@ describe('App deletion', async function() {
     cr = getMssAppCr(mobileApp.metadata.name, mobileApp.metadata.uid);
     mssApp = await resource(TYPE.MSS_APP, ACTION.CREATE, cr);
 
-    pushApp = await createPushApp('test');
+    pushApp = await createPushApp(process.env['APP_NAME']);
 
     cr = getAndroidVariantCr(
       mobileApp.metadata.name,
