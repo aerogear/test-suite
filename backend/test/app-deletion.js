@@ -41,7 +41,7 @@ describe('App deletion', async function() {
   };
 
   before('init kube client', async function() {
-    await init(process.env.MDC_NAMESPACE);
+    await init();
   });
 
   it('should create mobile app', async function() {
