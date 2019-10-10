@@ -163,7 +163,7 @@ const createPushApp = async name => {
 
   await waitFor(async () => {
       pushApp = await resource(PUSH_APP, GET, pushApp.metadata.name);
-      return pushApp.status.pushApplicationId
+      return pushApp.status && pushApp.status.pushApplicationId;
     },
     TIMEOUT
   );

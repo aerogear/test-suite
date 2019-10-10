@@ -1,0 +1,45 @@
+pipeline {
+  agent {
+    dockerfile {
+      dir 'containers/node'
+      label 'psi_rhel8'
+    }
+  }
+  parameters {
+    string(name: 'OPENSHIFT_USERNAME', defaultValue: 'evals01', description: 'Evals username')
+    password(name: 'OPENSHIFT_PASSWORD', defaultValue: 'Password1', description: 'Evals user password')
+    string(name: 'OPENSHIFT_URL', defaultValue: '', description: 'RHMI cluster to target (https://...)')
+  }
+  environment {
+    JUNIT_REPORT_STACK="1"
+  }
+  stages {
+    stage('Install dependencies') {
+      steps {
+        sh "npm install"
+        dir('browser') {
+          sh """
+          npm install
+          npm install mocha-jenkins-reporter
+          """
+        }
+      }
+    }
+    stage('Login with oc') {
+      steps {
+        sh """
+        oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p $OPENSHIFT_PASSWORD
+        """
+      }
+    }
+    stage('Test') {
+      steps {
+        dir('browser') {
+          sh "JUNIT_REPORT_PATH=report.xml npm test -- --reporter mocha-jenkins-reporter || true"
+          archiveArtifacts "report.xml"
+          junit allowEmptyResults: true, testResults: "report.xml"
+        }
+      }
+    }
+  }
+}
