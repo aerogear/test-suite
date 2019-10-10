@@ -29,7 +29,6 @@ const appName = 'device-test-suite';
     BINDING.KEYCLOAK,
     BINDING.MSS,
     BINDING.PUSH_ANDROID,
-    BINDING.PUSH_IOS
   ]);
 
   const folder = path.resolve(__dirname, '..');
