@@ -1,19 +1,19 @@
 require('chai').should();
 
-const getMobileClientCr = require('../templates/mobile-client');
-const getKeycloakRealmCr = require('../templates/keycloak-realm');
-const getMssAppCr = require('../templates/mss-app');
-const getAndroidVariantCr = require('../templates/android-variant');
-const getIosVariantCr = require('../templates/ios-variant');
-const getSyncConfigMap = require('../templates/data-sync');
+const getMobileClientCr = require('../../common/templates/mobile-client');
+const getKeycloakRealmCr = require('../../common/templates/keycloak-realm');
+const getMssAppCr = require('../../common/templates/mss-app');
+const getAndroidVariantCr = require('../../common/templates/android-variant');
+const getIosVariantCr = require('../../common/templates/ios-variant');
+const getSyncConfigMap = require('../../common/templates/data-sync');
 const {
-  initKubeClient,
+  init,
   TYPE,
   ACTION,
   resource,
   createPushApp
-} = require('../util/kubernetes');
-const waitFor = require('../util/waitFor');
+} = require('../../common/util/rhmds-api');
+const { waitFor } = require('../../common/util/utils');
 
 const TIMEOUT = 20000;
 
@@ -41,11 +41,11 @@ describe('App deletion', async function() {
   };
 
   before('init kube client', async function() {
-    await initKubeClient(process.env.MDC_NAMESPACE);
+    await init();
   });
 
   it('should create mobile app', async function() {
-    const cr = getMobileClientCr('test');
+    const cr = getMobileClientCr(process.env['APP_NAME']);
     mobileApp = await resource(TYPE.MOBILE_APP, ACTION.CREATE, cr);
   });
 
@@ -56,7 +56,7 @@ describe('App deletion', async function() {
     cr = getMssAppCr(mobileApp.metadata.name, mobileApp.metadata.uid);
     mssApp = await resource(TYPE.MSS_APP, ACTION.CREATE, cr);
 
-    pushApp = await createPushApp('test');
+    pushApp = await createPushApp(process.env['APP_NAME']);
 
     cr = getAndroidVariantCr(
       mobileApp.metadata.name,

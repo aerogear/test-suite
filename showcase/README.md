@@ -21,7 +21,9 @@ prepare the cluster and generate the `mobile-services.json`
 
 ```bash
 oc login ...
-./scripts/prepare.sh
+
+cd .. && npm install && cd showcase
+./scripts/prepare.js
 ```
 
 build and upload the testing app to BrowserStack:

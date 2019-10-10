@@ -4,14 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": ". ./scripts/prepare.sh && mocha"
+    "start": "mocha --file utils/prepare.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "chai": "^4.2.0",
-    "kubernetes-client": "^8.3.4",
     "mocha": "^6.2.0"
   }
 }

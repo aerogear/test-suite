@@ -50,11 +50,13 @@ export DATASYNC_VERSION="..."
 To target OpenShift instance run:
 
 ```
-export OPENSHIFT_HOST=<OPENSHIFT_HOST_URL>
 export OPENSHIFT_USER=<EVALS_USERNAME>
 export OPENSHIFT_PASS=<EVALS_PASSWORD>
 
-./scripts/prepare.sh
+oc login ...
+
+cd .. && npm install && cd device
+./scripts/prepare.js
 ```
 
 Script will create mobile app and bindings via CRs and fetch mobile-services.json.

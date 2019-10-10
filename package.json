@@ -1,0 +1,7 @@
+{
+  "name": "test-suite",
+  "dependencies": {
+    "kubernetes-client": "^8.3.4",
+    "openshift-rest-client": "^2.2.2"
+  }
+}
