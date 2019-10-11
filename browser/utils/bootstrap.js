@@ -15,12 +15,12 @@ const opts = {
 }
 
 before(async () => {
-    const { openshiftClient, mdcNamespace } = await init()
+    const openshiftClient = await init()
     global.expect = expect
     global.browser = await puppeteer.launch(opts)
     global.page
     global.context
-    global.mdcUrl = await getMdcUrl(mdcNamespace)
+    global.mdcUrl = await getMdcUrl()
     global.openshiftConsoleUrl = getOpenShiftConsoleUrl(openshiftClient)
 })
 
@@ -41,9 +41,10 @@ afterEach(function() {
   }
 });
 
-async function getMdcUrl(ns) {
-  const mdcRoutes = await resource(TYPE.ROUTE, ACTION.GET_ALL, '', ns)
-  return `https://${mdcRoutes.items[0].spec.host}`
+async function getMdcUrl() {
+  // MDC namespace is targeted by default
+  const mdcRoute = await resource(TYPE.ROUTE, ACTION.GET_ALL)
+  return `https://${mdcRoute.items[0].spec.host}`
 }
 
 function getOpenShiftConsoleUrl(openshiftClient) {
