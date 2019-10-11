@@ -1,8 +1,8 @@
 const username = process.env.OPENSHIFT_USERNAME
 const password = process.env.OPENSHIFT_PASSWORD
-const mdcLoginPageUrl = process.env.MDC_URL
 
 module.exports = async () => {
+    const mdcLoginPageUrl = global.mdcUrl
     // Create anonymous browser window to keep tests isolated
     context = await browser.createIncognitoBrowserContext();
     page = await context.newPage();
