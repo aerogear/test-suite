@@ -4,13 +4,11 @@
 ## How to run the tests
 
 ```
-# Username & Password you can use to login to MDC via oAuth Proxy
+# Login with oc client
+oc login <AUTH_URL> --token <TOKEN>
+# Username & Password you can use to login to MDC/OpenShift via oAuth Proxy
 export OPENSHIFT_USERNAME=<REPLACE_ME>
 export OPENSHIFT_PASSWORD=<REPLACE_ME>
-# URL to MDC instance
-export MDC_URL="https://<REPLACE_ME>"
-# URL to OpenShift Console
-export OPENSHIFT_URL="https://<REPLACE_ME>/console"
 npm test
 ```
 

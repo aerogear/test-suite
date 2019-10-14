@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer')
 const { expect } = require('chai')
+const { init, resource, TYPE, ACTION } = require('../../common/util/rhmds-api')
 const FAILED_TESTS = {};
 
 const opts = {
@@ -14,10 +15,13 @@ const opts = {
 }
 
 before(async () => {
+    const openshiftClient = await init()
     global.expect = expect
     global.browser = await puppeteer.launch(opts)
     global.page
     global.context
+    global.mdcUrl = await getMdcUrl()
+    global.openshiftConsoleUrl = getOpenShiftConsoleUrl(openshiftClient)
 })
 
 after(() => {
@@ -36,3 +40,13 @@ afterEach(function() {
     FAILED_TESTS[this.currentTest.file] = true;
   }
 });
+
+async function getMdcUrl() {
+  // MDC namespace is targeted by default
+  const mdcRoute = await resource(TYPE.ROUTE, ACTION.GET_ALL)
+  return `https://${mdcRoute.items[0].spec.host}`
+}
+
+function getOpenShiftConsoleUrl(openshiftClient) {
+  return openshiftClient.backend.requestOptions.baseUrl
+}

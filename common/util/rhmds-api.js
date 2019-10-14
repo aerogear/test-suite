@@ -81,6 +81,8 @@ const init = async () => {
   await determineMdcNamespace();
 
   openshiftClient = await OpenshiftClient();
+
+  return openshiftClient
 }
 
 const resource = async (type, action, param, namespace = null) => {
