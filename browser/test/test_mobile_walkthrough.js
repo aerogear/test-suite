@@ -1,7 +1,5 @@
 const openshiftUsername = process.env.OPENSHIFT_USERNAME
 const openshiftPassword = process.env.OPENSHIFT_PASSWORD
-const openshiftConsoleUrl = process.env.OPENSHIFT_URL
-const { expect } = require('chai')
 const { checkLinks, clickOnElements } = require('../utils/walkthrough')
 
 describe('Test Mobile Walkthrough in Solution Explorer', () => {
@@ -9,6 +7,7 @@ describe('Test Mobile Walkthrough in Solution Explorer', () => {
         // Create anonymous browser window to keep tests isolated
         context = await browser.createIncognitoBrowserContext();
         page = await context.newPage();
+        const openshiftConsoleUrl = global.openshiftConsoleUrl
 
         await Promise.all([
             page.goto(openshiftConsoleUrl),

@@ -53,7 +53,6 @@ describe('Alerts test', function() {
                 headers,
                 method: 'get'
             });
-            console.log(result.data.data.alerts);
             return result.data.data.alerts.find(alert => alert.labels.alertname === 'MobileDeveloperConsoleContainerDown');
         }, 5 * 60000);
 

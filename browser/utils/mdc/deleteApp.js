@@ -1,6 +1,6 @@
-const mdcLoginPageUrl = process.env.MDC_URL
-
 module.exports = async (appName) => {
+    const mdcLoginPageUrl = global.mdcUrl
+
     await page.goto(mdcLoginPageUrl, { waitUntil: ['domcontentloaded', 'networkidle0'] })
     await page.waitForSelector('.toolbar-pf-actions button')
     // Find app's "Dropdown" button and click on it
