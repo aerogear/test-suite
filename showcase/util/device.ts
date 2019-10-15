@@ -29,7 +29,7 @@ const options: WebdriverIO.RemoteOptions = {
   capabilities
 };
 
-export let device: BrowserObject = null;
+export let device: BrowserObject;
 
 export async function init() {
   device = await remote(options as any);
