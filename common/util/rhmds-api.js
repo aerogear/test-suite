@@ -294,7 +294,7 @@ const outputPushConfig = async (app, folder) => {
   const pushApp = await resource(PUSH_APP, GET, app.metadata.name);
   fs.writeFileSync(path.resolve(folder, 'push-app.json'), JSON.stringify(pushApp, null, 2));
 };
-
+const getMdcNamespace = () => mdcNamespace; 
 module.exports = {
   init,
   TYPE: {
@@ -330,5 +330,6 @@ module.exports = {
   redeployShowcase,
   bind,
   outputAppConfig,
-  outputPushConfig
+  outputPushConfig,
+  getMdcNamespace
 };
