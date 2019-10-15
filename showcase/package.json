@@ -2,7 +2,7 @@
   "name": "showcase-test-set",
   "version": "1.0.0",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha 'test/**/*.ts'",
     "lint": "tslint -p .",
     "prettier": "prettier '**/*.{js,ts,json,md}'",
     "prettier:check": "npm run prettier -- --check",
