@@ -36,3 +36,4 @@ export const KEYCLOAK_USERNAME = "admin";
 export const KEYCLOAK_PASSWORD = "admin";
 
 export const SLOWDOWN = 2000;
+export const RETRIES = 3;

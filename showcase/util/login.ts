@@ -1,4 +1,4 @@
-import { interact } from "./commons";
+import { interact, retry } from "./commons";
 import {
   KEYCLOAK_PASSWORD,
   KEYCLOAK_USERNAME,
@@ -73,15 +73,18 @@ export async function login() {
   await device.getTitle();
 
   // Login
-  const username = await device.$("#username");
-  await interact(username, e => e.setValue(KEYCLOAK_USERNAME));
+  await retry(async () => {
+    await interact(await device.$("#username"), e =>
+      e.setValue(KEYCLOAK_USERNAME)
+    );
 
-  const password = await device.$("#password");
-  await interact(password, e => e.setValue(KEYCLOAK_PASSWORD));
+    await interact(await device.$("#password"), e =>
+      e.setValue(KEYCLOAK_PASSWORD)
+    );
 
-  const login = await device.$("#kc-login");
-  await interact(login, e => e.click());
-  await waitForLoggedIn();
+    await interact(await device.$("#kc-login"), e => e.click());
+    await waitForLoggedIn();
+  });
 
   // switch back to the main window
   await switchToMainWindow();
