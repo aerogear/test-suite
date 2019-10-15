@@ -73,12 +73,9 @@ pipeline {
       stages {
         stage('Install dependencies') {
           steps {
-            sh "npm install"
+            sh 'npm install'
             dir('device') {
-              sh """
-              npm install
-              npm install mocha-jenkins-reporter
-              """
+              sh 'npm install'
               unstash 'package-lock'
             }
           }
@@ -86,10 +83,12 @@ pipeline {
         stage('Bind services') {
           steps {
             dir('device') {
-              sh """
-              oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p $OPENSHIFT_PASS
-              ./scripts/prepare.js
-              """
+              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASS', password: OPENSHIFT_PASS]]]) {
+                sh """
+                oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p ${OPENSHIFT_PASS}
+                """
+              }
+              sh './scripts/prepare.js'
             }
           }
         }

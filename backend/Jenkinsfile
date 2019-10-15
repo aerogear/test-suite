@@ -15,32 +15,30 @@ pipeline {
     IOS_CERTIFICATE = credentials('ios-push-certificate')
     IOS_PASSPHRASE = credentials('ios-push-password')
     JUNIT_REPORT_STACK = '1'
+    JUNIT_REPORT_PATH = 'report.xml'
   }
   stages {
     stage('Install dependencies') {
       steps {
-        sh "npm install"
+        sh 'npm install'
         dir('backend') {
-          sh """
-          npm install
-          npm install mocha-jenkins-reporter
-          """
+          sh 'npm install'
         }
       }
     }
     stage('Login with oc') {
       steps {
-        sh """
-        oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p $OPENSHIFT_PASSWORD
-        """
+        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
+          sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p ${OPENSHIFT_PASSWORD}"
+        }
       }
     }
     stage('Test') {
       steps {
         dir('backend') {
-          sh "JUNIT_REPORT_PATH=report.xml npm start -- --reporter mocha-jenkins-reporter || true"
-          archiveArtifacts "report.xml"
-          junit allowEmptyResults: true, testResults: "report.xml"
+          sh 'npm start -- --reporter mocha-jenkins-reporter'
+          archiveArtifacts JUNIT_REPORT_PATH
+          junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
         }
       }
     }

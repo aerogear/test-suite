@@ -16,20 +16,19 @@ pipeline {
   stages {
     stage('Install dependencies') {
       steps {
-        sh "npm install"
+        sh 'npm install'
         dir('browser') {
-          sh """
-          npm install
-          npm install mocha-jenkins-reporter
-          """
+          sh 'npm install'
         }
       }
     }
     stage('Login with oc') {
       steps {
-        sh """
-        oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p $OPENSHIFT_PASSWORD
-        """
+        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
+          sh """
+          oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p ${OPENSHIFT_PASSWORD}
+          """
+        }
       }
     }
     stage('Test') {
