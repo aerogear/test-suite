@@ -7,7 +7,7 @@ const { init, getMdcNamespace } = require('../../common/util/rhmds-api');
 
 describe('Alerts test', function() {
     this.timeout(0);
-    let header;
+    let headers;
     let browser;
     before("authenticate with oauth proxy", async() => {
         const openshiftUser = process.env.OPENSHIFT_USER;
