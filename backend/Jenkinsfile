@@ -36,7 +36,7 @@ pipeline {
     stage('Test') {
       steps {
         dir('backend') {
-          sh 'npm start -- --reporter mocha-jenkins-reporter'
+          sh 'npm start -- --reporter mocha-jenkins-reporter || true'
           archiveArtifacts JUNIT_REPORT_PATH
           junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
         }

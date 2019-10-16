@@ -1,7 +1,7 @@
 def runIntegrationTests() {
-  sh "JUNIT_REPORT_PATH=report-${env.MOBILE_PLATFORM}.xml npm test -- --reporter mocha-jenkins-reporter || true"
-  archiveArtifacts "report-${env.MOBILE_PLATFORM}.xml"
-  junit allowEmptyResults: true, testResults: "report-${env.MOBILE_PLATFORM}.xml"
+  sh 'npm test -- --reporter mocha-jenkins-reporter || true'
+  archiveArtifacts JUNIT_REPORT_PATH
+  junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
 }
 
 pipeline {
@@ -14,7 +14,7 @@ pipeline {
   environment {
     BROWSERSTACK_USER = credentials('browserstack-user')
     BROWSERSTACK_KEY = credentials('browserstack-key')
-    JUNIT_REPORT_STACK="1"
+    JUNIT_REPORT_STACK = '1'
   }
   stages {
     stage('Preparation') {
@@ -37,9 +37,7 @@ pipeline {
           steps {
             dir('showcase') {
               wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASS', password: OPENSHIFT_PASS]]]) {
-                sh """
-                oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p $OPENSHIFT_PASS
-                """
+                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p $OPENSHIFT_PASS"
               }
               sh './scripts/prepare.js'
               stash includes: 'mobile-services.json', name: 'mobile-services'
@@ -79,7 +77,7 @@ pipeline {
           steps {
             dir('showcase') {
               unstash 'mobile-services'
-              sh """#!/usr/bin/env bash -l
+              sh """#!/usr/bin/env bash
               npm -g install cordova ionic@4
               ./scripts/build.sh
               ./scripts/upload.sh >bs-app-ios.txt
@@ -112,6 +110,7 @@ pipeline {
           environment {
             MOBILE_PLATFORM = 'android'
             BROWSERSTACK_APP = readFile 'showcase/bs-app-android.txt'
+            JUNIT_REPORT_PATH = 'report-android.xml'
           }
           steps {
             dir('showcase') {
@@ -123,6 +122,7 @@ pipeline {
           environment { 
             MOBILE_PLATFORM = 'ios'
             BROWSERSTACK_APP = readFile 'showcase/bs-app-ios.txt'
+            JUNIT_REPORT_PATH = 'report-ios.xml'
           }
           steps {
             dir('showcase') {

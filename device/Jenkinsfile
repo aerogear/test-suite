@@ -1,7 +1,7 @@
 def runIntegrationTests() {
-  sh "JUNIT_REPORT_PATH=report-${env.MOBILE_PLATFORM}.xml npm start -- --reporter mocha-jenkins-reporter test/**/*.ts || true"
-  archiveArtifacts "report-${env.MOBILE_PLATFORM}.xml"
-  junit allowEmptyResults: true, testResults: "report-${env.MOBILE_PLATFORM}.xml"
+  sh 'npm start -- --reporter mocha-jenkins-reporter test/**/*.ts || true'
+  archiveArtifacts JUNIT_REPORT_PATH
+  junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
 }
 
 pipeline {
@@ -16,7 +16,7 @@ pipeline {
     BROWSERSTACK_KEY = credentials('browserstack-key')
     FIREBASE_SERVER_KEY = credentials('firebase-server-key')
     FIREBASE_SENDER_ID = credentials('firebase-sender-id')
-    JUNIT_REPORT_STACK="1"
+    JUNIT_REPORT_STACK = '1'
   }
   stages {
     stage('Build Testing App') {
@@ -53,7 +53,7 @@ pipeline {
           }
           steps {
             dir('device') {
-              sh """#!/usr/bin/env bash -l
+              sh """#!/usr/bin/env bash
               npm -g install cordova
               ./scripts/build-testing-app.sh
               """
@@ -84,9 +84,7 @@ pipeline {
           steps {
             dir('device') {
               wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASS', password: OPENSHIFT_PASS]]]) {
-                sh """
-                oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p ${OPENSHIFT_PASS}
-                """
+                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p ${OPENSHIFT_PASS}"
               }
               sh './scripts/prepare.js'
             }
@@ -95,6 +93,7 @@ pipeline {
         stage('Test android') {
           environment {
             MOBILE_PLATFORM = 'android'
+            JUNIT_REPORT_PATH = 'report-android.xml'
           }
           steps {
             dir('device') {
@@ -106,6 +105,7 @@ pipeline {
         stage('Test ios') {
           environment { 
             MOBILE_PLATFORM = 'ios'
+            JUNIT_REPORT_PATH = 'report-ios.xml'
           }
           steps {
             dir('device') {
