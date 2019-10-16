@@ -27,7 +27,6 @@ describe('Mobile Security Service', function () {
         
         before('authenticate with oauth proxy', async () => {
               headers = getOAuthProxy(mssUrl);
-              console.log(headers);
     }
 
     it('should have no apps registered', async () => {
