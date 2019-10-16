@@ -77,7 +77,7 @@ pipeline {
           steps {
             dir('showcase') {
               unstash 'mobile-services'
-              sh """#!/usr/bin/env bash
+              sh """#!/usr/bin/env bash -l
               npm -g install cordova ionic@4
               ./scripts/build.sh
               ./scripts/upload.sh >bs-app-ios.txt
