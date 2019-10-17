@@ -6,11 +6,6 @@ def runIntegrationTests() {
 
 pipeline {
   agent none
-  parameters {
-    string(name: 'OPENSHIFT_USER', defaultValue: 'evals01', description: 'Evals username')
-    password(name: 'OPENSHIFT_PASS', defaultValue: 'Password1', description: 'Evals user password')
-    string(name: 'OPENSHIFT_URL', defaultValue: '', description: 'RHMI cluster to target (https://...)')
-  }
   environment {
     BROWSERSTACK_USER = credentials('browserstack-user')
     BROWSERSTACK_KEY = credentials('browserstack-key')
@@ -36,8 +31,8 @@ pipeline {
         stage('Bind services') {
           steps {
             dir('showcase') {
-              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASS', password: OPENSHIFT_PASS]]]) {
-                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p $OPENSHIFT_PASS"
+              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
+                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p $OPENSHIFT_PASSWORD"
               }
               sh './scripts/prepare.js'
               stash includes: 'mobile-services.json', name: 'mobile-services'

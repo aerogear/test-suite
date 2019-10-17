@@ -5,11 +5,6 @@ pipeline {
       label 'psi_rhel8'
     }
   }
-  parameters {
-    string(name: 'OPENSHIFT_USERNAME', defaultValue: 'evals01', description: 'Evals username')
-    password(name: 'OPENSHIFT_PASSWORD', defaultValue: 'Password1', description: 'Evals user password')
-    string(name: 'OPENSHIFT_URL', defaultValue: '', description: 'RHMI cluster to target (https://...)')
-  }
   environment {
     FIREBASE_SERVER_KEY = credentials('firebase-server-key')
     IOS_CERTIFICATE = credentials('ios-push-certificate')
