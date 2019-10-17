@@ -1,25 +1,136 @@
+def runIntegrationTests() {
+  sh 'npm test -- --reporter mocha-jenkins-reporter || true'
+  archiveArtifacts JUNIT_REPORT_PATH
+  junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
+}
+
 pipeline {
-    agent {
+  agent none
+  parameters {
+    string(name: 'OPENSHIFT_USER', defaultValue: 'evals01', description: 'Evals username')
+    password(name: 'OPENSHIFT_PASS', defaultValue: 'Password1', description: 'Evals user password')
+    string(name: 'OPENSHIFT_URL', defaultValue: '', description: 'RHMI cluster to target (https://...)')
+  }
+  environment {
+    BROWSERSTACK_USER = credentials('browserstack-user')
+    BROWSERSTACK_KEY = credentials('browserstack-key')
+    JUNIT_REPORT_STACK = '1'
+  }
+  stages {
+    stage('Preparation') {
+      agent {
         dockerfile {
-            dir "device/containers/node"
-            label "psi_rhel8"
+          dir 'containers/node'
+          label 'psi_rhel8'
         }
-    }
-    stages {
-        stage("install") {
-            steps {
-                dir("showcase") {
-                    sh "npm install"
-                }
+      }
+      stages {
+        stage('Install dependencies') {
+          steps {
+            sh 'npm install'
+            dir('showcase') {
+              sh 'npm install'
             }
+          }
         }
-        stage("test") {
-            steps {
-                dir("showcase") {
-                    sh "npm run lint"
-                    sh "npm run prettier:check"
-                }
+        stage('Bind services') {
+          steps {
+            dir('showcase') {
+              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASS', password: OPENSHIFT_PASS]]]) {
+                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USER -p $OPENSHIFT_PASS"
+              }
+              sh './scripts/prepare.js'
+              stash includes: 'mobile-services.json', name: 'mobile-services'
             }
+          }
         }
+      } 
     }
+    stage('Build Showcase App') {
+      parallel {
+        stage('Android') {
+          agent {
+            dockerfile {
+              dir 'containers/android'
+              label 'psi_rhel8'
+            }
+          }
+          environment {
+            MOBILE_PLATFORM = 'android'
+          }
+          steps {
+            dir('showcase') {
+              unstash 'mobile-services'
+              sh './scripts/build.sh'
+              sh './scripts/upload.sh >bs-app-android.txt'
+              stash includes: 'bs-app-android.txt', name: 'bs-app-android'
+            }
+          }
+        }
+        stage('iOS') {
+          agent { 
+            label 'osx5x'
+          }
+          environment { 
+            MOBILE_PLATFORM = 'ios'
+          }
+          steps {
+            dir('showcase') {
+              unstash 'mobile-services'
+              sh """#!/usr/bin/env bash -l
+              npm -g install cordova ionic@4
+              ./scripts/build.sh
+              ./scripts/upload.sh >bs-app-ios.txt
+              """
+              stash includes: 'bs-app-ios.txt', name: 'bs-app-ios'
+            }
+          }
+        }
+      }
+    }
+    stage('Testing') {
+      agent {
+        dockerfile {
+          dir 'containers/node'
+          label 'psi_rhel8'
+        }
+      }
+      stages {
+        stage('Install dependencies') {
+          steps {
+            sh 'npm install'
+            dir('showcase') {
+              sh 'npm install'
+              unstash 'bs-app-android'
+              unstash 'bs-app-ios'
+            }
+          }
+        }
+        stage('Test android') {
+          environment {
+            MOBILE_PLATFORM = 'android'
+            BROWSERSTACK_APP = readFile 'showcase/bs-app-android.txt'
+            JUNIT_REPORT_PATH = 'report-android.xml'
+          }
+          steps {
+            dir('showcase') {
+              runIntegrationTests()
+            }
+          }
+        }
+        stage('Test ios') {
+          environment { 
+            MOBILE_PLATFORM = 'ios'
+            BROWSERSTACK_APP = readFile 'showcase/bs-app-ios.txt'
+            JUNIT_REPORT_PATH = 'report-ios.xml'
+          }
+          steps {
+            dir('showcase') {
+              runIntegrationTests()
+            }
+          }
+        }
+      } 
+    }
+  }
 }
