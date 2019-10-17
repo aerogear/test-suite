@@ -27,7 +27,7 @@ export HEADLESS=false
 
    > The below configuration assume that you have opened the whole test-suite repo using VS Code, if you have only opened the `browser` subdirectory remove `browsers/` from `program` and remove the `cwd` line.
 
-   > You can choose can also choose a different `name`
+   > You can also choose a different `name`
 
    ```json
    {
