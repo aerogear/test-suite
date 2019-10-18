@@ -7,13 +7,13 @@ import gql from "graphql-tag";
 import * as _ToggleNetworkStatus from "./ToggleNetworkStatus";
 
 export const modules = {
-    "@aerogear/app": aerogearApp,
-    "@aerogear/auth": aerogearAuth,
-    "@aerogear/push": aerogearPush,
-    "@aerogear/security": aerogearSecurity,
-    "@aerogear/voyager-client": aerogearVoyagerClient,
-    "graphql-tag": { gql },
-    "./ToggleNetworkStatus": _ToggleNetworkStatus,
+  "@aerogear/app": aerogearApp,
+  "@aerogear/auth": aerogearAuth,
+  "@aerogear/push": aerogearPush,
+  "@aerogear/security": aerogearSecurity,
+  "@aerogear/voyager-client": aerogearVoyagerClient,
+  "graphql-tag": { gql },
+  "./ToggleNetworkStatus": _ToggleNetworkStatus
 };
 
 export type Modules = typeof modules;

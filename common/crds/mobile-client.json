@@ -12,9 +12,7 @@
       "plural": "mobileclients",
       "singular": "mobileclient",
       "kind": "MobileClient",
-      "shortNames": [
-        "mc"
-      ]
+      "shortNames": ["mc"]
     },
     "validation": {
       "openAPIV3Schema": {

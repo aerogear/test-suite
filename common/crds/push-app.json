@@ -37,9 +37,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "description"
-            ],
+            "required": ["description"],
             "type": "object"
           },
           "status": {
@@ -60,10 +58,7 @@
                 "type": "array"
               }
             },
-            "required": [
-              "pushApplicationId",
-              "masterSecret"
-            ],
+            "required": ["pushApplicationId", "masterSecret"],
             "type": "object"
           }
         }
