@@ -13,23 +13,14 @@ describe("Security", function() {
 
     // Find security tab
     await retry(async () => {
-      const e = await device.$(() => {
-        return Array.from(document.querySelectorAll("ion-menu ion-item")).find(
-          e => {
-            const l = e.querySelector("ion-label");
-            return l !== null && l.textContent === "Security";
-          }
-        );
-      });
+      const e = await device.$("#e2e-menu-item-security");
       await interact(e, e => e.click());
-      await (await device.$(
-        'ion-menu ion-item[routerLink="/devicetrust"]'
-      )).waitForDisplayed();
+      await (await device.$("#e2e-menu-item-devicetrust")).waitForDisplayed();
     });
 
     // Go to Device Trust
     await retry(async () => {
-      const e = await device.$('ion-menu ion-item[routerLink="/devicetrust"]');
+      const e = await device.$("#e2e-menu-item-devicetrust");
       await interact(e, e => e.click());
       await e.waitForDisplayed(undefined, true);
     });
@@ -42,11 +33,7 @@ describe("Security", function() {
 
     // Wait for the checks to pass
     await retry(async () => {
-      const e = await device.$(() => {
-        return document
-          .querySelectorAll("devicetrust ion-grid ion-row")[2]
-          .querySelector("div");
-      });
+      const e = await device.$("#e2e-devicetrust-passed");
       expect(await e.getText()).match(/\(\d+ out of \d+ checks passing\)/);
     }, 5000);
   });

@@ -14,7 +14,7 @@ describe("Profile", function() {
 
     // Go to Profile
     await retry(async () => {
-      const e = await device.$('ion-menu ion-item[routerLink="/profile"]');
+      const e = await device.$("#e2e-menu-item-profile");
       await interact(e, e => e.click());
       await e.waitForDisplayed(undefined, true);
     });
@@ -27,12 +27,7 @@ describe("Profile", function() {
 
     // Verify the username
     await retry(async () => {
-      const e = await device.$(() => {
-        return document
-          .querySelectorAll("app-profile ion-card")[0]
-          .querySelectorAll("ion-item")[2]
-          .querySelector(".identity-text");
-      });
+      const e = await device.$("#e2e-profile-username");
       expect(await e.getText()).equal(KEYCLOAK_USERNAME);
     }, 5000);
   });
