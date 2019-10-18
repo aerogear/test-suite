@@ -26,12 +26,12 @@ describe('Mobile Security Service', function () {
         let browser;
 
         before('authenticate with oauth proxy', async () => {
-            const openshiftUser = process.env.OPENSHIFT_USER;
-            const openshiftPass = process.env.OPENSHIFT_PASS;
+            const openshiftUser = process.env.OPENSHIFT_USERNAME;
+            const openshiftPass = process.env.OPENSHIFT_PASSWORD;
 
             if (openshiftUser === undefined || openshiftPass === undefined) {
                 throw new Error(
-                    "OPENSHIFT_USER and/or OPENSHIFT_PASS are not defined"
+                    "OPENSHIFT_USERNAME and/or OPENSHIFT_PASSWORD are not defined"
                 );
             }
 
