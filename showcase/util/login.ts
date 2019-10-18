@@ -6,7 +6,6 @@ import {
   MobilePlatform
 } from "./config";
 import { device } from "./device";
-import { log } from "./log";
 
 const MAIN_WINDOW_URL = /(http|ionic):\/\/localhost\/?/;
 const BLANK_WINDOW_URL = "about:blank";
