@@ -1,14 +1,14 @@
+// Expected parameters for the pipeline:
+//   - OPENSHIFT_URL - RHMI cluster to target (https://...)
+//   - OPENSHIFT_USERNAME - Evals username
+//   - OPENSHIFT_PASSWORD - Evals user password
+
 pipeline {
   agent {
     dockerfile {
       dir 'containers/node'
       label 'psi_rhel8'
     }
-  }
-  parameters {
-    string(name: 'OPENSHIFT_USERNAME', defaultValue: 'evals01', description: 'Evals username')
-    password(name: 'OPENSHIFT_PASSWORD', defaultValue: 'Password1', description: 'Evals user password')
-    string(name: 'OPENSHIFT_URL', defaultValue: '', description: 'RHMI cluster to target (https://...)')
   }
   environment {
     JUNIT_REPORT_STACK = '1'
