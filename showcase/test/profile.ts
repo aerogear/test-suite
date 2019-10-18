@@ -1,44 +1,34 @@
-import { shadowClick } from "../util/commons";
+import { interact, shadowClick, retry } from "../util/commons";
 import { KEYCLOAK_USERNAME } from "../util/config";
 import { device } from "../util/device";
-import { log } from "../util/log";
+import { expect } from "chai";
 
-describe("Profile", () => {
-  it(`should be logged in as ${KEYCLOAK_USERNAME}`, async () => {
+describe("Profile", function() {
+  it("should be logged in", async () => {
     // Open Menu
-    const menuButton = await device.$("ion-menu-button");
-    await menuButton.waitForDisplayed();
-    shadowClick(menuButton, "button");
+    await retry(async () => {
+      const e = await device.$("ion-menu-button");
+      await interact(e, e => shadowClick(e, "button"));
+      await (await device.$("ion-menu")).waitForDisplayed();
+    });
 
     // Go to Profile
-    const profileItem = await device.$("#e2e-menu-item-profile");
-    await profileItem.waitForDisplayed();
-    await profileItem.click();
-
-    // It could happened that the click is faster than the js
-    try {
-      await profileItem.waitForDisplayed(undefined, true, "timeout");
-    } catch (e) {
-      if (e.message === "timeout") {
-        log.warning("retry to click");
-
-        // try to manually close the menu
-        await profileItem.click();
-
-        await profileItem.waitForDisplayed(undefined, true);
-      } else {
-        throw e;
-      }
-    }
+    await retry(async () => {
+      const e = await device.$("#e2e-menu-item-profile");
+      await interact(e, e => e.click());
+      await e.waitForDisplayed(undefined, true);
+    });
 
     // Wait for profile page
-    const profilePage = await device.$("app-profile");
-    await profilePage.waitForDisplayed();
+    await retry(async () => {
+      const e = await device.$("app-profile");
+      await e.waitForDisplayed();
+    });
 
     // Verify the username
-    const username = await device.$("#e2e-profile-username");
-    await device.waitUntil(async () => {
-      return (await username.getText()) === KEYCLOAK_USERNAME;
-    });
+    await retry(async () => {
+      const e = await device.$("#e2e-profile-username");
+      expect(await e.getText()).equal(KEYCLOAK_USERNAME);
+    }, 5000);
   });
 });

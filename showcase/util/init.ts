@@ -1,7 +1,5 @@
 import { getAutomationSession } from "./browserstack";
-import { KEYCLOAK_PASSWORD, KEYCLOAK_USERNAME } from "./config";
 import { device, init } from "./device";
-import { log } from "./log";
 import { login } from "./login";
 
 before("Initialize device", async function() {
@@ -10,11 +8,13 @@ before("Initialize device", async function() {
   await init();
 
   const session = await getAutomationSession(device.sessionId);
-  log.success(`initialized browserstack device: ${session.browser_url}`);
+  console.log("BrowserStack Session:");
+  console.log(session.browser_url);
+  console.log();
 });
 
 before("Login", async () => {
-  await login(KEYCLOAK_USERNAME, KEYCLOAK_PASSWORD);
+  await login();
 });
 
 after("Close device", async () => {

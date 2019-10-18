@@ -1,33 +1,40 @@
-import { shadowClick } from "../util/commons";
+import { shadowClick, retry, interact } from "../util/commons";
 import { device } from "../util/device";
+import { expect } from "chai";
 
-describe("Security", () => {
+describe("Security", function() {
   it("should display number of passed checks", async () => {
     // Open Menu
-    const menuButton = await device.$("ion-menu-button");
-    await menuButton.waitForDisplayed();
-    shadowClick(menuButton, "button");
+    await retry(async () => {
+      const e = await device.$("ion-menu-button");
+      await interact(e, e => shadowClick(e, "button"));
+      await (await device.$("ion-menu")).waitForDisplayed();
+    });
 
     // Find security tab
-    const securityItem = await device.$("#e2e-menu-item-security");
-    await securityItem.waitForDisplayed();
-    await securityItem.click();
+    await retry(async () => {
+      const e = await device.$("#e2e-menu-item-security");
+      await interact(e, e => e.click());
+      await (await device.$("#e2e-menu-item-devicetrust")).waitForDisplayed();
+    });
 
     // Go to Device Trust
-    const deviceTrustItem = await device.$("#e2e-menu-item-devicetrust");
-    await deviceTrustItem.waitForDisplayed();
-    await deviceTrustItem.click();
-
-    await deviceTrustItem.waitForDisplayed(undefined, true);
+    await retry(async () => {
+      const e = await device.$("#e2e-menu-item-devicetrust");
+      await interact(e, e => e.click());
+      await e.waitForDisplayed(undefined, true);
+    });
 
     // Device Trust
-    const deviceTrust = await device.$("devicetrust");
-    await deviceTrust.waitForDisplayed();
+    await retry(async () => {
+      const e = await device.$("devicetrust");
+      await e.waitForDisplayed();
+    });
 
     // Wait for the checks to pass
-    const passed = await device.$("#e2e-devicetrust-passed");
-    await device.waitUntil(async () =>
-      /\(\d+ out of \d+ checks passing\)/.test(await passed.getText())
-    );
+    await retry(async () => {
+      const e = await device.$("#e2e-devicetrust-passed");
+      expect(await e.getText()).match(/\(\d+ out of \d+ checks passing\)/);
+    }, 5000);
   });
 });
