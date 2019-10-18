@@ -46,7 +46,7 @@ npm test
 When writing UI tests there are a few good practice that we can follow in order
 to make the tests less flaky.
 
-Try to use the `test/profile.ts` as example.
+Use the `test/profile.ts` as an example.
 
 #### 1. Use the interact() method
 
@@ -56,8 +56,28 @@ that the element is into the view and it will slow down the interaction in order
 simulate a real user.
 
 ```ts
-const profileItem = await device.$("#e2e-menu-item-profile");
-await interact(profileItem, e => e.click());
+const e = await device.$("#e2e-menu-item-profile");
+await interact(e, e => e.click());
+```
+
+#### 1. Use the retry() method
+
+When interact with an element (click, setValue, ...) it can happened that the interaction
+doesn't trigger any action making the next step failing, it's also normal for a real user to
+click a couple of time on the same button before giving up, so to simulate this behavior
+and make the tests more stable we should use the `retry()` method in `./util/commons`.
+
+To correctly use the `retry()` method you should first find the button, then use the
+`interact()` method to wait for the button to be visible and click on it, and then wait
+for the consequence (the button should disappear, a new page should appear, ...), if the
+consequence isn't satisfied throw an Error and the `retry()` method will try again.
+
+```ts
+await retry(async () => {
+  const e = await device.$("#e2e-menu-item-profile");
+  await interact(e, e => e.click());
+  await e.waitForDisplayed(undefined, true);
+});
 ```
 
 #### 2. Prefers using IDs instant of complex selectors
@@ -68,37 +88,3 @@ all the necessaries IDs. Also if the ID is used only from the tests prefix it
 with `e2e-`.
 
 PR Example: https://github.com/aerogear/ionic-showcase/pull/260
-
-#### 3. Apply a retry policy and reset the device on each retry
-
-There are to many variables that could make a UI test fails, for this reason is good to
-set a retry policy in each tests (3 retry is always enough), but before retry the test we
-have also to reset the device to a know state.
-
-Example:
-
-```ts
-describe("My Test", function() {
-  // always add a retries policy so that
-  // we avoid to fail because of flaky tests
-  this.retries(3);
-
-  afterEach(async function() {
-    // reset the device only if the test didn't passed (is retrying or has failed)
-    if (!this.currentTest.isPassed()) {
-      // prefers to print a warning message but it's not necessary
-      log.warning(`retry test: ${this.currentTest.title}`);
-
-      // reset the device so that we can retry form a know point
-      await reset();
-    }
-  });
-
-  it(`should do something`, async () => {
-    // always try to login again
-    await login();
-
-    // your test logic
-  });
-});
-```
