@@ -24,7 +24,7 @@ export FIREBASE_SERVER_KEY=[..]
 export FIREBASE_SENDER_ID=[..]
 ```
 
-## Install dependencies 
+## Install dependencies
 
 ```
 npm install

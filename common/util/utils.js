@@ -5,9 +5,9 @@ const waitFor = async (check, timeout, pause = 4000) => {
 
     const t = setTimeout(() => {
       timedout = true;
-      reject(new Error('Timed out'));
+      reject(new Error("Timed out"));
     }, timeout);
-    
+
     while (!timedout && !passed) {
       passed = await check();
       await new Promise(resolve => setTimeout(resolve, pause));
@@ -18,7 +18,10 @@ const waitFor = async (check, timeout, pause = 4000) => {
   });
 };
 
-const randomString = () => Math.random().toString(36).substring(7);
+const randomString = () =>
+  Math.random()
+    .toString(36)
+    .substring(7);
 
 module.exports = {
   waitFor,
