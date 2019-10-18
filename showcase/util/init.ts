@@ -1,6 +1,5 @@
 import { getAutomationSession } from "./browserstack";
 import { device, init } from "./device";
-import { log } from "./log";
 import { login } from "./login";
 
 before("Initialize device", async function() {
@@ -9,7 +8,9 @@ before("Initialize device", async function() {
   await init();
 
   const session = await getAutomationSession(device.sessionId);
-  log.success(session.browser_url);
+  console.log("BrowserStack Session:");
+  console.log(session.browser_url);
+  console.log();
 });
 
 before("Login", async () => {
