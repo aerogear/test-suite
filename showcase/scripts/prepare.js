@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const path = require('path');
+const path = require("path");
 
 const {
   init,
@@ -9,27 +9,24 @@ const {
   recreateMobileApp,
   redeployShowcase,
   outputAppConfig
-} = require('../../common/util/rhmds-api');
+} = require("../../common/util/rhmds-api");
 
-const appName = 'showcase-test-suite';
+const appName = "showcase-test-suite";
 
 (async () => {
   await init();
 
-  console.log('Recreating mobile app...');
+  console.log("Recreating mobile app...");
   const app = await recreateMobileApp(appName);
 
-  console.log('Redeploying showcase server...');
+  console.log("Redeploying showcase server...");
   await redeployShowcase(appName);
-  
-  console.log('Binding with services...');
-  await bind(app, [
-    BINDING.DATA_SYNC,
-    BINDING.KEYCLOAK
-  ]);
 
-  const folder = path.resolve(__dirname, '..');
+  console.log("Binding with services...");
+  await bind(app, [BINDING.DATA_SYNC, BINDING.KEYCLOAK]);
+
+  const folder = path.resolve(__dirname, "..");
   outputAppConfig(app, folder);
 
-  console.log('Setup successful');
+  console.log("Setup successful");
 })();

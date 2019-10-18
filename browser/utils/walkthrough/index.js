@@ -1,2 +1,2 @@
-exports.checkLinks = require('./checkLinks')
-exports.clickOnElements = require('./clickOnElements')
+exports.checkLinks = require("./checkLinks");
+exports.clickOnElements = require("./clickOnElements");

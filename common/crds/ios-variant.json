@@ -90,9 +90,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "ready"
-            ],
+            "required": ["ready"],
             "type": "object"
           }
         }
