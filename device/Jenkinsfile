@@ -4,6 +4,11 @@ def runIntegrationTests() {
   junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
 }
 
+// Expected parameters for the pipeline:
+//   - OPENSHIFT_URL - RHMI cluster to target (https://...)
+//   - OPENSHIFT_USERNAME - Evals username
+//   - OPENSHIFT_PASSWORD - Evals user password
+
 pipeline {
   agent none
   environment {
