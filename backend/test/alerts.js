@@ -32,7 +32,7 @@ describe('MDC alerts test', function() {
                 alert =>
                 alert.labels.alertname === 'MobileDeveloperConsoleContainerDown'
             );
-        }, 5 * 60000);
+        }, 7 * 60000);
 
         await exec(`oc scale --replicas=1 dc mdc -n ${mdcNamespace}`);
     });
@@ -48,7 +48,7 @@ describe('MDC alerts test', function() {
                 alert.labels.alertname === "MobileDeveloperConsoleOperatorDown"
             )
 
-        }, 5 * 60000)
+        }, 7 * 60000)
         await exec(`kubectl scale --replicas=1 deployment/mobile-developer-console-operator -n ${mdcNamespace}`)
     })
 });
