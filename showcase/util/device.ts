@@ -15,7 +15,6 @@ const capabilities = {
   real_mobile: true,
   app: BROWSERSTACK_APP,
   autoWebview: true,
-  // "browserstack.local": "true",
   "browserstack.user": BROWSERSTACK_USER,
   "browserstack.key": BROWSERSTACK_KEY,
   "browserstack.debug": true,

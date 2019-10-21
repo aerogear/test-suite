@@ -1,0 +1,17 @@
+# exclude everything
+*.*
+
+# apart from
+!.*/
+!*.js
+!*.ts
+!*.md
+!*.json
+!*.yml
+
+# special exclusions
+.vscode/
+
+/device/testing-app/
+
+/showcase/mobile-services.json

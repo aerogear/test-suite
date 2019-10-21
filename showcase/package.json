@@ -2,11 +2,7 @@
   "name": "showcase-test-set",
   "version": "1.0.0",
   "scripts": {
-    "test": "mocha",
-    "lint": "tslint -p .",
-    "prettier": "prettier '**/*.{js,ts,json,md}'",
-    "prettier:check": "npm run prettier -- --check",
-    "prettier:write": "npm run prettier -- --write"
+    "test": "mocha 'test/**/*.ts'",
   },
   "dependencies": {
     "@types/chai": "4.2.3",
@@ -16,10 +12,8 @@
     "chai": "4.2.0",
     "chalk": "2.4.2",
     "mocha": "6.2.1",
-    "prettier": "1.18.2",
+    "mocha-jenkins-reporter": "^0.4.2",
     "ts-node": "8.4.1",
-    "tslint": "5.20.0",
-    "tslint-config-prettier": "1.18.0",
     "typescript": "3.6.3",
     "webdriverio": "5.14.4"
   }

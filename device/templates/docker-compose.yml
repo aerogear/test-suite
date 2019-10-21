@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   keycloak:
@@ -38,7 +38,7 @@ services:
   ups:
     image: aerogear/unifiedpush-configurable-container:${UPS_VERSION}
     ports:
-    - "8089:8080"
+      - "8089:8080"
     environment:
       POSTGRES_SERVICE_HOST: upsdb
       POSTGRES_SERVICE_PORT: 5432

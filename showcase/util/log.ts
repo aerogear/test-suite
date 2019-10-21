@@ -1,19 +1,30 @@
 import chalk from "chalk";
 
+const prefix = {
+  info: chalk.blue("I:"),
+  success: chalk.green("S:"),
+  warning: chalk.yellow("W:"),
+  error: chalk.red("E:")
+};
+
+function format(prefix: string, message: string) {
+  return `      ${prefix} ${message}`;
+}
+
 function info(message: string, ...optionalParams: any[]) {
-  console.log(`${chalk.blue("I:")} ${message}`, ...optionalParams);
+  console.log(format(prefix.info, message), ...optionalParams);
 }
 
 function success(message: string, ...optionalParams: any[]) {
-  console.log(`${chalk.green("S:")} ${message}`, ...optionalParams);
+  console.log(format(prefix.success, message), ...optionalParams);
 }
 
 function warning(message: string, ...optionalParams: any[]) {
-  console.warn(`${chalk.yellow("W:")} ${message}`, ...optionalParams);
+  console.warn(format(prefix.warning, message), ...optionalParams);
 }
 
 function error(message: string, ...optionalParams: any[]) {
-  console.warn(`${chalk.red("E:")} ${message}`, ...optionalParams);
+  console.warn(format(prefix.error, message), ...optionalParams);
 }
 
 export const log = {

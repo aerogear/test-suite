@@ -9,43 +9,43 @@ import { GlobalUniverse } from "../../util/init";
 import { setNetwork } from "../../util/network";
 
 interface Universe extends GlobalUniverse {
-    networkStatus: ToggleNetworkStatus | CordovaNetworkStatus;
-    itemsQuery: any;
-    apolloClient: ApolloOfflineClient;
-    offlineChangePromise: Promise<any>;
+  networkStatus: ToggleNetworkStatus | CordovaNetworkStatus;
+  itemsQuery: any;
+  apolloClient: ApolloOfflineClient;
+  offlineChangePromise: Promise<any>;
 }
 
 describe("Data Sync", function() {
-    this.timeout(0);
+  this.timeout(0);
 
-    let numItems;
+  let numItems;
 
-    it("should initialize voyager client", async () => {
-        await device.execute(async (modules, universe: Universe, platform) => {
-            const {
-                OfflineClient,
-                CordovaNetworkStatus,
-                CacheOperation,
-                getUpdateFunction,
-            } = modules["@aerogear/voyager-client"];
-            const { gql } = modules["graphql-tag"];
-            const { ToggleNetworkStatus } = modules["./ToggleNetworkStatus"];
+  it("should initialize voyager client", async () => {
+    await device.execute(async (modules, universe: Universe, platform) => {
+      const {
+        OfflineClient,
+        CordovaNetworkStatus,
+        CacheOperation,
+        getUpdateFunction
+      } = modules["@aerogear/voyager-client"];
+      const { gql } = modules["graphql-tag"];
+      const { ToggleNetworkStatus } = modules["./ToggleNetworkStatus"];
 
-            const { app } = universe;
+      const { app } = universe;
 
-            let networkStatus;
+      let networkStatus;
 
-            if (platform === "ios") {
-                // this is workaround for iOS as BrowserStack does not support
-                // putting iOS devices offline
-                networkStatus = new ToggleNetworkStatus();
-            } else {
-                networkStatus = new CordovaNetworkStatus();
-            }
+      if (platform === "ios") {
+        // this is workaround for iOS as BrowserStack does not support
+        // putting iOS devices offline
+        networkStatus = new ToggleNetworkStatus();
+      } else {
+        networkStatus = new CordovaNetworkStatus();
+      }
 
-            universe.networkStatus = networkStatus;
+      universe.networkStatus = networkStatus;
 
-            const itemsQuery = gql(`
+      const itemsQuery = gql(`
                 query allTasks {
                     allTasks {
                         id
@@ -53,66 +53,66 @@ describe("Data Sync", function() {
                     }
                 }
             `);
-            universe.itemsQuery = itemsQuery;
+      universe.itemsQuery = itemsQuery;
 
-            const cacheUpdates = {
-                createTask: getUpdateFunction({
-                    mutationName: "createTask",
-                    idField: "id",
-                    operationType: CacheOperation.ADD,
-                    updateQuery: itemsQuery,
-                }),
-            };
+      const cacheUpdates = {
+        createTask: getUpdateFunction({
+          mutationName: "createTask",
+          idField: "id",
+          operationType: CacheOperation.ADD,
+          updateQuery: itemsQuery
+        })
+      };
 
-            const options = {
-                openShiftConfig: app.config,
-                networkStatus,
-                mutationCacheUpdates: cacheUpdates,
-            };
+      const options = {
+        openShiftConfig: app.config,
+        networkStatus,
+        mutationCacheUpdates: cacheUpdates
+      };
 
-            const offlineClient = new OfflineClient(options);
+      const offlineClient = new OfflineClient(options);
 
-            const apolloClient = await offlineClient.init();
+      const apolloClient = await offlineClient.init();
 
-            universe.apolloClient = apolloClient;
-        }, process.env.MOBILE_PLATFORM);
+      universe.apolloClient = apolloClient;
+    }, process.env.MOBILE_PLATFORM);
+  });
+
+  it("should perform query", async () => {
+    const result = await device.execute(async (_, universe: Universe) => {
+      const { apolloClient, itemsQuery } = universe;
+
+      const { data } = await apolloClient.query({
+        query: itemsQuery,
+        fetchPolicy: "network-only",
+        errorPolicy: "none"
+      });
+
+      return { data: data.allTasks };
     });
 
-    it("should perform query", async () => {
-        const result = await device.execute(async (_, universe: Universe) => {
-            const { apolloClient, itemsQuery } = universe;
+    numItems = result.data.length;
+  });
 
-            const { data } = await apolloClient.query({
-                query: itemsQuery,
-                fetchPolicy: "network-only",
-                errorPolicy: "none",
-            });
+  it("should perform offline mutation", async () => {
+    if (process.env.MOBILE_PLATFORM === "ios") {
+      await device.execute(async (_, universe: Universe) => {
+        const { networkStatus } = universe;
+        (networkStatus as ToggleNetworkStatus).setOnline(false);
+      });
+    } else {
+      await setNetwork("no-network");
+    }
 
-            return { data: data.allTasks };
-        });
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
-        numItems = result.data.length;
-    });
+    await device.execute(async (modules, universe: Universe) => {
+      try {
+        const { gql } = modules["graphql-tag"];
+        const { apolloClient, itemsQuery } = universe;
 
-    it("should perform offline mutation", async () => {
-        if (process.env.MOBILE_PLATFORM === "ios") {
-            await device.execute(async (_, universe: Universe) => {
-                const { networkStatus } = universe;
-                (networkStatus as ToggleNetworkStatus).setOnline(false);
-            });
-        } else {
-            await setNetwork("no-network");
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 5000));
-
-        await device.execute(async (modules, universe: Universe) => {
-            try {
-                const { gql } = modules["graphql-tag"];
-                const { apolloClient, itemsQuery } = universe;
-
-                await apolloClient.offlineMutate({
-                    mutation: gql(`
+        await apolloClient.offlineMutate({
+          mutation: gql(`
                         mutation createTask($title: String!, $description: String!) {
                             createTask(title: $title, description: $description) {
                                 id
@@ -120,64 +120,64 @@ describe("Data Sync", function() {
                             }
                         }
                     `),
-                    variables: { title: "test", description: "test" },
-                    updateQuery: itemsQuery,
-                    returnType: "Task",
-                });
-            } catch (error) {
-                if (error.networkError && error.networkError.offline) {
-                    const offlineError = error.networkError;
-                    universe.offlineChangePromise = offlineError.watchOfflineChange();
-                    return;
-                }
-
-                throw error;
-            }
-
-            throw new Error("network error offline was not thrown");
+          variables: { title: "test", description: "test" },
+          updateQuery: itemsQuery,
+          returnType: "Task"
         });
-    });
-
-    it("should see updated cache", async () => {
-        const result = await device.execute(async (_, universe: Universe) => {
-            const { apolloClient, itemsQuery } = universe;
-
-            const { data } = await apolloClient.query({
-                query: itemsQuery
-            });
-
-            return { data: data.allTasks };
-        });
-
-        result.data.length.should.equal(numItems + 1);
-        result.data[numItems].title.should.equal("test");
-    });
-
-    it("should sync changes when going online", async () => {
-        if (process.env.MOBILE_PLATFORM === "ios") {
-            await device.execute(async (_, universe: Universe) => {
-                const { networkStatus } = universe;
-                (networkStatus as ToggleNetworkStatus).setOnline(true);
-            });
-        } else {
-            await setNetwork("reset");
+      } catch (error) {
+        if (error.networkError && error.networkError.offline) {
+          const offlineError = error.networkError;
+          universe.offlineChangePromise = offlineError.watchOfflineChange();
+          return;
         }
 
-        const result = await device.execute(async (_, universe: Universe) => {
-            const { apolloClient, itemsQuery, offlineChangePromise } = universe;
+        throw error;
+      }
 
-            await offlineChangePromise;
-
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const { data } = await apolloClient.query({
-                query: itemsQuery,
-            });
-
-            return { data: data.allTasks };
-        });
-
-        result.data.length.should.equal(numItems + 1);
-        result.data[numItems].title.should.equal("test");
+      throw new Error("network error offline was not thrown");
     });
+  });
+
+  it("should see updated cache", async () => {
+    const result = await device.execute(async (_, universe: Universe) => {
+      const { apolloClient, itemsQuery } = universe;
+
+      const { data } = await apolloClient.query({
+        query: itemsQuery
+      });
+
+      return { data: data.allTasks };
+    });
+
+    result.data.length.should.equal(numItems + 1);
+    result.data[numItems].title.should.equal("test");
+  });
+
+  it("should sync changes when going online", async () => {
+    if (process.env.MOBILE_PLATFORM === "ios") {
+      await device.execute(async (_, universe: Universe) => {
+        const { networkStatus } = universe;
+        (networkStatus as ToggleNetworkStatus).setOnline(true);
+      });
+    } else {
+      await setNetwork("reset");
+    }
+
+    const result = await device.execute(async (_, universe: Universe) => {
+      const { apolloClient, itemsQuery, offlineChangePromise } = universe;
+
+      await offlineChangePromise;
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const { data } = await apolloClient.query({
+        query: itemsQuery
+      });
+
+      return { data: data.allTasks };
+    });
+
+    result.data.length.should.equal(numItems + 1);
+    result.data[numItems].title.should.equal("test");
+  });
 });

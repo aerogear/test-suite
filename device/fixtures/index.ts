@@ -3,9 +3,9 @@ import { modules } from "./modules";
 
 // expose all typescript helpers globally
 for (const key in helpers) {
-    if (helpers.hasOwnProperty(key)) {
-        window[key] = helpers[key];
-    }
+  if (helpers.hasOwnProperty(key)) {
+    window[key] = helpers[key];
+  }
 }
 
 // set _this globally to avoid typescript issue "_this is not defined"

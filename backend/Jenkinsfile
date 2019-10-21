@@ -1,0 +1,46 @@
+// Expected parameters for the pipeline:
+//   - OPENSHIFT_URL - RHMI cluster to target (https://...)
+//   - OPENSHIFT_USERNAME - Evals username
+//   - OPENSHIFT_PASSWORD - Evals user password
+
+pipeline {
+  agent {
+    dockerfile {
+      dir 'containers/node'
+      label 'psi_rhel8'
+    }
+  }
+  environment {
+    FIREBASE_SERVER_KEY = credentials('firebase-server-key')
+    IOS_CERTIFICATE = credentials('ios-push-certificate')
+    IOS_PASSPHRASE = credentials('ios-push-password')
+    JUNIT_REPORT_STACK = '1'
+    JUNIT_REPORT_PATH = 'report.xml'
+  }
+  stages {
+    stage('Install dependencies') {
+      steps {
+        sh 'npm install'
+        dir('backend') {
+          sh 'npm install'
+        }
+      }
+    }
+    stage('Login with oc') {
+      steps {
+        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
+          sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p ${OPENSHIFT_PASSWORD}"
+        }
+      }
+    }
+    stage('Test') {
+      steps {
+        dir('backend') {
+          sh 'npm start -- --reporter mocha-jenkins-reporter || true'
+          archiveArtifacts JUNIT_REPORT_PATH
+          junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
+        }
+      }
+    }
+  }
+}
