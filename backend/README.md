@@ -22,6 +22,9 @@ These variables for testing UPS are required:
 export FIREBASE_SERVER_KEY=...
 export IOS_CERTIFICATE=...
 export IOS_PASSPHRASE=...
+export OPENSHIFT_USER=<ADMIN_USERNAME>
+export OPENSHIFT_PASS=<ADMIN_PASSWORD>
+
 ```
 
 For the iOS certificate, you can generate fake one using:
