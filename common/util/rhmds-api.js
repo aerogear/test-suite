@@ -171,11 +171,20 @@ const createPushApp = async name => {
   return pushApp;
 };
 
-const deployShowcaseServer = async (name, namespace) => {
-  await exec(`svcat provision ${name} \
-    --class datasync-showcase-server \
-    --plan default -n ${namespace} --wait \
-  `);
+const deployShowcaseServer = async namespace => {
+  await exec(`oc new-app --template datasync-showcase-server -n ${namespace}`);
+  await waitFor(
+    async () => {
+      const replicasReady = (await exec(
+        `oc get dc -o jsonpath='{.items[*].status.readyReplicas}' -n ${namespace} | wc -w`
+      )).stdout.replace(/\s/g, "");
+      console.log(`Waiting for showcase server: ${replicasReady}/3`);
+      // until postgresql, mqtt and showcase-server are ready
+      return replicasReady.includes("3");
+    },
+    200000,
+    10000
+  );
 };
 
 const newProject = async name => {
@@ -207,11 +216,11 @@ const redeployShowcase = async namePrefix => {
     }
   }
 
-  const name = `${namePrefix}-${randomString()}`;
-  await newProject(name);
-  await deployShowcaseServer(name, name);
+  const projectName = `${namePrefix}-${randomString()}`;
+  await newProject(projectName);
+  await deployShowcaseServer(projectName);
 
-  return name;
+  return projectName;
 };
 
 const bind = async (app, services) => {
