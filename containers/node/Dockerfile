@@ -20,14 +20,6 @@ RUN tar -xvf oc.tar.gz
 
 RUN mv openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/* /usr/local/bin/
 
-# install svcat cli
-
-ADD https://download.svcat.sh/cli/latest-v0.2/linux/amd64/svcat $HOME/svcat
-
-RUN chmod +x svcat
-
-RUN mv svcat /usr/local/bin/
-
 # create jenkins user
 
 RUN useradd -m -u 1001 jenkins
