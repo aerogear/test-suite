@@ -176,6 +176,7 @@ const deployShowcaseServer = async (namespace) => {
   await waitFor(async () => {
     const replicasReady = (await exec(`oc get dc -o jsonpath='{.items[*].status.readyReplicas}' -n ${namespace} | wc -w`)).stdout.replace(/\s/g, '')
     console.log(`Still waiting for deployment of Data Sync Template. Replicas ready: ${replicasReady}/3`)
+    // until postgresql, mqtt and showcase-server are ready
     return replicasReady.includes('3')
   }, 200000, 10000)
 };
