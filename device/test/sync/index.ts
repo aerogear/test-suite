@@ -1,8 +1,7 @@
 import chai = require("chai");
 chai.should();
 
-import { ApolloOfflineClient } from "@aerogear/voyager-client";
-import { CordovaNetworkStatus } from "@aerogear/voyager-client";
+import { ApolloOfflineClient, CordovaNetworkStatus } from "@aerogear/voyager-client";
 import { ToggleNetworkStatus } from "../../fixtures/ToggleNetworkStatus";
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
@@ -10,15 +9,14 @@ import { setNetwork } from "../../util/network";
 
 interface Universe extends GlobalUniverse {
   networkStatus: ToggleNetworkStatus | CordovaNetworkStatus;
-  itemsQuery: any;
+  getAllItemsQuery: any;
+  createTaskMutation: any;
   apolloClient: ApolloOfflineClient;
   offlineChangePromise: Promise<any>;
 }
 
 describe("Data Sync", function() {
   this.timeout(0);
-
-  let numItems;
 
   it("should initialize voyager client", async () => {
     await device.execute(async (modules, universe: Universe, platform) => {
@@ -45,7 +43,7 @@ describe("Data Sync", function() {
 
       universe.networkStatus = networkStatus;
 
-      const itemsQuery = gql(`
+      const getAllItemsQuery = gql(`
                 query allTasks {
                     allTasks {
                         id
@@ -53,14 +51,14 @@ describe("Data Sync", function() {
                     }
                 }
             `);
-      universe.itemsQuery = itemsQuery;
+      universe.getAllItemsQuery = getAllItemsQuery;
 
       const cacheUpdates = {
         createTask: getUpdateFunction({
           mutationName: "createTask",
           idField: "id",
           operationType: CacheOperation.ADD,
-          updateQuery: itemsQuery
+          updateQuery: getAllItemsQuery
         })
       };
 
@@ -79,20 +77,89 @@ describe("Data Sync", function() {
   });
 
   it("should perform query", async () => {
-    const result = await device.execute(async (_, universe: Universe) => {
-      const { apolloClient, itemsQuery } = universe;
+    await device.execute(async (_, universe: Universe) => {
+      const { apolloClient, getAllItemsQuery } = universe;
 
-      const { data } = await apolloClient.query({
-        query: itemsQuery,
+      await apolloClient.query({
+        query: getAllItemsQuery,
         fetchPolicy: "network-only",
         errorPolicy: "none"
       });
-
-      return { data: data.allTasks };
     });
-
-    numItems = result.data.length;
   });
+
+  describe("Subscription test", function() {
+
+    it("device should subscribe to ws and receive updates once new content is available", async () => {
+      const result = await device.execute(async (modules, universe: Universe) => {
+        const { apolloClient, getAllItemsQuery } = universe;
+        const { CacheOperation, createSubscriptionOptions } = modules["@aerogear/voyager-client"];
+        const { gql } = modules["graphql-tag"];
+        const testTaskTitle = `task received via websocket-${Date.now()}`
+        let receivedUpdate
+        
+        const taskAddedSubscription = gql(`
+          subscription {
+              taskAdded {
+                  id
+                  title
+              }
+          }
+        `)
+        const createTaskMutation = gql(`
+          mutation createTask($title: String!, $description: String!) {
+              createTask(title: $title, description: $description) {
+                  id
+                  title
+              }
+          }
+        `)
+        universe.createTaskMutation = createTaskMutation;
+
+        const options = {
+          subscriptionQuery: taskAddedSubscription,
+          cacheUpdateQuery: getAllItemsQuery,
+          operationType: CacheOperation.ADD
+        };
+
+        const subscriptionOptions = createSubscriptionOptions(options)
+        const getTasks = await apolloClient.watchQuery({
+          query: getAllItemsQuery,
+          fetchPolicy: 'network-only'
+        })
+        getTasks.subscribeToMore(subscriptionOptions)
+        getTasks.subscribe(result => {
+          receivedUpdate = result.data.allTasks
+        })
+        // Wait until the client is successfully subscribed
+        while(!receivedUpdate) {
+          await new Promise(res => setTimeout(res, 100))
+        }
+        // Get current number of items on the server
+        const numberOfItems = receivedUpdate.length
+        
+        await apolloClient.mutate({
+          mutation: createTaskMutation,
+          variables: { title: testTaskTitle, description: 'test'}
+        })
+        
+        // Wait until the number of items changes since the new task was created
+        while(receivedUpdate.length === numberOfItems) {
+          await new Promise(res => setTimeout(res, 100))
+        }
+
+        return { data: receivedUpdate, testTaskTitle }
+      });
+
+    const foundTitle = result.data.find(task => task.title === result.testTaskTitle)
+    foundTitle.should.not.equal(undefined)
+
+    });
+  })
+
+  describe("Offline mutation test", function() {
+
+  let testTitleToCheck
 
   it("should perform offline mutation", async () => {
     if (process.env.MOBILE_PLATFORM === "ios") {
@@ -106,29 +173,21 @@ describe("Data Sync", function() {
 
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    await device.execute(async (modules, universe: Universe) => {
+    testTitleToCheck = await device.execute(async (_, universe: Universe) => {
+      const testTitle = `offline-test-title-${Date.now()}`
       try {
-        const { gql } = modules["graphql-tag"];
-        const { apolloClient, itemsQuery } = universe;
-
+        const { apolloClient, getAllItemsQuery, createTaskMutation } = universe;
         await apolloClient.offlineMutate({
-          mutation: gql(`
-                        mutation createTask($title: String!, $description: String!) {
-                            createTask(title: $title, description: $description) {
-                                id
-                                title
-                            }
-                        }
-                    `),
-          variables: { title: "test", description: "test" },
-          updateQuery: itemsQuery,
+          mutation: createTaskMutation,
+          variables: { title: testTitle, description: "test" },
+          updateQuery: getAllItemsQuery,
           returnType: "Task"
         });
       } catch (error) {
         if (error.networkError && error.networkError.offline) {
           const offlineError = error.networkError;
           universe.offlineChangePromise = offlineError.watchOfflineChange();
-          return;
+          return testTitle;
         }
 
         throw error;
@@ -140,17 +199,17 @@ describe("Data Sync", function() {
 
   it("should see updated cache", async () => {
     const result = await device.execute(async (_, universe: Universe) => {
-      const { apolloClient, itemsQuery } = universe;
+      const { apolloClient, getAllItemsQuery } = universe;
 
       const { data } = await apolloClient.query({
-        query: itemsQuery
+        query: getAllItemsQuery
       });
 
       return { data: data.allTasks };
     });
 
-    result.data.length.should.equal(numItems + 1);
-    result.data[numItems].title.should.equal("test");
+    const foundTitle = result.data.find(task => task.title === testTitleToCheck)
+    foundTitle.should.not.equal(undefined)
   });
 
   it("should sync changes when going online", async () => {
@@ -164,20 +223,22 @@ describe("Data Sync", function() {
     }
 
     const result = await device.execute(async (_, universe: Universe) => {
-      const { apolloClient, itemsQuery, offlineChangePromise } = universe;
+      const { apolloClient, getAllItemsQuery, offlineChangePromise } = universe;
 
       await offlineChangePromise;
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const { data } = await apolloClient.query({
-        query: itemsQuery
+        query: getAllItemsQuery
       });
 
       return { data: data.allTasks };
     });
 
-    result.data.length.should.equal(numItems + 1);
-    result.data[numItems].title.should.equal("test");
+    const foundTitle = result.data.find(task => task.title === testTitleToCheck)
+    foundTitle.should.not.equal(undefined)
   });
+
+  })
 });
