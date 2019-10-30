@@ -2,7 +2,7 @@
   "name": "showcase-test-set",
   "version": "1.0.0",
   "scripts": {
-    "test": "mocha 'test/**/*.ts'",
+    "test": "mocha 'test/**/*.ts'"
   },
   "dependencies": {
     "@types/chai": "4.2.3",
