@@ -1,8 +1,8 @@
 const puppeteer = require('puppeteer');
 let browser;
 let headers;
-const openshiftUser = process.env.OPENSHIFT_USER;
-const openshiftPass = process.env.OPENSHIFT_PASS;
+const openshiftUser = process.env.OPENSHIFT_USERNAME;
+const openshiftPass = process.env.OPENSHIFT_PASSWORD;
 const waitFor = async (check, timeout, pause = 4000) => {
   return new Promise(async (resolve, reject) => {
     let timedout = false;
@@ -26,7 +26,7 @@ const waitFor = async (check, timeout, pause = 4000) => {
 const randomString = () => Math.random().toString(36).substring(7);
 const getOAuthProxy = async serviceURL => {
     if (openshiftUser === undefined || openshiftPass === undefined) {
-        throw new Error('OPENSHIFT_USER and/or OPENSHIFT_PASS are not defined');
+        throw new Error('OPENSHIFT_USERNAME and/or OPENSHIFT_PASSWORD are not defined');
     }
 
     browser = await puppeteer.launch();
