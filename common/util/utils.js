@@ -10,9 +10,9 @@ const waitFor = async (check, timeout, pause = 4000) => {
 
     const t = setTimeout(() => {
       timedout = true;
-      reject(new Error('Timed out'));
+      reject(new Error("Timed out"));
     }, timeout);
-    
+
     while (!timedout && !passed) {
       passed = await check();
       await new Promise(resolve => setTimeout(resolve, pause));

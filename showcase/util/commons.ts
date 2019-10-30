@@ -1,4 +1,7 @@
 import { device } from "./device";
+import { slowdown, sleep } from "./timing";
+import { RETRIES } from "./config";
+import { log } from "./log";
 
 /**
  * On Safari when a button or link is inside a shadowRoot click on the
@@ -19,14 +22,39 @@ export async function shadowClick(
   );
 }
 
-export async function asyncFind<T>(
-  array: T[],
-  predicate: (value: T) => Promise<boolean>
-): Promise<T | null> {
-  for (const value of array) {
-    if (await predicate(value)) {
-      return value;
+/**
+ * Retry the closure for RETRIES times.
+ *
+ * @param closure the method that should be retried if it throw an error
+ * @param interval number of ms to wait before retry
+ */
+export async function retry<T>(
+  closure: () => Promise<T>,
+  interval: number = 0
+): Promise<T> {
+  let i = 0;
+  while (true) {
+    i++;
+    try {
+      return await closure();
+    } catch (e) {
+      if (i <= RETRIES) {
+        log.warning("retry after error: ", e);
+        await sleep(interval);
+        continue;
+      } else {
+        throw e;
+      }
     }
   }
-  return null;
+}
+
+export async function interact(
+  element: WebdriverIOAsync.Element,
+  interaction: (element: WebdriverIOAsync.Element) => Promise<void>
+) {
+  await element.waitForDisplayed();
+  await element.scrollIntoView();
+  await slowdown();
+  await interaction(element);
 }

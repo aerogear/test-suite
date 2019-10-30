@@ -126,10 +126,7 @@
           "composite": true,
           "composites": {
             "client": {
-              "realm-management": [
-                "query-groups",
-                "query-users"
-              ]
+              "realm-management": ["query-groups", "query-users"]
             }
           },
           "clientRole": true,
@@ -170,9 +167,7 @@
           "composite": true,
           "composites": {
             "client": {
-              "realm-management": [
-                "query-clients"
-              ]
+              "realm-management": ["query-clients"]
             }
           },
           "clientRole": true,
@@ -301,9 +296,7 @@
           "composite": true,
           "composites": {
             "client": {
-              "account": [
-                "manage-account-links"
-              ]
+              "account": ["manage-account-links"]
             }
           },
           "clientRole": true,
@@ -323,29 +316,19 @@
     }
   },
   "groups": [],
-  "defaultRoles": [
-    "offline_access",
-    "uma_authorization"
-  ],
-  "requiredCredentials": [
-    "password"
-  ],
+  "defaultRoles": ["offline_access", "uma_authorization"],
+  "requiredCredentials": ["password"],
   "otpPolicyType": "totp",
   "otpPolicyAlgorithm": "HmacSHA1",
   "otpPolicyInitialCounter": 0,
   "otpPolicyDigits": 6,
   "otpPolicyLookAheadWindow": 1,
   "otpPolicyPeriod": 30,
-  "otpSupportedApplications": [
-    "FreeOTP",
-    "Google Authenticator"
-  ],
+  "otpSupportedApplications": ["FreeOTP", "Google Authenticator"],
   "scopeMappings": [
     {
       "clientScope": "offline_access",
-      "roles": [
-        "offline_access"
-      ]
+      "roles": ["offline_access"]
     }
   ],
   "clients": [
@@ -380,11 +363,7 @@
         "roles",
         "email"
       ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access"
-      ]
+      "optionalClientScopes": ["address", "phone", "offline_access"]
     },
     {
       "id": "be432368-44b1-4e3a-9750-5ac43c9fcd78",
@@ -393,12 +372,8 @@
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
-      "redirectUris": [
-        "http://localhost/*"
-      ],
-      "webOrigins": [
-        "http://localhost/*"
-      ],
+      "redirectUris": ["http://localhost/*"],
+      "webOrigins": ["http://localhost/*"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
@@ -434,11 +409,7 @@
         "roles",
         "email"
       ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access"
-      ]
+      "optionalClientScopes": ["address", "phone", "offline_access"]
     },
     {
       "id": "7fca46de-88fb-4131-96ec-26001565c9b7",
@@ -471,11 +442,7 @@
         "roles",
         "email"
       ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access"
-      ]
+      "optionalClientScopes": ["address", "phone", "offline_access"]
     },
     {
       "id": "94700360-d965-481f-9f33-6128114b11c1",
@@ -486,9 +453,7 @@
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
-      "redirectUris": [
-        "/auth/admin/integration/console/*"
-      ],
+      "redirectUris": ["/auth/admin/integration/console/*"],
       "webOrigins": [],
       "notBefore": 0,
       "bearerOnly": false,
@@ -528,11 +493,7 @@
         "roles",
         "email"
       ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access"
-      ]
+      "optionalClientScopes": ["address", "phone", "offline_access"]
     },
     {
       "id": "142e706b-4c1b-4745-ad80-1b7f4b76720b",
@@ -543,13 +504,8 @@
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
-      "defaultRoles": [
-        "manage-account",
-        "view-profile"
-      ],
-      "redirectUris": [
-        "/auth/realms/integration/account/*"
-      ],
+      "defaultRoles": ["manage-account", "view-profile"],
+      "redirectUris": ["/auth/realms/integration/account/*"],
       "webOrigins": [],
       "notBefore": 0,
       "bearerOnly": false,
@@ -572,11 +528,7 @@
         "roles",
         "email"
       ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access"
-      ]
+      "optionalClientScopes": ["address", "phone", "offline_access"]
     },
     {
       "id": "1432d928-8d89-42fc-a343-4785eee74cd1",
@@ -609,11 +561,7 @@
         "roles",
         "email"
       ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access"
-      ]
+      "optionalClientScopes": ["address", "phone", "offline_access"]
     }
   ],
   "clientScopes": [
@@ -1066,11 +1014,7 @@
     "web-origins",
     "roles"
   ],
-  "defaultOptionalClientScopes": [
-    "offline_access",
-    "phone",
-    "address"
-  ],
+  "defaultOptionalClientScopes": ["offline_access", "phone", "address"],
   "browserSecurityHeaders": {
     "contentSecurityPolicyReportOnly": "",
     "xContentTypeOptions": "nosniff",
@@ -1082,9 +1026,7 @@
   },
   "smtpServer": {},
   "eventsEnabled": false,
-  "eventsListeners": [
-    "jboss-logging"
-  ],
+  "eventsListeners": ["jboss-logging"],
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
   "adminEventsDetailsEnabled": false,
@@ -1097,9 +1039,7 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "max-clients": [
-            "200"
-          ]
+          "max-clients": ["200"]
         }
       },
       {
@@ -1128,9 +1068,7 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "allow-default-scopes": [
-            "true"
-          ]
+          "allow-default-scopes": ["true"]
         }
       },
       {
@@ -1175,9 +1113,7 @@
         "subType": "authenticated",
         "subComponents": {},
         "config": {
-          "allow-default-scopes": [
-            "true"
-          ]
+          "allow-default-scopes": ["true"]
         }
       },
       {
@@ -1187,12 +1123,8 @@
         "subType": "anonymous",
         "subComponents": {},
         "config": {
-          "host-sending-registration-request-must-match": [
-            "true"
-          ],
-          "client-uris-must-match": [
-            "true"
-          ]
+          "host-sending-registration-request-must-match": ["true"],
+          "client-uris-must-match": ["true"]
         }
       }
     ],
@@ -1203,9 +1135,7 @@
         "providerId": "aes-generated",
         "subComponents": {},
         "config": {
-          "priority": [
-            "100"
-          ]
+          "priority": ["100"]
         }
       },
       {
@@ -1214,9 +1144,7 @@
         "providerId": "rsa-generated",
         "subComponents": {},
         "config": {
-          "priority": [
-            "100"
-          ]
+          "priority": ["100"]
         }
       },
       {
@@ -1225,12 +1153,8 @@
         "providerId": "hmac-generated",
         "subComponents": {},
         "config": {
-          "priority": [
-            "100"
-          ],
-          "algorithm": [
-            "HS256"
-          ]
+          "priority": ["100"],
+          "algorithm": ["HS256"]
         }
       }
     ]

@@ -1,4 +1,4 @@
 {
-    "require": "ts-node/register",
-    "file": "util/init.ts"
+  "require": "ts-node/register",
+  "file": "util/init.ts"
 }

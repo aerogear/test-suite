@@ -61,11 +61,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "serverKey",
-              "senderId",
-              "pushApplicationId"
-            ],
+            "required": ["serverKey", "senderId", "pushApplicationId"],
             "type": "object"
           },
           "status": {
@@ -80,9 +76,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "ready"
-            ],
+            "required": ["ready"],
             "type": "object"
           }
         }

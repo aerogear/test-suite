@@ -2,9 +2,9 @@
 
 set -e
 
-SCRIPT_NAME="$0"
+SCRIPT="$0"
 
-function help() { echo "$SCRIPT_NAME [RETRIES (default: 100)]"; }
+function help() { echo "$SCRIPT [RETRIES (default: 100)]"; }
 
 POSITIONALS=()
 while [[ $# -gt 0 ]]; do
@@ -20,21 +20,21 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-RETRIES=${POSITIONALS[0]:-100}
+RETRIES="${POSITIONALS[0]:-100}"
 
-succeded=0
-i=1
-while test ${i} -le ${RETRIES}; do
+succeded="0"
+i="1"
+while test "${i}" -le "${RETRIES}"; do
     echo
     echo "# ${i}/${RETRIES}"
     if npm test; then
-        let succeded+=1
+        ((succeded += 1))
     fi
-    let i+=1
+    ((i += 1))
 done
 
-if test ${succeded} -ne ${RETRIES}; then
-    let failed=RETRIES-succeded
+if test "${succeded}" -ne "${RETRIES}"; then
+    ((failed = RETRIES - succeded))
     echo
     echo "error: ${failed}/${RETRIES} has failed"
     exit 1

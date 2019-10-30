@@ -44,12 +44,29 @@ cordova plugin add cordova-plugin-inappbrowser
 npx webpack
 
 if [ "$MOBILE_PLATFORM" = "ios" ]; then
-  fastlane build
+  cordova platform add ios
+  cordova prepare ios
+
+  # build ios using xcode without certificates
+  cd platforms/ios
+  xcodebuild \
+      -workspace "HelloCordova.xcworkspace" \
+      -scheme "HelloCordova" \
+      -configuration Debug \
+      -derivedDataPath ./derived \
+      CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+  # create the .ipa file
+  mkdir -p package/Payload
+  cp -r derived/Build/Products/Debug-iphoneos/HelloCordova.app package/Payload/
+  cd package/
+  zip -r HelloCordova.ipa Payload/
+  cd ../../..
 
   curl \
     -u "$BROWSERSTACK_USER:$BROWSERSTACK_KEY" \
     -X POST https://api-cloud.browserstack.com/app-automate/upload \
-    -F "file=@$PWD/platforms/ios/build/device/HelloCordova.ipa" \
+    -F "file=@$PWD/platforms/ios/package/HelloCordova.ipa" \
     >bs-app-url.txt
 else
 
