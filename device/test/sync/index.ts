@@ -9,7 +9,6 @@ import { ToggleNetworkStatus } from "../../fixtures/ToggleNetworkStatus";
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
 import { setNetwork } from "../../util/network";
-import gql from "graphql-tag";
 import axios from "axios";
 
 interface Universe extends GlobalUniverse {
