@@ -11,7 +11,7 @@
     "eslint": "6.1.0",
     "eslint-config-prettier": "6.4.0",
     "kubernetes-client": "8.3.4",
-    "openshift-rest-client": "2.2.2",
+    "openshift-rest-client": "3.0.0",
     "prettier": "1.18.2",
     "typescript": "3.6.4"
   }
