@@ -47,6 +47,7 @@ const MSS = "security";
 let mdcNamespace;
 let kubeClient;
 let openshiftClient;
+let allNamespaces;
 
 const determineMdcNamespace = async () => {
   const testAppName = `test-${randomString()}`;
@@ -59,6 +60,16 @@ const determineMdcNamespace = async () => {
   } catch (_) {
     mdcNamespace = "mobile-developer-console";
   }
+};
+
+const getNamespaces = async namespaceName => {
+  if (!allNamespaces) {
+    // eslint-disable-next-line require-atomic-updates
+    allNamespaces = await resource(PROJECT, GET_ALL);
+  }
+  return allNamespaces.items
+    .map(ns => ns.metadata.name)
+    .find(name => name.includes(namespaceName));
 };
 
 const init = async () => {
@@ -357,5 +368,6 @@ module.exports = {
   redeployShowcase,
   bind,
   outputAppConfig,
-  outputPushConfig
+  outputPushConfig,
+  getNamespaces
 };
