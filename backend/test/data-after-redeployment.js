@@ -14,13 +14,31 @@ const {
 const { waitFor, getOAuthProxy } = require("../../common/util/utils");
 
 describe("Data after redeployment", async function() {
+  let headers;
   this.timeout(0);
 
   before("Init kube client", async function() {
     await init();
   });
 
-  async function waitForApp(url, headers, statusCode) {
+  async function waitForPodsToBeReady(namespace) {
+    await waitFor(
+      async () => {
+        const podsOutput = (await exec(
+          `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
+        )).stdout;
+        console.log(
+          `Waiting for all pods in ${namespace} namespace to be ready`
+        );
+        // until all pods have ready=true status
+        return !podsOutput.includes("false");
+      },
+      200000,
+      10000
+    );
+  }
+
+  async function waitForApp(url, statusCode) {
     await waitFor(
       async () => {
         const res = await axios({ url, headers }).catch(() => {
@@ -33,21 +51,29 @@ describe("Data after redeployment", async function() {
     );
   }
 
-  async function restartPod(params) {
-    for (const i of [0, 1]) {
-      await exec(
-        `oc scale --replicas ${i} ${params.resourceType} ${params.resourceName} -n ${params.namespace}`
-      );
+  async function triggerRedeploy(resources) {
+    for (const r of resources) {
+      if (r.resourceType === "dc") {
+        // For DC we can trigger redeploy easily by rolling out to latest config
+        await exec(`oc rollout latest ${r.resourceName} -n ${r.namespace}`);
+      } else {
+        // Trigger redeploy of deployment by patching the template label
+        await exec(
+          `oc patch ${r.resourceType} ${r.resourceName} \
+                -p '{"spec": {"template": {"metadata": { "labels": {  "test": "${Date.now()}"}}}}}' \
+                -n ${r.namespace}`
+        );
+      }
     }
   }
 
   describe("UPS", async function() {
-    let headers;
     let upsProjectName;
     let upsHostname;
     let pushAppEndpoint;
     let pushApp;
     const upsDcName = "unifiedpush";
+    const upsDbDcName = `${upsDcName}-postgresql`;
     const pushAppName = `push-app-test-${Date.now()}`;
     const pushVariantName = `push-variant-test-${Date.now()}`;
 
@@ -82,13 +108,21 @@ describe("Data after redeployment", async function() {
       variant.name.should.equal(pushVariantName);
     });
 
-    it("should successfully redeploy UPS", async () => {
-      await restartPod({
-        resourceType: "dc",
-        resourceName: upsDcName,
-        namespace: upsProjectName
-      });
-      await waitForApp(pushAppEndpoint, headers, 200);
+    it("should successfully redeploy Postgres DB and UPS", async () => {
+      await triggerRedeploy([
+        {
+          resourceType: "dc",
+          resourceName: upsDbDcName,
+          namespace: upsProjectName
+        },
+        {
+          resourceType: "dc",
+          resourceName: upsDcName,
+          namespace: upsProjectName
+        }
+      ]);
+      await waitForPodsToBeReady(upsProjectName);
+      await waitForApp(pushAppEndpoint, 200);
     });
 
     it("previously created UPS app & variant should be still present after redeployment", async () => {
@@ -140,13 +174,13 @@ describe("Data after redeployment", async function() {
   });
 
   describe("Mobile Security Service", async function() {
-    let headers;
     let mssProjectName;
     let mssHostname;
     let mssApiEndpoint;
     let mssApp;
     let deployedApp;
     const mssDeploymentName = "mobile-security-service";
+    const mssDbDeploymentName = `${mssDeploymentName}-db`;
     const mssAppId = `test.${Date.now()}.test`;
 
     before("Get MSS resources", async function() {
@@ -182,13 +216,21 @@ describe("Data after redeployment", async function() {
       deployedApp = res.data;
     });
 
-    it("should successfully redeploy MSS", async () => {
-      await restartPod({
-        resourceType: "deployment",
-        resourceName: mssDeploymentName,
-        namespace: mssProjectName
-      });
-      await waitForApp(`${mssApiEndpoint}/apps`, headers, 200);
+    it("should successfully redeploy Postgres DB and MSS", async () => {
+      await triggerRedeploy([
+        {
+          resourceType: "deployment",
+          resourceName: mssDbDeploymentName,
+          namespace: mssProjectName
+        },
+        {
+          resourceType: "deployment",
+          resourceName: mssDeploymentName,
+          namespace: mssProjectName
+        }
+      ]);
+      await waitForPodsToBeReady(mssProjectName);
+      await waitForApp(`${mssApiEndpoint}/apps`, 200);
     });
 
     it("previously created MSS app & deployed version should be still present after redeployment", async () => {
