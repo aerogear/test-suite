@@ -1,8 +1,5 @@
 const puppeteer = require("puppeteer");
-let browser;
-let headers;
-const openshiftUser = process.env.OPENSHIFT_USERNAME;
-const openshiftPass = process.env.OPENSHIFT_PASSWORD;
+
 const waitFor = async (check, timeout, pause = 4000) => {
   return new Promise(async (resolve, reject) => {
     let timedout = false;
@@ -28,15 +25,21 @@ const randomString = () =>
   Math.random()
     .toString(36)
     .substring(7);
-const getOAuthProxy = async serviceURL => {
+
+const getHeaderWithOauthProxyCookie = async (
+  serviceURL,
+  openshiftUser,
+  openshiftPass
+) => {
   if (openshiftUser === undefined || openshiftPass === undefined) {
     throw new Error(
       "OPENSHIFT_USERNAME and/or OPENSHIFT_PASSWORD are not defined"
     );
   }
 
-  browser = await puppeteer.launch();
+  const browser = await puppeteer.launch();
   const page = await browser.newPage();
+
   await page.goto(serviceURL);
   await Promise.all([page.waitForNavigation(), page.click("button")]);
   await page.type("#username", openshiftUser);
@@ -46,16 +49,15 @@ const getOAuthProxy = async serviceURL => {
   if (approveButton) {
     await Promise.all([page.waitForNavigation(), approveButton.click()]);
   }
-
   const cookies = await page.cookies();
   const cookie = cookies.find(c => c.name === "_oauth_proxy").value;
-  headers = { Cookie: `_oauth_proxy=${cookie}` };
   await browser.close();
-  return headers;
+
+  return { Cookie: `_oauth_proxy=${cookie}` };
 };
 
 module.exports = {
   waitFor,
   randomString,
-  getOAuthProxy
+  getHeaderWithOauthProxyCookie
 };
