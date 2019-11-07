@@ -1,8 +1,7 @@
 const should = require("chai").should();
-const util = require("util");
-const exec = util.promisify(require("child_process").exec);
-
 const axios = require("axios");
+const openshiftAdminUser = process.env.OPENSHIFT_ADMIN_USERNAME;
+const openshiftAdminPassword = process.env.OPENSHIFT_ADMIN_PASSWORD;
 const {
   init,
   getNamespaces,
@@ -10,8 +9,12 @@ const {
   resource,
   TYPE
 } = require("../../common/util/rhmds-api");
-
-const { waitFor, getOAuthProxy } = require("../../common/util/utils");
+const { getHeaderWithOauthProxyCookie } = require("../../common/util/utils");
+const {
+  waitForApp,
+  waitForPodsToBeReady,
+  triggerRedeploy
+} = require("../utils");
 
 describe("Data after redeployment", async function() {
   let headers;
@@ -20,52 +23,6 @@ describe("Data after redeployment", async function() {
   before("Init kube client", async function() {
     await init();
   });
-
-  async function waitForPodsToBeReady(namespace) {
-    await waitFor(
-      async () => {
-        const podsOutput = (await exec(
-          `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
-        )).stdout;
-        console.log(
-          `Waiting for all pods in ${namespace} namespace to be ready`
-        );
-        // until all pods have ready=true status
-        return !podsOutput.includes("false");
-      },
-      200000,
-      10000
-    );
-  }
-
-  async function waitForApp(url, statusCode) {
-    await waitFor(
-      async () => {
-        const res = await axios({ url, headers }).catch(() => {
-          console.log(`Waiting for app (${url}) to be ready`);
-        });
-        return res ? res.status === statusCode : false;
-      },
-      200000,
-      10000
-    );
-  }
-
-  async function triggerRedeploy(resources) {
-    for (const r of resources) {
-      if (r.resourceType === "dc") {
-        // For DC we can trigger redeploy easily by rolling out to latest config
-        await exec(`oc rollout latest ${r.resourceName} -n ${r.namespace}`);
-      } else {
-        // Trigger redeploy of deployment by patching the template label
-        await exec(
-          `oc patch ${r.resourceType} ${r.resourceName} \
-                -p '{"spec": {"template": {"metadata": { "labels": {  "test": "${Date.now()}"}}}}}' \
-                -n ${r.namespace}`
-        );
-      }
-    }
-  }
 
   describe("UPS", async function() {
     let upsProjectName;
@@ -88,7 +45,11 @@ describe("Data after redeployment", async function() {
         .map(r => r.spec.host)
         .find(url => url.includes("mobile-unifiedpush"));
       pushAppEndpoint = `https://${upsHostname}/rest/applications`;
-      headers = await getOAuthProxy(pushAppEndpoint);
+      headers = await getHeaderWithOauthProxyCookie(
+        pushAppEndpoint,
+        openshiftAdminUser,
+        openshiftAdminPassword
+      );
     });
 
     after("Delete UPS app", async function() {
@@ -122,7 +83,7 @@ describe("Data after redeployment", async function() {
         }
       ]);
       await waitForPodsToBeReady(upsProjectName);
-      await waitForApp(pushAppEndpoint, 200);
+      await waitForApp(pushAppEndpoint, headers, 200);
     });
 
     it("previously created UPS app & variant should be still present after redeployment", async () => {
@@ -194,7 +155,11 @@ describe("Data after redeployment", async function() {
         .map(r => r.spec.host)
         .find(url => url.includes("mobile-security-service"));
       mssApiEndpoint = `https://${mssHostname}/api`;
-      headers = await getOAuthProxy(`${mssApiEndpoint}/apps`);
+      headers = await getHeaderWithOauthProxyCookie(
+        `${mssApiEndpoint}/apps`,
+        openshiftAdminUser,
+        openshiftAdminPassword
+      );
     });
 
     after("Delete MSS app", async function() {
@@ -230,7 +195,7 @@ describe("Data after redeployment", async function() {
         }
       ]);
       await waitForPodsToBeReady(mssProjectName);
-      await waitForApp(`${mssApiEndpoint}/apps`, 200);
+      await waitForApp(`${mssApiEndpoint}/apps`, headers, 200);
     });
 
     it("previously created MSS app & deployed version should be still present after redeployment", async () => {
