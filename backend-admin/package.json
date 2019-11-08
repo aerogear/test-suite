@@ -1,0 +1,17 @@
+{
+  "name": "backend-admin",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "mocha"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0",
+    "mocha-jenkins-reporter": "^0.4.2"
+  }
+}
