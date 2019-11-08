@@ -34,7 +34,7 @@ export async function retry<T>(
 ): Promise<T> {
   let i = 1;
   let success = false;
-  let result
+  let result;
 
   while (!success) {
     try {
@@ -49,9 +49,9 @@ export async function retry<T>(
         throw e;
       }
     }
-  success = true;
+    success = true;
   }
-  return result
+  return result;
 }
 
 export async function interact(

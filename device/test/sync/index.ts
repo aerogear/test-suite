@@ -25,32 +25,35 @@ describe("Data Sync", function() {
   this.timeout(0);
 
   it("should initialize voyager client", async () => {
-    const appConfig = await device.execute(
-      async function (modules, universe: Universe, platform) {
-        const {
-          OfflineClient,
-          CordovaNetworkStatus,
-          CacheOperation,
-          getUpdateFunction
-        } = modules["@aerogear/voyager-client"];
-        const { gql } = modules["graphql-tag"];
-        const { ToggleNetworkStatus } = modules["./ToggleNetworkStatus"];
+    const appConfig = await device.execute(async function(
+      modules,
+      universe: Universe,
+      platform
+    ) {
+      const {
+        OfflineClient,
+        CordovaNetworkStatus,
+        CacheOperation,
+        getUpdateFunction
+      } = modules["@aerogear/voyager-client"];
+      const { gql } = modules["graphql-tag"];
+      const { ToggleNetworkStatus } = modules["./ToggleNetworkStatus"];
 
-        const { app } = universe;
+      const { app } = universe;
 
-        let networkStatus;
+      let networkStatus;
 
-        if (platform === "ios") {
-          // this is workaround for iOS as BrowserStack does not support
-          // putting iOS devices offline
-          networkStatus = new ToggleNetworkStatus();
-        } else {
-          networkStatus = new CordovaNetworkStatus();
-        }
+      if (platform === "ios") {
+        // this is workaround for iOS as BrowserStack does not support
+        // putting iOS devices offline
+        networkStatus = new ToggleNetworkStatus();
+      } else {
+        networkStatus = new CordovaNetworkStatus();
+      }
 
-        universe.networkStatus = networkStatus;
+      universe.networkStatus = networkStatus;
 
-        const getAllItemsQuery = gql(`
+      const getAllItemsQuery = gql(`
         query allTasks {
             allTasks {
                   id
@@ -58,32 +61,31 @@ describe("Data Sync", function() {
                 }
             }
           `);
-        universe.getAllItemsQuery = getAllItemsQuery;
+      universe.getAllItemsQuery = getAllItemsQuery;
 
-        const cacheUpdates = {
-          createTask: getUpdateFunction({
-            mutationName: "createTask",
-            idField: "id",
-            operationType: CacheOperation.ADD,
-            updateQuery: getAllItemsQuery
-          })
-        };
+      const cacheUpdates = {
+        createTask: getUpdateFunction({
+          mutationName: "createTask",
+          idField: "id",
+          operationType: CacheOperation.ADD,
+          updateQuery: getAllItemsQuery
+        })
+      };
 
-        const options = {
-          openShiftConfig: app.config,
-          networkStatus,
-          mutationCacheUpdates: cacheUpdates
-        };
+      const options = {
+        openShiftConfig: app.config,
+        networkStatus,
+        mutationCacheUpdates: cacheUpdates
+      };
 
-        const offlineClient = new OfflineClient(options);
+      const offlineClient = new OfflineClient(options);
 
-        // eslint-disable-next-line require-atomic-updates
-        universe.apolloClient = await offlineClient.init();
+      // eslint-disable-next-line require-atomic-updates
+      universe.apolloClient = await offlineClient.init();
 
-        return app.config;
-      },
-      process.env.MOBILE_PLATFORM
-    );
+      return app.config;
+    },
+    process.env.MOBILE_PLATFORM);
     syncAppUrl = appConfig.configurations.find(s => s.type === "sync-app").url;
   });
 

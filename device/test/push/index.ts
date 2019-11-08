@@ -75,7 +75,8 @@ describe("Push", function() {
     });
   } else {
     before("get push app config", async () => {
-      pushApplicationID = require("../../push-app.json").status.pushApplicationId;
+      pushApplicationID = require("../../push-app.json").status
+        .pushApplicationId;
       masterSecret = require("../../push-app.json").status.masterSecret;
     });
   }
