@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "lib": ["es2019"],
+    "inlineSourceMap": true,
+    "esModuleInterop": true
+  }
+}
