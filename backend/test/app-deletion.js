@@ -58,7 +58,7 @@ describe("App deletion", async function() {
     cr = getMssAppCr(mobileApp.metadata.name, mobileApp.metadata.uid);
     mssApp = await resource(TYPE.MSS_APP, ACTION.CREATE, cr);
 
-    pushApp = await createPushApp(process.env["APP_NAME"]);
+    pushApp = await createPushApp(mobileApp.metadata.name, mobileApp.metadata.uid);
 
     cr = getAndroidVariantCr(
       mobileApp.metadata.name,

@@ -163,7 +163,7 @@ const resource = async (type, action, param, namespace = null) => {
   }
 };
 
-const createPushApp = async name => {
+const createPushApp = async (name, uid) => {
   let pushApp;
 
   try {
@@ -173,7 +173,7 @@ const createPushApp = async name => {
     console.log("No push application found. Creating a new one.");
   }
 
-  const pushAppCr = getPushAppCr(name);
+  const pushAppCr = getPushAppCr(name, uid);
   pushApp = await resource(PUSH_APP, CREATE, pushAppCr);
 
   await waitFor(async () => {
@@ -277,8 +277,8 @@ const bind = async (app, services) => {
         break;
       }
 
-      case PUSH_ANDROID: {
-        pushApp = await createPushApp(app.metadata.name);
+      case PUSH_ANDROID:
+        pushApp = await createPushApp(app.metadata.name, app.metadata.uid);
         const androidVariantCr = getAndroidVariantCr(
           app.metadata.name,
           app.metadata.uid,
@@ -287,9 +287,9 @@ const bind = async (app, services) => {
         );
         await resource(ANDROID_VARIANT, CREATE, androidVariantCr);
         break;
-      }
-      case PUSH_IOS: {
-        pushApp = await createPushApp(app.metadata.name);
+
+      case PUSH_IOS:
+        pushApp = await createPushApp(app.metadata.name, app.metadata.uid);
         const iosVariantCr = getIosVariantCr(
           app.metadata.name,
           app.metadata.uid,

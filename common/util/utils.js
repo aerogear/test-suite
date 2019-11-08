@@ -1,25 +1,19 @@
 const puppeteer = require("puppeteer");
 
 const waitFor = async (check, timeout, pause = 4000) => {
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve, reject) => {
-    let timedout = false;
-    let passed = false;
+  const start = Date.now()
 
-    const t = setTimeout(() => {
-      timedout = true;
-      reject(new Error("Timed out"));
-    }, timeout);
-
-    passed = await check();
-    while (!timedout && !passed) {
-      await new Promise(resolve => setTimeout(resolve, pause));
-      passed = await check();
+  while (true) {
+    if (start + timeout < Date.now()) {
+      throw new Error("Timed out")
     }
 
-    clearTimeout(t);
-    resolve();
-  });
+    if (await check()) {
+      return;
+    }
+
+    await new Promise(r => setTimeout(r, pause));
+  }
 };
 
 const randomString = () =>

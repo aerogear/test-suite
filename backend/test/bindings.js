@@ -102,7 +102,7 @@ describe("Bindings", async function() {
   });
 
   it("should create push app", async function() {
-    pushApp = await createPushApp(process.env["APP_NAME"]);
+    pushApp = await createPushApp(mobileApp.metadata.name, mobileApp.metadata.uid);
   });
 
   it("should create push android binding", async function() {
