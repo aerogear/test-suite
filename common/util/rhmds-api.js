@@ -177,7 +177,8 @@ const createPushApp = async name => {
   pushApp = await resource(PUSH_APP, CREATE, pushAppCr);
 
   await waitFor(async () => {
-    const pushApp = await resource(PUSH_APP, GET, pushApp.metadata.name);
+    // eslint-disable-next-line require-atomic-updates
+    pushApp = await resource(PUSH_APP, GET, pushApp.metadata.name);
     return pushApp.status && pushApp.status.pushApplicationId;
   }, TIMEOUT);
 
@@ -209,6 +210,7 @@ const deleteProject = async name => {
 };
 
 const recreateMobileApp = async name => {
+  console.log("Recreating mobile app...");
   await resource(MOBILE_APP, DELETE, name).catch(() => {});
   await resource(PUSH_APP, DELETE, name).catch(() => {});
 
@@ -231,12 +233,14 @@ const redeployShowcase = async namePrefix => {
 
   const projectName = `${namePrefix}-${randomString()}`;
   await newProject(projectName);
+  console.log("Redeploying showcase server...");
   await deployShowcaseServer(projectName);
 
   return projectName;
 };
 
 const bind = async (app, services) => {
+  console.log("Binding with services...");
   const bindings = [...services];
 
   while (bindings.length > 0) {

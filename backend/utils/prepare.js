@@ -11,7 +11,6 @@ process.env["APP_NAME"] = name;
 
 before("redeploy showcase server", async function() {
   this.timeout(0);
-  console.log("Redeploying showcase server...");
   await init();
   await resource(TYPE.MOBILE_APP, ACTION.DELETE, name).catch(() => {});
   const namespace = await redeployShowcase(name);
