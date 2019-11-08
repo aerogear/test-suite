@@ -10,6 +10,10 @@ pipeline {
       label 'psi_rhel8'
     }
   }
+  options {
+    timestamps()
+    ansiColor('gnome-terminal')
+  }
   environment {
     JUNIT_REPORT_STACK = '1'
     JUNIT_REPORT_PATH = 'report.xml'
