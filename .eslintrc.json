@@ -23,7 +23,10 @@
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
         "prettier/@typescript-eslint"
-      ]
+      ],
+      "rules": {
+        "@typescript-eslint/member-ordering": 1
+      }
     }
   ]
 }
