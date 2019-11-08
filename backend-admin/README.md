@@ -8,7 +8,7 @@ npm install
 
 ## Target OpenShift
 
-Tests need to target OpenShift instance with RHMI. For this use:
+Tests need to target OpenShift instance with RHMI. Login with `oc` as a cluster-admin user:
 
 ```
 oc login ...

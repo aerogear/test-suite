@@ -156,7 +156,7 @@ describe("Data after redeployment", async function() {
         .find(url => url.includes("mobile-security-service"));
       mssApiEndpoint = `https://${mssHostname}/api`;
       headers = await getHeaderWithOauthProxyCookie(
-        `${mssApiEndpoint}/apps`,
+        `https://${mssHostname}`,
         openshiftAdminUser,
         openshiftAdminPassword
       );
