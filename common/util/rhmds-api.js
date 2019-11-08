@@ -169,13 +169,15 @@ const createPushApp = async name => {
   try {
     pushApp = await resource(PUSH_APP, GET, name);
     return pushApp;
-  } catch (_) {}
+  } catch (_) {
+    console.log("No push application found. Creating a new one.");
+  }
 
   const pushAppCr = getPushAppCr(name);
   pushApp = await resource(PUSH_APP, CREATE, pushAppCr);
 
   await waitFor(async () => {
-    pushApp = await resource(PUSH_APP, GET, pushApp.metadata.name);
+    const pushApp = await resource(PUSH_APP, GET, pushApp.metadata.name);
     return pushApp.status && pushApp.status.pushApplicationId;
   }, TIMEOUT);
 
@@ -243,7 +245,7 @@ const bind = async (app, services) => {
     let pushApp;
 
     switch (service) {
-      case DATA_SYNC:
+      case DATA_SYNC: {
         const namespaces = await resource(PROJECT, GET_ALL);
         const namespace = namespaces.items.find(ns =>
           ns.metadata.name.startsWith(app.metadata.name)
@@ -261,16 +263,17 @@ const bind = async (app, services) => {
         );
         await resource(CONFIG_MAP, CREATE, syncConfigMap);
         break;
-
-      case KEYCLOAK:
+      }
+      case KEYCLOAK: {
         const keycloakRealmCr = getKeycloakRealmCr(
           app.metadata.name,
           app.metadata.uid
         );
         await resource(KEYCLOAK_REALM, CREATE, keycloakRealmCr);
         break;
+      }
 
-      case PUSH_ANDROID:
+      case PUSH_ANDROID: {
         pushApp = await createPushApp(app.metadata.name);
         const androidVariantCr = getAndroidVariantCr(
           app.metadata.name,
@@ -280,8 +283,8 @@ const bind = async (app, services) => {
         );
         await resource(ANDROID_VARIANT, CREATE, androidVariantCr);
         break;
-
-      case PUSH_IOS:
+      }
+      case PUSH_IOS: {
         pushApp = await createPushApp(app.metadata.name);
         const iosVariantCr = getIosVariantCr(
           app.metadata.name,
@@ -292,12 +295,12 @@ const bind = async (app, services) => {
         );
         await resource(IOS_VARIANT, CREATE, iosVariantCr);
         break;
-
-      case MSS:
+      }
+      case MSS: {
         const mssAppCr = getMssAppCr(app.metadata.name, app.metadata.uid);
         await resource(MSS_APP, CREATE, mssAppCr);
         break;
-
+      }
       default:
         break;
     }

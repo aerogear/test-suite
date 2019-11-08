@@ -23,9 +23,11 @@ if (process.env.LOCAL_APPIUM === "true") {
     hostname: "hub-cloud.browserstack.com",
     logLevel: "error",
     capabilities: {
+      // eslint-disable-next-line @typescript-eslint/camelcase
       os_version: process.env.MOBILE_PLATFORM === "ios" ? "13" : "9.0",
       device:
         process.env.MOBILE_PLATFORM === "ios" ? "iPhone XS" : "Google Pixel 3",
+      // eslint-disable-next-line @typescript-eslint/camelcase
       real_mobile: "true",
       project: "AeroGear Test Suite",
       name: "Device",

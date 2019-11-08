@@ -1,3 +1,4 @@
+const { expect } = require("chai");
 const openApp = require("./openApp");
 const config = require("../../config");
 
@@ -50,11 +51,10 @@ module.exports = async (appName, serviceName, params) => {
         "idmUser",
         "idmPassword"
       );
-      const realmInputId = "#root_realmSettings_realmId";
-      await page.waitForSelector(realmInputId);
+      await page.waitForSelector("#root_realmSettings_realmId");
       // Trigger mouse triple-click to select existing text in input field to delete it :)
-      await page.click(realmInputId, { clickCount: 3 });
-      await page.type(realmInputId, params.idmRealmName);
+      await page.click("#root_realmSettings_realmId", { clickCount: 3 });
+      await page.type("#root_realmSettings_realmId", params.idmRealmName);
       await page.type("#root_realmSettings_adminUsername", params.idmUser);
       await page.type("#root_realmSettings_adminPassword", params.idmPassword);
       break;

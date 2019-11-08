@@ -1,3 +1,4 @@
+const { expect } = require("chai");
 const {
   createApp,
   deleteApp,
@@ -83,7 +84,7 @@ describe("Test binding of all services", () => {
     const parsedMobileConfig = await parseMobileServicesConfig();
     const { services } = parsedMobileConfig;
     // Make sure the config contains all required services' properties
-    for (service of services) {
+    for (const service of services) {
       switch (service.name) {
         case "keycloak":
           expect(service).to.be.an("object");

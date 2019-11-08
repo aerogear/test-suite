@@ -26,7 +26,7 @@ describe("Data Sync", function() {
 
   it("should initialize voyager client", async () => {
     const appConfig = await device.execute(
-      async (modules, universe: Universe, platform) => {
+      async function (modules, universe: Universe, platform) {
         const {
           OfflineClient,
           CordovaNetworkStatus,
@@ -77,9 +77,9 @@ describe("Data Sync", function() {
 
         const offlineClient = new OfflineClient(options);
 
-        const apolloClient = await offlineClient.init();
+        // eslint-disable-next-line require-atomic-updates
+        universe.apolloClient = await offlineClient.init();
 
-        universe.apolloClient = apolloClient;
         return app.config;
       },
       process.env.MOBILE_PLATFORM
@@ -144,6 +144,7 @@ describe("Data Sync", function() {
           lastUpdate = universe.subscriptionUpdate.data;
           await new Promise(res => setTimeout(res, 1000));
         }
+        // eslint-disable-next-line require-atomic-updates
         universe.subscriptionUpdate.numberOfTasksBeforeUpdate =
           universe.subscriptionUpdate.data.length;
       });
@@ -222,6 +223,7 @@ describe("Data Sync", function() {
           } catch (error) {
             if (error.networkError && error.networkError.offline) {
               const offlineError = error.networkError;
+              // eslint-disable-next-line require-atomic-updates
               universe.offlineChangePromise = offlineError.watchOfflineChange();
               return testTitle;
             }

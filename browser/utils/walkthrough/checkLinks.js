@@ -1,8 +1,10 @@
+const { expect } = require("chai");
+
 module.exports = async selector => {
   await page.waitForSelector(selector);
   const linksToCheck = await page.$$eval(selector, els => els.map(a => a.href));
 
-  for (link of linksToCheck) {
+  for (const link of linksToCheck) {
     const newPage = await context.newPage();
     let response;
     try {

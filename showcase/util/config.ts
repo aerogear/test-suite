@@ -11,7 +11,7 @@ function getEnv(name: string, fallback?: string) {
   const value = process.env[name];
   if (value === undefined) {
     if (fallback === undefined) {
-      throw new Error(`\'${name}\' environment variable is not defined`);
+      throw new Error(`'${name}' environment variable is not defined`);
     } else {
       return fallback;
     }

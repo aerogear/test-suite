@@ -5,7 +5,7 @@ import {
 
 export class ToggleNetworkStatus implements NetworkStatus {
   private callback: NetworkStatusChangeCallback = null;
-  private online: boolean = true;
+  private online = true;
 
   public onStatusChangeListener(callback: NetworkStatusChangeCallback) {
     this.callback = callback;

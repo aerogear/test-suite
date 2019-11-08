@@ -30,15 +30,18 @@ export async function shadowClick(
  */
 export async function retry<T>(
   closure: () => Promise<T>,
-  interval: number = 0
+  interval = 0
 ): Promise<T> {
-  let i = 0;
-  while (true) {
-    i++;
+  let i = 1;
+  let success = false;
+  let result
+
+  while (!success) {
     try {
-      return await closure();
+      result = await closure();
     } catch (e) {
-      if (i <= RETRIES) {
+      if (i < RETRIES) {
+        i++;
         log.warning("retry after error: ", e);
         await sleep(interval);
         continue;
@@ -46,7 +49,9 @@ export async function retry<T>(
         throw e;
       }
     }
+  success = true;
   }
+  return result
 }
 
 export async function interact(

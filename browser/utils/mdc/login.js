@@ -1,10 +1,11 @@
+const { expect } = require("chai");
 const username = process.env.OPENSHIFT_USERNAME;
 const password = process.env.OPENSHIFT_PASSWORD;
 
 module.exports = async () => {
   const mdcLoginPageUrl = global.mdcUrl;
   // Create anonymous browser window to keep tests isolated
-  context = await browser.createIncognitoBrowserContext();
+  const context = await global.browser.createIncognitoBrowserContext();
   page = await context.newPage();
 
   await page.goto(mdcLoginPageUrl);

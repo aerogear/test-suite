@@ -1,3 +1,4 @@
+const { expect } = require("chai");
 const openApp = require("./openApp");
 
 module.exports = async (appName, serviceName) => {

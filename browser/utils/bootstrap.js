@@ -1,5 +1,4 @@
 const puppeteer = require("puppeteer");
-const { expect } = require("chai");
 const { init, resource, TYPE, ACTION } = require("../../common/util/rhmds-api");
 const FAILED_TESTS = {};
 
@@ -16,10 +15,9 @@ const opts = {
 
 before(async () => {
   const openshiftClient = await init();
-  global.expect = expect;
   global.browser = await puppeteer.launch(opts);
-  global.page;
-  global.context;
+  global.page = null;
+  global.context = null;
   global.mdcUrl = await getMdcUrl();
   global.openshiftConsoleUrl = getOpenShiftConsoleUrl(openshiftClient);
 });

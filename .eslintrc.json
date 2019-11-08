@@ -5,6 +5,10 @@
     "mocha": true,
     "es6": true
   },
+  "globals": {
+    "browser": "readonly",
+    "page": "writable"
+  },
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module"
