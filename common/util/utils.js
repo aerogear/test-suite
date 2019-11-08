@@ -37,7 +37,7 @@ const getHeaderWithOauthProxyCookie = async (
     );
   }
 
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ slowMo: 50 });
   const page = await browser.newPage();
 
   await page.goto(serviceURL);
