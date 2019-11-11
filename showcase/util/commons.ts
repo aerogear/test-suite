@@ -12,7 +12,7 @@ import { log } from "./log";
 export async function shadowClick(
   element: WebdriverIOAsync.Element,
   selector: string
-) {
+): Promise<void> {
   await device.execute(
     (element, selector) => {
       element.shadowRoot.querySelector(selector).click();
@@ -57,7 +57,7 @@ export async function retry<T>(
 export async function interact(
   element: WebdriverIOAsync.Element,
   interaction: (element: WebdriverIOAsync.Element) => Promise<void>
-) {
+): Promise<void> {
   await element.waitForDisplayed();
   await element.scrollIntoView();
   await slowdown();

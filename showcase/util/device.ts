@@ -33,6 +33,6 @@ const options: WebdriverIO.RemoteOptions = {
 
 export let device: BrowserObject;
 
-export async function init() {
-  device = await remote(options as any);
+export async function init(): Promise<void> {
+  device = await remote(options);
 }
