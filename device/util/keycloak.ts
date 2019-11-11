@@ -14,7 +14,7 @@ const config = {
   testPass: "admin"
 };
 
-async function authenticateKeycloak() {
+async function authenticateKeycloak(): Promise<string> {
   const res = await axios({
     method: "POST",
     url: `${config.authServerUrl}/realms/${config.adminRealmName}/protocol/openid-connect/token`,
@@ -23,7 +23,7 @@ async function authenticateKeycloak() {
   return `Bearer ${res.data["access_token"]}`;
 }
 
-async function importRealm() {
+async function importRealm(): Promise<void> {
   await axios({
     method: "POST",
     url: `${config.authServerUrl}/admin/realms`,
@@ -35,7 +35,7 @@ async function importRealm() {
   });
 }
 
-async function createUser(name: string) {
+async function createUser(name: string): Promise<void> {
   await axios({
     method: "post",
     url: `${config.authServerUrl}/admin/realms/${config.appRealmName}/users`,
@@ -53,14 +53,14 @@ async function createUser(name: string) {
   });
 }
 
-async function prepareKeycloak(authServerUrl: string) {
+async function prepareKeycloak(authServerUrl: string): Promise<void> {
   config.authServerUrl = authServerUrl;
   config.token = await authenticateKeycloak();
   await importRealm();
   await createUser(config.testUser);
 }
 
-async function resetKeycloakConfiguration() {
+async function resetKeycloakConfiguration(): Promise<void> {
   await axios({
     method: "DELETE",
     url: `${config.authServerUrl}/admin/realms/${config.appRealmName}`,

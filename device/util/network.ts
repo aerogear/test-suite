@@ -1,7 +1,10 @@
 import fetch from "node-fetch";
 import { device } from "./device";
 
-export async function setNetwork(profile: string) {
+/**
+ * Change network profile for the device in BrowserStack
+ */
+export async function setNetwork(profile: string): Promise<void> {
   const buff = Buffer.from(
     `${process.env.BROWSERSTACK_USER}:${process.env.BROWSERSTACK_KEY}`
   );

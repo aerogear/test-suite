@@ -3,20 +3,22 @@ chai.should();
 
 import {
   ApolloOfflineClient,
-  CordovaNetworkStatus
+  CordovaNetworkStatus,
+  OfflineError
 } from "@aerogear/voyager-client";
 import { ToggleNetworkStatus } from "../../fixtures/ToggleNetworkStatus";
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
 import { setNetwork } from "../../util/network";
 import axios from "axios";
+import { DocumentNode } from "graphql";
 
 interface Universe extends GlobalUniverse {
   networkStatus: ToggleNetworkStatus | CordovaNetworkStatus;
-  getAllItemsQuery: any;
-  subscriptionUpdate: any;
+  getAllItemsQuery: DocumentNode;
+  subscriptionUpdate: { data?: unknown[]; numberOfTasksBeforeUpdate?: number };
   apolloClient: ApolloOfflineClient;
-  offlineChangePromise: Promise<any>;
+  offlineChangePromise: Promise<unknown>;
 }
 
 describe("Data Sync", function() {
@@ -181,7 +183,7 @@ describe("Data Sync", function() {
         }
       );
       const foundTitle = updatedContent.find(
-        task => task.title === subscriptionTestTaskTitle
+        (task: { title: string }) => task.title === subscriptionTestTaskTitle
       );
       foundTitle.should.not.equal(undefined);
     });
@@ -224,7 +226,7 @@ describe("Data Sync", function() {
             });
           } catch (error) {
             if (error.networkError && error.networkError.offline) {
-              const offlineError = error.networkError;
+              const offlineError = error.networkError as OfflineError;
               // eslint-disable-next-line require-atomic-updates
               universe.offlineChangePromise = offlineError.watchOfflineChange();
               return testTitle;
