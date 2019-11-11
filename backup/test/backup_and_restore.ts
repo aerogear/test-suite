@@ -2,7 +2,7 @@ import { KubeHelper } from "../util/kube-helper";
 import { S3Helper } from "../util/s3-helper";
 import { dirSync } from "tmp";
 import path from "path";
-import { log } from "../../showcase/util/log";
+import { log } from "../../common/util/log";
 import { BackupHelper, Backup } from "../util/backup-helper";
 import { untar, decode, gunzipAll, execScript } from "../util/utils";
 import { restoreNamespace } from "../util/restore-utils";

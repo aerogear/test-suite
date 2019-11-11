@@ -1,6 +1,6 @@
 import { KubeHelper } from "./kube-helper";
 import { randomString } from "../../common/util/utils";
-import { log } from "../../showcase/util/log";
+import { log } from "../../common/util/log";
 
 const LOGS_BACKUP_REGEX = /^upload: '\S+' -> '(s3:\/\/(?<bucket>\S+?)\/(?<file>.+))'/gm;
 

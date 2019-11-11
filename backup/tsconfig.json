@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
     "lib": ["es2019"],
     "allowJs": true,
+    "moduleResolution": "node",
     "inlineSourceMap": true,
     "esModuleInterop": true
-  }
+  },
+  "exclude": ["node_modules"]
 }

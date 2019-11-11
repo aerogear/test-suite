@@ -1,7 +1,7 @@
 import { device } from "./device";
 import { slowdown, sleep } from "./timing";
 import { RETRIES } from "./config";
-import { log } from "./log";
+import { log } from "../../common/util/log";
 
 /**
  * On Safari when a button or link is inside a shadowRoot click on the
