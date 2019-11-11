@@ -1,19 +1,24 @@
 const puppeteer = require("puppeteer");
 
 const waitFor = async (check, timeout, pause = 4000) => {
-  const start = Date.now();
+  return new Promise(async (resolve, reject) => {
+    let timedout = false;
+    let passed = false;
 
-  while (true) {
-    if (start + timeout < Date.now()) {
-      throw new Error("Timed out");
+    const t = setTimeout(() => {
+      timedout = true;
+      reject(new Error("Timed out"));
+    }, timeout);
+
+    passed = await check();
+    while (!timedout && !passed) {
+      await new Promise(resolve => setTimeout(resolve, pause));
+      passed = await check();
     }
 
-    if (await check()) {
-      return;
-    }
-
-    await new Promise(r => setTimeout(r, pause));
-  }
+    clearTimeout(t);
+    resolve();
+  });
 };
 
 const randomString = () =>
