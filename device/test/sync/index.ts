@@ -3,20 +3,22 @@ chai.should();
 
 import {
   ApolloOfflineClient,
-  CordovaNetworkStatus
+  CordovaNetworkStatus,
+  OfflineError
 } from "@aerogear/voyager-client";
 import { ToggleNetworkStatus } from "../../fixtures/ToggleNetworkStatus";
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
 import { setNetwork } from "../../util/network";
 import axios from "axios";
+import { DocumentNode } from "graphql";
 
 interface Universe extends GlobalUniverse {
   networkStatus: ToggleNetworkStatus | CordovaNetworkStatus;
-  getAllItemsQuery: any;
-  subscriptionUpdate: any;
+  getAllItemsQuery: DocumentNode;
+  subscriptionUpdate: { data?: unknown[]; numberOfTasksBeforeUpdate?: number };
   apolloClient: ApolloOfflineClient;
-  offlineChangePromise: Promise<any>;
+  offlineChangePromise: Promise<unknown>;
 }
 
 describe("Data Sync", function() {
@@ -25,32 +27,35 @@ describe("Data Sync", function() {
   this.timeout(0);
 
   it("should initialize voyager client", async () => {
-    const appConfig = await device.execute(
-      async (modules, universe: Universe, platform) => {
-        const {
-          OfflineClient,
-          CordovaNetworkStatus,
-          CacheOperation,
-          getUpdateFunction
-        } = modules["@aerogear/voyager-client"];
-        const { gql } = modules["graphql-tag"];
-        const { ToggleNetworkStatus } = modules["./ToggleNetworkStatus"];
+    const appConfig = await device.execute(async function(
+      modules,
+      universe: Universe,
+      platform
+    ) {
+      const {
+        OfflineClient,
+        CordovaNetworkStatus,
+        CacheOperation,
+        getUpdateFunction
+      } = modules["@aerogear/voyager-client"];
+      const { gql } = modules["graphql-tag"];
+      const { ToggleNetworkStatus } = modules["./ToggleNetworkStatus"];
 
-        const { app } = universe;
+      const { app } = universe;
 
-        let networkStatus;
+      let networkStatus;
 
-        if (platform === "ios") {
-          // this is workaround for iOS as BrowserStack does not support
-          // putting iOS devices offline
-          networkStatus = new ToggleNetworkStatus();
-        } else {
-          networkStatus = new CordovaNetworkStatus();
-        }
+      if (platform === "ios") {
+        // this is workaround for iOS as BrowserStack does not support
+        // putting iOS devices offline
+        networkStatus = new ToggleNetworkStatus();
+      } else {
+        networkStatus = new CordovaNetworkStatus();
+      }
 
-        universe.networkStatus = networkStatus;
+      universe.networkStatus = networkStatus;
 
-        const getAllItemsQuery = gql(`
+      const getAllItemsQuery = gql(`
         query allTasks {
             allTasks {
                   id
@@ -58,32 +63,31 @@ describe("Data Sync", function() {
                 }
             }
           `);
-        universe.getAllItemsQuery = getAllItemsQuery;
+      universe.getAllItemsQuery = getAllItemsQuery;
 
-        const cacheUpdates = {
-          createTask: getUpdateFunction({
-            mutationName: "createTask",
-            idField: "id",
-            operationType: CacheOperation.ADD,
-            updateQuery: getAllItemsQuery
-          })
-        };
+      const cacheUpdates = {
+        createTask: getUpdateFunction({
+          mutationName: "createTask",
+          idField: "id",
+          operationType: CacheOperation.ADD,
+          updateQuery: getAllItemsQuery
+        })
+      };
 
-        const options = {
-          openShiftConfig: app.config,
-          networkStatus,
-          mutationCacheUpdates: cacheUpdates
-        };
+      const options = {
+        openShiftConfig: app.config,
+        networkStatus,
+        mutationCacheUpdates: cacheUpdates
+      };
 
-        const offlineClient = new OfflineClient(options);
+      const offlineClient = new OfflineClient(options);
 
-        const apolloClient = await offlineClient.init();
+      // eslint-disable-next-line require-atomic-updates
+      universe.apolloClient = await offlineClient.init();
 
-        universe.apolloClient = apolloClient;
-        return app.config;
-      },
-      process.env.MOBILE_PLATFORM
-    );
+      return app.config;
+    },
+    process.env.MOBILE_PLATFORM);
     syncAppUrl = appConfig.configurations.find(s => s.type === "sync-app").url;
   });
 
@@ -144,6 +148,7 @@ describe("Data Sync", function() {
           lastUpdate = universe.subscriptionUpdate.data;
           await new Promise(res => setTimeout(res, 1000));
         }
+        // eslint-disable-next-line require-atomic-updates
         universe.subscriptionUpdate.numberOfTasksBeforeUpdate =
           universe.subscriptionUpdate.data.length;
       });
@@ -178,7 +183,7 @@ describe("Data Sync", function() {
         }
       );
       const foundTitle = updatedContent.find(
-        task => task.title === subscriptionTestTaskTitle
+        (task: { title: string }) => task.title === subscriptionTestTaskTitle
       );
       foundTitle.should.not.equal(undefined);
     });
@@ -221,7 +226,8 @@ describe("Data Sync", function() {
             });
           } catch (error) {
             if (error.networkError && error.networkError.offline) {
-              const offlineError = error.networkError;
+              const offlineError = error.networkError as OfflineError;
+              // eslint-disable-next-line require-atomic-updates
               universe.offlineChangePromise = offlineError.watchOfflineChange();
               return testTitle;
             }

@@ -12,7 +12,7 @@ import { log } from "./log";
 export async function shadowClick(
   element: WebdriverIOAsync.Element,
   selector: string
-) {
+): Promise<void> {
   await device.execute(
     (element, selector) => {
       element.shadowRoot.querySelector(selector).click();
@@ -30,15 +30,18 @@ export async function shadowClick(
  */
 export async function retry<T>(
   closure: () => Promise<T>,
-  interval: number = 0
+  interval = 0
 ): Promise<T> {
-  let i = 0;
-  while (true) {
-    i++;
+  let i = 1;
+  let success = false;
+  let result;
+
+  while (!success) {
     try {
-      return await closure();
+      result = await closure();
     } catch (e) {
-      if (i <= RETRIES) {
+      if (i < RETRIES) {
+        i++;
         log.warning("retry after error: ", e);
         await sleep(interval);
         continue;
@@ -46,13 +49,15 @@ export async function retry<T>(
         throw e;
       }
     }
+    success = true;
   }
+  return result;
 }
 
 export async function interact(
   element: WebdriverIOAsync.Element,
   interaction: (element: WebdriverIOAsync.Element) => Promise<void>
-) {
+): Promise<void> {
   await element.waitForDisplayed();
   await element.scrollIntoView();
   await slowdown();

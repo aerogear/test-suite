@@ -1,3 +1,4 @@
+const { expect } = require("chai");
 const { login } = require("../utils/mdc");
 const openshiftUsername = process.env.OPENSHIFT_USERNAME;
 

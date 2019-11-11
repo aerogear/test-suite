@@ -7,23 +7,23 @@ const prefix = {
   error: chalk.red("E:")
 };
 
-function format(prefix: string, message: string) {
+function format(prefix: string, message: string): string {
   return `      ${prefix} ${message}`;
 }
 
-function info(message: string, ...optionalParams: any[]) {
+function info(message: string, ...optionalParams: unknown[]): void {
   console.log(format(prefix.info, message), ...optionalParams);
 }
 
-function success(message: string, ...optionalParams: any[]) {
+function success(message: string, ...optionalParams: unknown[]): void {
   console.log(format(prefix.success, message), ...optionalParams);
 }
 
-function warning(message: string, ...optionalParams: any[]) {
+function warning(message: string, ...optionalParams: unknown[]): void {
   console.warn(format(prefix.warning, message), ...optionalParams);
 }
 
-function error(message: string, ...optionalParams: any[]) {
+function error(message: string, ...optionalParams: unknown[]): void {
   console.warn(format(prefix.error, message), ...optionalParams);
 }
 

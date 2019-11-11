@@ -1,6 +1,7 @@
 const { login, createApp, openApp, deleteApp } = require("../utils/mdc");
 const appName1 = `test-app-${Date.now()}`,
   appName2 = `new-test-app-${Date.now()}`;
+
 describe("Test MDC apps", () => {
   before(async () => {
     await login();

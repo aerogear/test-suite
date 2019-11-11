@@ -1,3 +1,4 @@
+const { expect } = require("chai");
 const openshiftUsername = process.env.OPENSHIFT_USERNAME;
 const openshiftPassword = process.env.OPENSHIFT_PASSWORD;
 const { checkLinks, clickOnElements } = require("../utils/walkthrough");
@@ -5,8 +6,8 @@ const { checkLinks, clickOnElements } = require("../utils/walkthrough");
 describe("Test Mobile Walkthrough in Solution Explorer", () => {
   before(async () => {
     // Create anonymous browser window to keep tests isolated
-    context = await browser.createIncognitoBrowserContext();
-    page = await context.newPage();
+    global.context = await browser.createIncognitoBrowserContext();
+    page = await global.context.newPage();
     const openshiftConsoleUrl = global.openshiftConsoleUrl;
 
     await Promise.all([
@@ -57,6 +58,7 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     const newTarget = await browser.waitForTarget(
       target => target.url() === solutionExplorerUrl
     );
+    // eslint-disable-next-line require-atomic-updates
     page = await newTarget.page();
     await page.waitForSelector(
       "#mobile-walkthrough-walkthroughs-1-ionic-showcase article"
@@ -70,7 +72,7 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     await checkLinks(".integr8ly-c-card--content a");
   });
   it("should open the Task 01 and verify the links", async () => {
-    await page.click("#get-started-01");
+    page.click("#get-started-01");
     await checkLinks(".integr8ly-c-card--content a");
   });
   it("should open the Task 02 and verify the links", async () => {

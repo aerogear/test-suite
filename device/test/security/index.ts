@@ -1,7 +1,7 @@
 import chai = require("chai");
 chai.should();
 
-import { DeviceCheck } from "@aerogear/security";
+import { DeviceCheck, DeviceCheckResult } from "@aerogear/security";
 import { device } from "../../util/device";
 
 describe("Device Security", () => {
@@ -104,7 +104,7 @@ describe("Device Security", () => {
       class CustomDeviceCheck implements DeviceCheck {
         public name = "My Custom Check";
 
-        public async check() {
+        public async check(): Promise<DeviceCheckResult> {
           return {
             name: "My Custom Check",
             passed: true

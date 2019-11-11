@@ -10,8 +10,10 @@ const capabilities = {
   project: "AeroGear Test Suit",
   name: "Showcase",
   browserName: "",
+  // eslint-disable-next-line @typescript-eslint/camelcase
   os_version: MOBILE_PLATFORM === "ios" ? "13" : "9.0",
   device: MOBILE_PLATFORM === "ios" ? "iPhone XS" : "Google Pixel 3",
+  // eslint-disable-next-line @typescript-eslint/camelcase
   real_mobile: true,
   app: BROWSERSTACK_APP,
   autoWebview: true,
@@ -31,6 +33,6 @@ const options: WebdriverIO.RemoteOptions = {
 
 export let device: BrowserObject;
 
-export async function init() {
-  device = await remote(options as any);
+export async function init(): Promise<void> {
+  device = await remote(options);
 }

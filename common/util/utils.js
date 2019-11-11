@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 
 const waitFor = async (check, timeout, pause = 4000) => {
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve, reject) => {
     let timedout = false;
     let passed = false;
@@ -41,7 +42,7 @@ const getHeaderWithOauthProxyCookie = async (
   let cookie;
 
   try {
-    const browser = await puppeteer.launch({ slowMo: 50 });
+    browser = await puppeteer.launch({ slowMo: 50 });
     const page = await browser.newPage();
 
     await page.goto(serviceURL);

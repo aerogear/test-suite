@@ -5,12 +5,12 @@ import { Modules } from "../fixtures/modules";
 export class Device {
   public browser: BrowserObject;
 
-  public async init() {
+  public async init(): Promise<void> {
     this.browser = await remote(opts);
     this.browser.setAsyncTimeout(30000);
   }
 
-  public async close() {
+  public async close(): Promise<void> {
     await this.browser.deleteSession();
   }
 
@@ -18,7 +18,7 @@ export class Device {
    * This is a wrap around the webdriver.io executeAsync() method
    * thats had few handy helpers and typescript support.
    */
-  public async execute<U extends {}, A extends any[], R>(
+  public async execute<U extends {}, A extends unknown[], R>(
     script: (modules: Modules, universe: U, ...args: A) => Promise<R>,
     ...args: A
   ): Promise<R> {
@@ -44,7 +44,9 @@ export class Device {
       // Very handy because it allows to print anything
       // using console.log() and it will be collected and reported back.
       const console = (await this.browser.getLogs("browser"))
-        .map((log: any) => `        ${log.level}: ${log.message}`)
+        .map((log: { level: string; message: string }) => {
+          return `        ${log.level}: ${log.message}`;
+        })
         .join("\n");
 
       throw new Error(`${error}\n\n      Console:\n${console}\n`);

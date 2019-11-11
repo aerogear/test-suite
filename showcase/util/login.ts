@@ -10,7 +10,7 @@ import { device } from "./device";
 const MAIN_WINDOW_URL = /(http|ionic):\/\/localhost\/?/;
 const BLANK_WINDOW_URL = "about:blank";
 
-async function switchWindow() {
+async function switchWindow(): Promise<void> {
   const handles = await device.getWindowHandles();
   if (handles.length === 1) {
     await device.switchToWindow(handles[0]);
@@ -30,12 +30,12 @@ async function isMainWindow(): Promise<boolean> {
   return MAIN_WINDOW_URL.test(await device.getUrl());
 }
 
-async function switchToMainWindow() {
+async function switchToMainWindow(): Promise<void> {
   await switchWindow();
   await device.waitUntil(isMainWindow);
 }
 
-async function isLoggedIn() {
+async function isLoggedIn(): Promise<boolean> {
   switch (MOBILE_PLATFORM) {
     case MobilePlatform.ANDROID:
       return (await device.getUrl()) === BLANK_WINDOW_URL;
@@ -44,11 +44,11 @@ async function isLoggedIn() {
   }
 }
 
-async function waitForLoggedIn() {
+async function waitForLoggedIn(): Promise<void> {
   await device.waitUntil(isLoggedIn);
 }
 
-export async function login() {
+export async function login(): Promise<void> {
   // in iOS if there is only one windows it means we are already logged in
   if ((await device.getWindowHandles()).length === 1) {
     return;
