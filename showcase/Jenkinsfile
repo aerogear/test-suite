@@ -115,6 +115,7 @@ pipeline {
             MOBILE_PLATFORM = 'android'
             BROWSERSTACK_APP = readFile 'showcase/bs-app-android.txt'
             JUNIT_REPORT_PATH = 'report-android.xml'
+            JUNIT_REPORT_NAME = 'Showcase Android Tests'
           }
           steps {
             dir('showcase') {
@@ -127,6 +128,7 @@ pipeline {
             MOBILE_PLATFORM = 'ios'
             BROWSERSTACK_APP = readFile 'showcase/bs-app-ios.txt'
             JUNIT_REPORT_PATH = 'report-ios.xml'
+            JUNIT_REPORT_NAME = 'Showcase iOS Tests'
           }
           steps {
             dir('showcase') {

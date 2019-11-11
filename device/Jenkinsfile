@@ -98,6 +98,7 @@ pipeline {
           environment {
             MOBILE_PLATFORM = 'android'
             JUNIT_REPORT_PATH = 'report-android.xml'
+            JUNIT_REPORT_NAME = 'Device Android Tests'
           }
           steps {
             dir('device') {
@@ -110,6 +111,7 @@ pipeline {
           environment { 
             MOBILE_PLATFORM = 'ios'
             JUNIT_REPORT_PATH = 'report-ios.xml'
+            JUNIT_REPORT_NAME = 'Device iOS Tests'
           }
           steps {
             dir('device') {
