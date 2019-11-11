@@ -11,6 +11,10 @@ def runIntegrationTests() {
 
 pipeline {
   agent none
+  options {
+    timestamps()
+    ansiColor('gnome-terminal')
+  }
   environment {
     BROWSERSTACK_USER = credentials('browserstack-user')
     BROWSERSTACK_KEY = credentials('browserstack-key')

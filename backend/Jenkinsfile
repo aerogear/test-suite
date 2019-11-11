@@ -10,6 +10,10 @@ pipeline {
       label 'psi_rhel8'
     }
   }
+  options {
+    timestamps()
+    ansiColor('gnome-terminal')
+  }
   environment {
     FIREBASE_SERVER_KEY = credentials('firebase-server-key')
     IOS_CERTIFICATE = credentials('ios-push-certificate')
