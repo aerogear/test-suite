@@ -1,24 +1,31 @@
 const puppeteer = require("puppeteer");
 
-const waitFor = async (check, timeout, pause = 4000) => {
-  return new Promise(async (resolve, reject) => {
-    let timedout = false;
-    let passed = false;
+/**
+ * Wait until the condition became true 
+ * 
+ * @param {() => Promise<boolean>} condition Condition to evaluate
+ * @param {number} timeout Amount of time in ms before going in timeout
+ * @param {boolean} immediately If true run the condition imminently on the first time
+ *                                else wait for the pause
+ * @param {number} pause Amount of time in ms to wait before executing the condition again
+ * @returns {Promise<void>}
+ */
+const waitFor = async (condition, timeout, immediately = true, pause = 4000) => {
+  const start = Date.now();
 
-    const t = setTimeout(() => {
-      timedout = true;
-      reject(new Error("Timed out"));
-    }, timeout);
-
-    passed = await check();
-    while (!timedout && !passed) {
-      await new Promise(resolve => setTimeout(resolve, pause));
-      passed = await check();
+  if (immediately) {
+    if (await condition()) {
+      return;
     }
+  }
 
-    clearTimeout(t);
-    resolve();
-  });
+  while (Date.now() < start + timeout) {
+    await new Promise(r => setTimeout(r, pause));
+
+    if (await condition()) {
+      return;
+    }
+  }
 };
 
 const randomString = () =>

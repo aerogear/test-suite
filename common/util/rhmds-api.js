@@ -197,6 +197,7 @@ const deployShowcaseServer = async namespace => {
       return replicasReady.includes("3");
     },
     200000,
+    false,
     10000
   );
 };

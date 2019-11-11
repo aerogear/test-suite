@@ -14,6 +14,7 @@ async function waitForPodsToBeReady(namespace) {
       return !podsOutput.includes("false");
     },
     200000,
+    false,
     10000
   );
 }
@@ -27,6 +28,7 @@ async function waitForApp(url, headers, statusCode) {
       return res ? res.status === statusCode : false;
     },
     30000,
+    false,
     1000
   );
 }

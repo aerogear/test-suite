@@ -4,30 +4,6 @@ import path from "path";
 import tar from "tar";
 import { execFile } from "child_process";
 
-export async function waitUntil(
-  condition: () => Promise<boolean>,
-  immediately = true,
-  timeout = 60 * 1000,
-  pause = 4 * 1000
-): Promise<void> {
-  const start = Date.now();
-
-  if (immediately) {
-    if (await condition()) {
-      return;
-    }
-  }
-
-  while (Date.now() < start + timeout) {
-    await new Promise(r => setTimeout(r, pause));
-
-    if (await condition()) {
-      return;
-    }
-  }
-
-  throw new Error("Timed out");
-}
 export function decode(encoded: string): string {
   return Buffer.from(encoded, "base64").toString("utf-8");
 }

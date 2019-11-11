@@ -20,7 +20,7 @@ import {
   isResourceList,
   KubeCustomApi
 } from "./kube-custom-api";
-import { waitUntil } from "./utils";
+import { waitFor } from "../../common/util/utils";
 
 type ApiConstructor<T extends ApiType> = new (server: string) => T;
 
@@ -181,7 +181,7 @@ export class KubeHelper {
     await client.deleteCollection(namespace);
 
     // wait and force
-    await waitUntil(
+    await waitFor(
       async () => {
         const list = await client.list(namespace);
         for (const r of list.items) {
@@ -193,8 +193,8 @@ export class KubeHelper {
         }
         return list.items.length === 0;
       },
-      false,
-      timeout
+      timeout,
+      false
     );
   }
 
@@ -215,11 +215,11 @@ export class KubeHelper {
    */
   public async waitForNamespaceToBeDeleted(
     namespace: string,
-    timeout = 15 * 60 * 1000
+    timeout = 5 * 60 * 1000
   ): Promise<void> {
     const v1 = this.config.makeApiClient(CoreV1Api);
 
-    await waitUntil(
+    await waitFor(
       async () => {
         try {
           await v1.readNamespace(namespace);
@@ -232,8 +232,8 @@ export class KubeHelper {
         }
         return false;
       },
-      false,
-      timeout
+      timeout,
+      false
     );
   }
 
@@ -300,13 +300,13 @@ export class KubeHelper {
     timeout = 15 * 60 * 1000
   ): Promise<void> {
     const batchV1 = this.config.makeApiClient(BatchV1Api);
-    await waitUntil(
+    await waitFor(
       async () => {
         const r = await batchV1.readNamespacedJob(name, namespace);
         return r.body.status.completionTime !== undefined;
       },
-      false,
-      timeout
+      timeout,
+      false
     );
   }
 
@@ -341,9 +341,10 @@ export class KubeHelper {
    */
   public async waitForDeployment(
     name: string,
-    namespace: string
+    namespace: string,
+    timeout = 5 * 60 * 1000
   ): Promise<void> {
-    await waitUntil(async () => {
+    await waitFor(async () => {
       try {
         await this.readDeployment(name, namespace);
       } catch (e) {
@@ -354,7 +355,7 @@ export class KubeHelper {
         }
       }
       return true;
-    });
+    }, timeout);
   }
 
   /**
@@ -388,16 +389,17 @@ export class KubeHelper {
    */
   public async waitForDeploymentToReconcile(
     name: string,
-    namespace: string
+    namespace: string,
+    timeout = 5 * 60 * 1000
   ): Promise<void> {
-    await waitUntil(async () => {
+    await waitFor(async () => {
       const d = await this.readDeployment(name, namespace);
       if (d.spec.replicas === 0) {
         return d.status.readyReplicas === undefined;
       } else {
         return d.status.readyReplicas === d.spec.replicas;
       }
-    });
+    }, timeout);
   }
 
   /**
@@ -420,10 +422,11 @@ export class KubeHelper {
    */
   public async waitForDeploymentConfig(
     name: string,
-    namespace: string
+    namespace: string,
+    timeout = 5 * 60 * 1000
   ): Promise<void> {
     const client = this.customApi("apps.openshift.io/v1", "DeploymentConfig");
-    await waitUntil(async () => {
+    await waitFor(async () => {
       try {
         await client.read(name, namespace);
       } catch (e) {
@@ -434,7 +437,7 @@ export class KubeHelper {
         }
       }
       return true;
-    });
+    }, timeout);
   }
 
   /**
@@ -459,17 +462,18 @@ export class KubeHelper {
    */
   public async waitForDeploymentConfigToReconcile(
     name: string,
-    namespace: string
+    namespace: string,
+    timeout = 5 * 60 * 1000
   ): Promise<void> {
     const client = this.customApi("apps.openshift.io/v1", "DeploymentConfig");
-    await waitUntil(async () => {
+    await waitFor(async () => {
       const d = await client.read(name, namespace);
       if (d.spec.replicas === 0) {
         return d.status.readyReplicas === undefined;
       } else {
         return d.status.readyReplicas === d.spec.replicas;
       }
-    });
+    }, timeout);
   }
 
   /**

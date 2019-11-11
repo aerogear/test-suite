@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["es2019"],
+    "allowJs": true,
     "inlineSourceMap": true,
     "esModuleInterop": true
   }
