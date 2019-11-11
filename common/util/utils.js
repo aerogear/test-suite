@@ -1,8 +1,8 @@
 const puppeteer = require("puppeteer");
 
 /**
- * Wait until the condition became true 
- * 
+ * Wait until the condition became true
+ *
  * @param {() => Promise<boolean>} condition Condition to evaluate
  * @param {number} timeout Amount of time in ms before going in timeout
  * @param {boolean} immediately If true run the condition imminently on the first time
@@ -10,7 +10,12 @@ const puppeteer = require("puppeteer");
  * @param {number} pause Amount of time in ms to wait before executing the condition again
  * @returns {Promise<void>}
  */
-const waitFor = async (condition, timeout, immediately = true, pause = 4000) => {
+const waitFor = async (
+  condition,
+  timeout,
+  immediately = true,
+  pause = 4000
+) => {
   const start = Date.now();
 
   if (immediately) {

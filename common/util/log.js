@@ -1,4 +1,4 @@
-const chalk = require('chalk');
+const chalk = require("chalk");
 
 const prefix = {
   info: chalk.blue("I:"),
@@ -8,8 +8,8 @@ const prefix = {
 };
 
 /**
- * @param {string} prefix 
- * @param {string} message 
+ * @param {string} prefix
+ * @param {string} message
  * @returns {string}
  */
 function format(prefix, message) {
@@ -17,37 +17,37 @@ function format(prefix, message) {
 }
 
 /**
- * @param {string} message 
- * @param  {...unknown} optionalParams 
+ * @param {string} message
+ * @param  {...unknown} optionalParams
  */
 function info(message, ...optionalParams) {
   console.log(format(prefix.info, message), ...optionalParams);
 }
 
 /**
- * @param {string} message 
- * @param  {...unknown} optionalParams 
+ * @param {string} message
+ * @param  {...unknown} optionalParams
  */
 function success(message, ...optionalParams) {
   console.log(format(prefix.success, message), ...optionalParams);
 }
 
 /**
- * @param {string} message 
- * @param  {...unknown} optionalParams 
+ * @param {string} message
+ * @param  {...unknown} optionalParams
  */
 function warning(message, ...optionalParams) {
   console.warn(format(prefix.warning, message), ...optionalParams);
 }
 
 /**
- * @param {string} message 
- * @param  {...unknown} optionalParams 
+ * @param {string} message
+ * @param  {...unknown} optionalParams
  */
 function error(message, ...optionalParams) {
   console.warn(format(prefix.error, message), ...optionalParams);
 }
 
 module.exports = {
-  log: { info, success, warning, error, }
+  log: { info, success, warning, error }
 };
