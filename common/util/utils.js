@@ -1,11 +1,11 @@
 const puppeteer = require("puppeteer");
 
 const waitFor = async (check, timeout, pause = 4000) => {
-  const start = Date.now()
+  const start = Date.now();
 
   while (true) {
     if (start + timeout < Date.now()) {
-      throw new Error("Timed out")
+      throw new Error("Timed out");
     }
 
     if (await check()) {
