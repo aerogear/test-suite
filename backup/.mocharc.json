@@ -1,4 +1,4 @@
 {
-  "require": ["source-map-support/register", "ts-node/register"],
+  "require": ["ts-node/register"],
   "timeout": "60000"
 }

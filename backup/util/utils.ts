@@ -3,6 +3,7 @@ import zlib from "zlib";
 import path from "path";
 import tar from "tar";
 import { execFile } from "child_process";
+import { Writable } from "stream";
 
 export function decode(encoded: string): string {
   return Buffer.from(encoded, "base64").toString("utf-8");
@@ -24,6 +25,36 @@ export function gunzipAll(dir: string): void {
 export async function untar(file: string): Promise<void> {
   const p = path.parse(file);
   await tar.extract({ file: file, cwd: p.dir });
+}
+
+/**
+ * Create a Writable stream that collect all data into a
+ * string and return them as a Promise once the stream end
+ */
+export function writable(): [Writable, Promise<string>] {
+  const data: string[] = [];
+  let stream: Writable;
+
+  const promise = new Promise<string>(resolve => {
+    // create a stream that collect everything in
+    // the data list and resolve the promise once the
+    // stream end
+    stream = new Writable({
+      write: (chunk, encoding, callback): void => {
+        if (Buffer.isBuffer(chunk)) {
+          data.push(chunk.toString());
+          callback();
+        } else {
+          callback(new Error(`can not process encoding: ${encoding}`));
+        }
+      },
+      final: (callback): void => {
+        resolve(data.join(""));
+        callback();
+      }
+    });
+  });
+  return [stream, promise];
 }
 
 /**

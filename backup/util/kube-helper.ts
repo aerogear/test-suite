@@ -11,22 +11,44 @@ import {
   AppsV1Api,
   V1Deployment,
   V1Pod,
-  Exec
+  Exec,
+  V1Namespace,
+  V1beta1CronJob
 } from "@kubernetes/client-node";
-import { Writable, Readable } from "stream";
+import { Readable } from "stream";
 import {
   Resource,
   resourceToString,
   isResourceList,
-  KubeCustomApi
+  KubeCustomApi,
+  RequestError
 } from "./kube-custom-api";
 import { waitFor } from "../../common/util/utils";
+import { trace } from "./error";
+import { writable } from "./utils";
 
 type ApiConstructor<T extends ApiType> = new (server: string) => T;
 
 export interface GenericResource extends Resource {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
+}
+
+/**
+ * Convert kubernetes error response to a classic javascript error with stacktrace
+ */
+export async function map<T>(call: () => Promise<{ body: T }>): Promise<T> {
+  return await trace(async () => {
+    try {
+      return (await call()).body;
+    } catch (e) {
+      if (e.response === undefined) {
+        throw e;
+      } else {
+        throw new RequestError(e.response);
+      }
+    }
+  });
 }
 
 export class KubeHelper {
@@ -90,22 +112,12 @@ export class KubeHelper {
   ): Promise<string> {
     const l = new Log(this.config);
     return await new Promise((resolve, reject) => {
-      const logs: string[] = [];
-      const stream = new Writable({
-        write: (chunk, encoding, callback): void => {
-          if (Buffer.isBuffer(chunk)) {
-            logs.push(chunk.toString());
-            callback();
-          } else {
-            callback(new Error(`can not process encoding: ${encoding}`));
-          }
-        }
-      });
+      const [stream, logs] = writable();
       l.log(namespace, pod, container, stream, e => {
         if (e) {
           reject(e);
         } else {
-          resolve(logs.join());
+          logs.then(v => resolve(v));
         }
       });
     });
@@ -123,18 +135,7 @@ export class KubeHelper {
   ): Promise<string> {
     const l = new Exec(this.config);
     return await new Promise((resolve, reject) => {
-      const output: string[] = [];
-      const stream = new Writable({
-        write: (chunk, encoding, callback): void => {
-          if (Buffer.isBuffer(chunk)) {
-            output.push(chunk.toString());
-            callback();
-          } else {
-            callback(new Error(`can not process encoding: ${encoding}`));
-          }
-        }
-      });
-
+      const [stream, output] = writable();
       l.exec(
         namespace,
         pod,
@@ -146,17 +147,19 @@ export class KubeHelper {
         false,
         s => {
           if (s.status === "Failure") {
-            reject(new Error(`error: ${s.message}\n${output.join("")}`));
+            output.then(v => reject(new Error(`error: ${s.message}\n${v}`)));
           } else if (s.status === "Success") {
-            resolve(output.join(""));
+            output.then(v => resolve(v));
           }
           reject(new Error(`unknown status: '${s.status}'`));
         }
       ).then(
         socket => {
-          socket.onclose = (): void => resolve(output.join(""));
+          socket.onclose = (): void => {
+            output.then(v => resolve(v));
+          };
           socket.onerror = (e): void => {
-            reject(new Error(`error: ${e}\n${output.join("")}`));
+            output.then(v => reject(new Error(`error: ${e}\n${v}`)));
           };
         },
         e => reject(e)
@@ -202,12 +205,25 @@ export class KubeHelper {
   //
 
   /**
+   * oc get namespace NAMESPACE
+   */
+  public async readNamespace(namespace: string): Promise<V1Namespace> {
+    return await map(() => this.api(CoreV1Api).readNamespace(namespace));
+  }
+
+  /**
+   * oc get namespace
+   */
+  public async listNamespace(): Promise<V1Namespace[]> {
+    const r = await map(() => this.api(CoreV1Api).listNamespace());
+    return r.items;
+  }
+
+  /**
    * oc delete namespace NAMESPACE
    */
   public async deleteNamespace(namespace: string): Promise<V1Status> {
-    const v1 = this.config.makeApiClient(CoreV1Api);
-    const r = await v1.deleteNamespace(namespace);
-    return r.body;
+    return await map(() => this.api(CoreV1Api).deleteNamespace(namespace));
   }
 
   /**
@@ -217,14 +233,12 @@ export class KubeHelper {
     namespace: string,
     timeout = 5 * 60 * 1000
   ): Promise<void> {
-    const v1 = this.config.makeApiClient(CoreV1Api);
-
     await waitFor(
       async () => {
         try {
-          await v1.readNamespace(namespace);
+          await this.readNamespace(namespace);
         } catch (e) {
-          if (e.response.body.code === 404) {
+          if (e instanceof RequestError && e.response.statusCode === 404) {
             return true;
           } else {
             throw e;
@@ -255,19 +269,51 @@ export class KubeHelper {
     namespace: string,
     labelSelector?: string
   ): Promise<V1Pod[]> {
-    const r = await this.api(CoreV1Api).listNamespacedPod(
-      namespace,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      labelSelector
+    const r = await map(() =>
+      this.api(CoreV1Api).listNamespacedPod(
+        namespace,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        labelSelector
+      )
     );
-    return r.body.items;
+    return r.items;
+  }
+
+  // CronJob
+  //
+
+  /**
+   * oc get cronjob NAME -n NAMESPACE
+   */
+  public async readCronJob(
+    name: string,
+    namespace: string
+  ): Promise<V1beta1CronJob> {
+    return await map(() =>
+      this.api(BatchV1beta1Api).readNamespacedCronJob(name, namespace)
+    );
   }
 
   // Job
   //
+
+  public async readJob(name: string, namespace: string): Promise<V1Job> {
+    return await map(() =>
+      this.api(BatchV1Api).readNamespacedJob(name, namespace)
+    );
+  }
+
+  /**
+   * oc crate job -f BODY -n NAMESPACE
+   */
+  public async createJob(namespace: string, body: V1Job): Promise<V1Job> {
+    return await map(() =>
+      this.api(BatchV1Api).createNamespacedJob(namespace, body)
+    );
+  }
 
   /**
    * oc create job NAME --from=cronjob/FROM -n NAMESPACE
@@ -278,17 +324,13 @@ export class KubeHelper {
     namespace: string
   ): Promise<V1Job> {
     // retrieve the cronjob
-    const batchV1Beta1 = this.config.makeApiClient(BatchV1beta1Api);
-    const cronJob = await batchV1Beta1.readNamespacedCronJob(from, namespace);
+    const cronJob = await this.readCronJob(from, namespace);
 
     // create a job with the same spec as the cronjob
-    const batchV1 = this.config.makeApiClient(BatchV1Api);
-    const job = await batchV1.createNamespacedJob(namespace, {
+    return await this.createJob(namespace, {
       metadata: { name },
-      spec: cronJob.body.spec.jobTemplate.spec
+      spec: cronJob.spec.jobTemplate.spec
     });
-
-    return job.body;
   }
 
   /**
@@ -299,11 +341,10 @@ export class KubeHelper {
     namespace: string,
     timeout = 15 * 60 * 1000
   ): Promise<void> {
-    const batchV1 = this.config.makeApiClient(BatchV1Api);
     await waitFor(
       async () => {
-        const r = await batchV1.readNamespacedJob(name, namespace);
-        return r.body.status.completionTime !== undefined;
+        const job = await this.readJob(name, namespace);
+        return job.status.completionTime !== undefined;
       },
       timeout,
       false
@@ -317,25 +358,45 @@ export class KubeHelper {
    * oc get secret NAME -n NAMESPACE
    */
   public async readSecret(name: string, namespace: string): Promise<V1Secret> {
-    const v1 = this.config.makeApiClient(CoreV1Api);
-    const r = await v1.readNamespacedSecret(name, namespace);
-    return r.body;
-  }
-
-  public async readDeployment(
-    name: string,
-    namespace: string
-  ): Promise<V1Deployment> {
-    const r = await this.api(AppsV1Api).readNamespacedDeployment(
-      name,
-      namespace
+    return await map(() =>
+      this.api(CoreV1Api).readNamespacedSecret(name, namespace)
     );
-    return r.body;
   }
 
   // Deployment
   //
 
+  public async readDeployment(
+    name: string,
+    namespace: string
+  ): Promise<V1Deployment> {
+    return await map(() =>
+      this.api(AppsV1Api).readNamespacedDeployment(name, namespace)
+    );
+  }
+
+  public async patchDeployment(
+    name: string,
+    namespace: string,
+    body: object
+  ): Promise<V1Deployment> {
+    return await map(() =>
+      this.api(AppsV1Api).patchNamespacedDeployment(
+        name,
+        namespace,
+        body,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          headers: {
+            "Content-Type": "application/merge-patch+json"
+          }
+        }
+      )
+    );
+  }
   /**
    * Wait until the deployment exists, it doesn't mean the deployment is ready
    */
@@ -348,7 +409,7 @@ export class KubeHelper {
       try {
         await this.readDeployment(name, namespace);
       } catch (e) {
-        if (e.response.body.code === 404) {
+        if (e instanceof RequestError && e.response.statusCode === 404) {
           return false;
         } else {
           throw e;
@@ -365,23 +426,10 @@ export class KubeHelper {
     name: string,
     namespace: string,
     replicas: number
-  ): Promise<void> {
-    await this.api(AppsV1Api).patchNamespacedDeployment(
-      name,
-      namespace,
-      {
-        spec: { replicas: replicas }
-      },
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      {
-        headers: {
-          "Content-Type": "application/merge-patch+json"
-        }
-      }
-    );
+  ): Promise<V1Deployment> {
+    return await this.patchDeployment(name, namespace, {
+      spec: { replicas: replicas }
+    });
   }
 
   /**
@@ -417,6 +465,25 @@ export class KubeHelper {
   // DeploymentConfig
   //
 
+  public deploymentConfigApi(): KubeCustomApi<GenericResource> {
+    return this.customApi("apps.openshift.io/v1", "DeploymentConfig");
+  }
+
+  public async readDeploymentConfig(
+    name: string,
+    namespace: string
+  ): Promise<GenericResource> {
+    return this.deploymentConfigApi().read(name, namespace);
+  }
+
+  public async pathDeploymentConfig(
+    name: string,
+    namespace: string,
+    body: object
+  ): Promise<GenericResource> {
+    return this.deploymentConfigApi().patch(name, body, namespace);
+  }
+
   /**
    * Wait for the openshift deploymentconfig to exists
    */
@@ -425,12 +492,11 @@ export class KubeHelper {
     namespace: string,
     timeout = 5 * 60 * 1000
   ): Promise<void> {
-    const client = this.customApi("apps.openshift.io/v1", "DeploymentConfig");
     await waitFor(async () => {
       try {
-        await client.read(name, namespace);
+        await this.readDeploymentConfig(name, namespace);
       } catch (e) {
-        if (JSON.parse(e.response.body).code === 404) {
+        if (e instanceof RequestError && e.response.statusCode === 404) {
           return false;
         } else {
           throw e;
@@ -448,13 +514,9 @@ export class KubeHelper {
     namespace: string,
     replicas: number
   ): Promise<void> {
-    await this.customApi("apps.openshift.io/v1", "DeploymentConfig").patch(
-      name,
-      {
-        spec: { replicas: replicas }
-      },
-      namespace
-    );
+    await this.pathDeploymentConfig(name, namespace, {
+      spec: { replicas: replicas }
+    });
   }
 
   /**
@@ -465,9 +527,8 @@ export class KubeHelper {
     namespace: string,
     timeout = 5 * 60 * 1000
   ): Promise<void> {
-    const client = this.customApi("apps.openshift.io/v1", "DeploymentConfig");
     await waitFor(async () => {
-      const d = await client.read(name, namespace);
+      const d = await this.readDeploymentConfig(name, namespace);
       if (d.spec.replicas === 0) {
         return d.status.readyReplicas === undefined;
       } else {

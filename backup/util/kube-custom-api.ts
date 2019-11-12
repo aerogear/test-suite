@@ -1,7 +1,41 @@
 import { V1ObjectMeta, V1ListMeta, KubeConfig } from "@kubernetes/client-node";
-import request, { Options } from "request-promise";
 import { ParsedUrlQueryInput } from "querystring";
 import querystring from "querystring";
+import { trace } from "./error";
+import request, { Options, Response } from "request";
+
+export class RequestError extends Error {
+  public response: Response;
+
+  constructor(response: Response) {
+    super(
+      `request failed with error: '${response.statusCode} - ${response.statusMessage}'\n` +
+        JSON.stringify(response.toJSON())
+    );
+
+    this.response = response;
+  }
+}
+
+function localRequest<T>(options: Options): Promise<T> {
+  return new Promise((resolve, reject) => {
+    request(options, (error: unknown, response: Response, body: string) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (
+          response.statusCode &&
+          response.statusCode >= 200 &&
+          response.statusCode <= 299
+        ) {
+          resolve(JSON.parse(body));
+        } else {
+          reject(new RequestError(response));
+        }
+      }
+    });
+  });
+}
 
 function createEndpoint(
   apiVersion: string,
@@ -100,7 +134,11 @@ export class KubeCustomApi<T extends Resource> {
     });
   }
 
-  public async patch(name: string, body: T, namespace?: string): Promise<T> {
+  public async patch(
+    name: string,
+    body: object,
+    namespace?: string
+  ): Promise<T> {
     return await this.request({
       method: "PATCH",
       headers: {
@@ -142,14 +180,6 @@ export class KubeCustomApi<T extends Resource> {
   private async request<U>(options: Options): Promise<U> {
     options.baseUrl = this.config.getCurrentCluster().server;
     this.config.applyToRequest(options);
-    try {
-      const body = await request(options);
-      return JSON.parse(body);
-    } catch (e) {
-      if (e.response) {
-        e.response.body = JSON.parse(e.response.body);
-        throw e;
-      }
-    }
+    return await trace(() => localRequest(options));
   }
 }
