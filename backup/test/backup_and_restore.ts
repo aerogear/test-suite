@@ -15,9 +15,14 @@ const MSS_NAMESPACE = "mobile-security-service";
 
 describe("Backup & Restore", function() {
   this.timeout(0);
+  this.bail(true);
 
   let kh: KubeHelper;
   let sh: S3Helper;
+
+  let mdcNamespace: string;
+  let upsNamespace: string;
+  let mssNamespace: string;
 
   before(async () => {
     // connect to the openshift api
@@ -34,6 +39,14 @@ describe("Backup & Restore", function() {
       decode(credentials.data.AWS_ACCESS_KEY_ID),
       decode(credentials.data.AWS_SECRET_ACCESS_KEY)
     );
+
+    // resolve the correct namespace
+    // because it change from RHPDS to OSD
+    // TODO: find a global solution to this problem
+    const namespaces = (await kh.listNamespace()).map(n => n.metadata.name);
+    mdcNamespace = namespaces.find(n => n.includes(MDC_NAMESPACE));
+    upsNamespace = namespaces.find(n => n.includes(UPS_NAMESPACE));
+    mssNamespace = namespaces.find(n => n.includes(MSS_NAMESPACE));
   });
 
   let resourceBackup: Backup;
@@ -46,8 +59,8 @@ describe("Backup & Restore", function() {
     // run in parallel
     const [resourceBackups, upsBackups, mssBackups] = await Promise.all([
       bh.backup("resources-backup", BACKUPS_NAMESPACE),
-      bh.backup("ups-daily-at-midnight", UPS_NAMESPACE),
-      bh.backup("mobile-security-service-backup", MSS_NAMESPACE)
+      bh.backup("ups-daily-at-midnight", upsNamespace),
+      bh.backup("mobile-security-service-backup", mssNamespace)
     ]);
 
     resourceBackup = resourceBackups[0];
@@ -81,20 +94,20 @@ describe("Backup & Restore", function() {
         "MobileSecurityServiceApp"
       ]
     ]) {
-      await kh.forceDeleteCollectionAndWait(apiVersion, kind, MDC_NAMESPACE);
+      await kh.forceDeleteCollectionAndWait(apiVersion, kind, mdcNamespace);
     }
   });
 
   it("should remove mss namespaces", async () => {
-    await kh.deleteNamespaceAndWait(MSS_NAMESPACE);
+    await kh.deleteNamespaceAndWait(mssNamespace);
   });
 
   it("should remove ups namespaces", async () => {
-    await kh.deleteNamespaceAndWait(UPS_NAMESPACE);
+    await kh.deleteNamespaceAndWait(upsNamespace);
   });
 
   it("should remove mdc namespaces", async () => {
-    await kh.deleteNamespaceAndWait(MDC_NAMESPACE);
+    await kh.deleteNamespaceAndWait(mdcNamespace);
   });
 
   let tmpdir: string;
@@ -128,7 +141,7 @@ describe("Backup & Restore", function() {
     await restoreNamespace(
       kh,
       tmpdir,
-      MSS_NAMESPACE,
+      mssNamespace,
       ["services", "routes", "deployments"],
       ["addressspaceschemas"]
     );
@@ -137,39 +150,35 @@ describe("Backup & Restore", function() {
 
   it("should restore mss database", async () => {
     // wait for the database to be ready
-    await kh.waitForDeployment("mobile-security-service-db", MSS_NAMESPACE);
+    await kh.waitForDeployment("mobile-security-service-db", mssNamespace);
     await kh.waitForDeploymentToReconcile(
       "mobile-security-service-db",
-      MSS_NAMESPACE
+      mssNamespace
     );
 
     // scale the operator down
     await kh.scaleDeploymentAndWait(
       "mobile-security-service-operator",
-      MSS_NAMESPACE,
+      mssNamespace,
       0
     );
 
     // scale mss down
-    await kh.scaleDeploymentAndWait(
-      "mobile-security-service",
-      MSS_NAMESPACE,
-      0
-    );
+    await kh.scaleDeploymentAndWait("mobile-security-service", mssNamespace, 0);
 
     // restore mss database
     const databasePod = (await kh.listPod(
-      MSS_NAMESPACE,
+      mssNamespace,
       "name=mobilesecurityservicedb"
     ))[0];
 
     // find the mss dump
-    const re = /^mobile-security-service.mobile_security_service-\d{2}_\d{2}_\d{2}\.pg_dump$/;
+    const re = /\.mobile_security_service-\d{2}_\d{2}_\d{2}\.pg_dump$/;
     const file = fs.readdirSync(tmpdir).find(f => re.test(f));
 
     // restore the dump
     await kh.exec(
-      MSS_NAMESPACE,
+      mssNamespace,
       databasePod.metadata.name,
       databasePod.spec.containers[0].name,
       ["bash", "-lc", "psql mobile_security_service"],
@@ -178,16 +187,12 @@ describe("Backup & Restore", function() {
     log.info("mss db restored");
 
     // scale mss up
-    await kh.scaleDeploymentAndWait(
-      "mobile-security-service",
-      MSS_NAMESPACE,
-      1
-    );
+    await kh.scaleDeploymentAndWait("mobile-security-service", mssNamespace, 1);
 
     // scale the operator up
     await kh.scaleDeploymentAndWait(
       "mobile-security-service-operator",
-      MSS_NAMESPACE,
+      mssNamespace,
       1
     );
   });
@@ -197,7 +202,7 @@ describe("Backup & Restore", function() {
     await restoreNamespace(
       kh,
       tmpdir,
-      UPS_NAMESPACE,
+      upsNamespace,
       ["services", "routes", "deploymentconfigs"],
       ["addressspaceschemas"]
     );
@@ -206,31 +211,31 @@ describe("Backup & Restore", function() {
 
   it("should restore ups database", async () => {
     // wait for the database to be ready
-    await kh.waitForDeploymentConfig("unifiedpush-postgresql", UPS_NAMESPACE);
+    await kh.waitForDeploymentConfig("unifiedpush-postgresql", upsNamespace);
     await kh.waitForDeploymentConfigToReconcile(
       "unifiedpush-postgresql",
-      UPS_NAMESPACE
+      upsNamespace
     );
 
     // scale the operator down
-    await kh.scaleDeployment("unifiedpush-operator", UPS_NAMESPACE, 0);
+    await kh.scaleDeployment("unifiedpush-operator", upsNamespace, 0);
 
     // scale mss down
-    await kh.scaleDeploymentConfigAndWait("unifiedpush", UPS_NAMESPACE, 0);
+    await kh.scaleDeploymentConfigAndWait("unifiedpush", upsNamespace, 0);
 
     // restore mss database
     const databasePod = (await kh.listPod(
-      UPS_NAMESPACE,
+      upsNamespace,
       "deploymentconfig=unifiedpush-postgresql"
     ))[0];
 
     // find the mss dump
-    const re = /^mobile-unifiedpush.unifiedpush-\d{2}_\d{2}_\d{2}\.pg_dump$/;
+    const re = /\.unifiedpush-\d{2}_\d{2}_\d{2}\.pg_dump$/;
     const file = fs.readdirSync(tmpdir).find(f => re.test(f));
 
     // restore the dump
     await kh.exec(
-      UPS_NAMESPACE,
+      upsNamespace,
       databasePod.metadata.name,
       databasePod.spec.containers[0].name,
       ["bash", "-lc", "psql unifiedpush"],
@@ -239,17 +244,17 @@ describe("Backup & Restore", function() {
     log.info("ups db restored");
 
     // scale mss up
-    await kh.scaleDeploymentConfigAndWait("unifiedpush", UPS_NAMESPACE, 1);
+    await kh.scaleDeploymentConfigAndWait("unifiedpush", upsNamespace, 1);
 
     // scale the operator up
-    await kh.scaleDeploymentAndWait("unifiedpush-operator", UPS_NAMESPACE, 1);
+    await kh.scaleDeploymentAndWait("unifiedpush-operator", upsNamespace, 1);
   });
 
   it("should restore mdc namespace", async () => {
     await restoreNamespace(
       kh,
       tmpdir,
-      MDC_NAMESPACE,
+      mdcNamespace,
       ["services", "routes", "deploymentconfigs"],
       [
         "addressspaceschemas",
@@ -267,7 +272,7 @@ describe("Backup & Restore", function() {
     log.info("mdc namespace restored");
 
     // wait for mdc
-    await kh.waitForDeploymentConfig("mdc", MDC_NAMESPACE);
+    await kh.waitForDeploymentConfig("mdc", mdcNamespace);
 
     // execute the mobile-developer-console-restoration.sh script
     // to finalize the restore process
@@ -275,7 +280,7 @@ describe("Backup & Restore", function() {
       __dirname,
       "../fixtures/mobile-developer-console-restoration.sh"
     );
-    const [out, , , code] = await execScript(script, [tmpdir, MDC_NAMESPACE]);
+    const [out, , , code] = await execScript(script, [tmpdir, mdcNamespace]);
     if (code !== 0) {
       throw new Error(`child process exit with code '${code}'\n${out}`);
     }
