@@ -197,7 +197,6 @@ const deployShowcaseServer = async namespace => {
       return replicasReady.includes("3");
     },
     200000,
-    false,
     10000
   );
 };
@@ -212,8 +211,8 @@ const deleteProject = async name => {
 
 const recreateMobileApp = async name => {
   console.log("Recreating mobile app...");
-  await resource(MOBILE_APP, DELETE, name).catch(() => {});
-  await resource(PUSH_APP, DELETE, name).catch(() => {});
+  await resource(MOBILE_APP, DELETE, name).catch(() => { });
+  await resource(PUSH_APP, DELETE, name).catch(() => { });
 
   const mobileClientCr = getMobileClientCr(name);
   return await resource(MOBILE_APP, CREATE, mobileClientCr);
@@ -278,7 +277,7 @@ const bind = async (app, services) => {
         break;
       }
 
-      case PUSH_ANDROID:
+      case PUSH_ANDROID: {
         pushApp = await createPushApp(app.metadata.name, app.metadata.uid);
         const androidVariantCr = getAndroidVariantCr(
           app.metadata.name,
@@ -288,8 +287,8 @@ const bind = async (app, services) => {
         );
         await resource(ANDROID_VARIANT, CREATE, androidVariantCr);
         break;
-
-      case PUSH_IOS:
+      }
+      case PUSH_IOS: {
         pushApp = await createPushApp(app.metadata.name, app.metadata.uid);
         const iosVariantCr = getIosVariantCr(
           app.metadata.name,
