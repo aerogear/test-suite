@@ -211,8 +211,8 @@ const deleteProject = async name => {
 
 const recreateMobileApp = async name => {
   console.log("Recreating mobile app...");
-  await resource(MOBILE_APP, DELETE, name).catch(() => { });
-  await resource(PUSH_APP, DELETE, name).catch(() => { });
+  await resource(MOBILE_APP, DELETE, name).catch(() => {});
+  await resource(PUSH_APP, DELETE, name).catch(() => {});
 
   const mobileClientCr = getMobileClientCr(name);
   return await resource(MOBILE_APP, CREATE, mobileClientCr);
