@@ -1,8 +1,11 @@
 {
   "compilerOptions": {
     "target": "es2019",
+    "module": "es2015",
+    "moduleResolution": "node",
     "allowJs": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "outDir": "./out" // just in case someone run tsc
   },
   "exclude": ["node_modules"]
 }
