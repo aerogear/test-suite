@@ -57,7 +57,6 @@ describe("Data Sync App deploy test", async function() {
       .find(url => url.includes("data-sync-app"));
     const response = await axios.get(`http://${syncAppHostname}`);
     response.status.should.equal(200);
-    console.log(response.data);
   });
 
   it("Data Sync App GraphQL endpoint should work and should respond to hello query", async () => {
