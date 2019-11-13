@@ -95,7 +95,6 @@ export class KubeHelper {
     // create the resource
     try {
       await client.create(resource, resource.metadata.namespace);
-      return;
     } catch (e) {
       const r = resourceToString(resource);
       throw new Error(`failed to create resource: ${r} with error: ${e}`);
@@ -117,7 +116,7 @@ export class KubeHelper {
         if (e) {
           reject(e);
         } else {
-          logs.then(v => resolve(v));
+          resolve(logs.toString());
         }
       });
     });
@@ -147,19 +146,19 @@ export class KubeHelper {
         false,
         s => {
           if (s.status === "Failure") {
-            output.then(v => reject(new Error(`error: ${s.message}\n${v}`)));
+            reject(new Error(`error: ${s.message}\n${output.toString()}`));
           } else if (s.status === "Success") {
-            output.then(v => resolve(v));
+            resolve(output.toString());
           }
           reject(new Error(`unknown status: '${s.status}'`));
         }
       ).then(
         socket => {
           socket.onclose = (): void => {
-            output.then(v => resolve(v));
+            resolve(output.toString());
           };
           socket.onerror = (e): void => {
-            output.then(v => reject(new Error(`error: ${e}\n${v}`)));
+            reject(new Error(`error: ${e}\n${output.toString()}`));
           };
         },
         e => reject(e)

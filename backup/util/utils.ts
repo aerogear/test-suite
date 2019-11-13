@@ -27,34 +27,41 @@ export async function untar(file: string): Promise<void> {
   await tar.extract({ file: file, cwd: p.dir });
 }
 
+class BufferBox {
+  // initialize an empty buffer
+  private buffer = Buffer.from([]);
+
+  public append(buffer: Buffer): void {
+    this.buffer = Buffer.concat([this.buffer, buffer]);
+  }
+
+  public toString(): string {
+    return this.buffer.toString();
+  }
+}
+
 /**
  * Create a Writable stream that collect all data into a
  * string and return them as a Promise once the stream end
  */
-export function writable(): [Writable, Promise<string>] {
-  const data: string[] = [];
-  let stream: Writable;
+export function writable(): [Writable, BufferBox] {
+  const data = new BufferBox();
 
-  const promise = new Promise<string>(resolve => {
-    // create a stream that collect everything in
-    // the data list and resolve the promise once the
-    // stream end
-    stream = new Writable({
-      write: (chunk, encoding, callback): void => {
-        if (Buffer.isBuffer(chunk)) {
-          data.push(chunk.toString());
-          callback();
-        } else {
-          callback(new Error(`can not process encoding: ${encoding}`));
-        }
-      },
-      final: (callback): void => {
-        resolve(data.join(""));
+  // create a stream that collect everything in
+  // the data list and resolve the promise once the
+  // stream end
+  const stream = new Writable({
+    write: (chunk, encoding, callback): void => {
+      if (Buffer.isBuffer(chunk)) {
+        data.append(chunk);
         callback();
+      } else {
+        callback(new Error(`can not process encoding: ${encoding}`));
       }
-    });
+    }
   });
-  return [stream, promise];
+
+  return [stream, data];
 }
 
 /**
