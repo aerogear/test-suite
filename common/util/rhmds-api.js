@@ -67,9 +67,12 @@ const getNamespaces = async namespaceName => {
     // eslint-disable-next-line require-atomic-updates
     allNamespaces = await resource(PROJECT, GET_ALL);
   }
-  return allNamespaces.items
-    .map(ns => ns.metadata.name)
-    .find(name => name.includes(namespaceName));
+  if (namespaceName) {
+    return allNamespaces.items
+      .map(ns => ns.metadata.name)
+      .find(name => name.includes(namespaceName));
+  }
+  return allNamespaces;
 };
 
 const init = async () => {
@@ -218,18 +221,23 @@ const recreateMobileApp = async name => {
   return await resource(MOBILE_APP, CREATE, mobileClientCr);
 };
 
+const cleanupNamespaces = async nsPrefix => {
+  const namespaces = await getNamespaces();
+
+  for (const ns of namespaces.items) {
+    if (ns.metadata.name.startsWith(nsPrefix)) {
+      await deleteProject(ns.metadata.name);
+    }
+  }
+};
+
 const redeployShowcase = async namePrefix => {
   // Creating namespace with random string suffix is a workaround
   // for some reason when deleting then creating namespace with
   // same name in script, no matter how long it waits before
   // creation, the creation always fails, saying that namespace
   // with the name already exists.
-  const namespaces = await resource(PROJECT, GET_ALL);
-  for (const ns of namespaces.items) {
-    if (ns.metadata.name.startsWith(namePrefix)) {
-      await deleteProject(ns.metadata.name);
-    }
-  }
+  await cleanupNamespaces(namePrefix);
 
   const projectName = `${namePrefix}-${randomString()}`;
   await newProject(projectName);
@@ -376,5 +384,6 @@ module.exports = {
   bind,
   outputAppConfig,
   outputPushConfig,
-  getNamespaces
+  getNamespaces,
+  cleanupNamespaces
 };
