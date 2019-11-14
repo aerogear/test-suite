@@ -15,14 +15,9 @@ const MSS_NAMESPACE = "mobile-security-service";
 
 describe("Backup & Restore", function() {
   this.timeout(0);
-  this.bail(true);
 
   let kh: KubeHelper;
   let sh: S3Helper;
-
-  let mdcNamespace: string;
-  let upsNamespace: string;
-  let mssNamespace: string;
 
   before(async () => {
     // connect to the openshift api
@@ -39,7 +34,13 @@ describe("Backup & Restore", function() {
       decode(credentials.data.AWS_ACCESS_KEY_ID),
       decode(credentials.data.AWS_SECRET_ACCESS_KEY)
     );
+  });
 
+  let mdcNamespace: string;
+  let upsNamespace: string;
+  let mssNamespace: string;
+
+  it("discover namespace names", async () => {
     // resolve the correct namespace
     // because it change from RHPDS to OSD
     // TODO: find a global solution to this problem
@@ -47,6 +48,10 @@ describe("Backup & Restore", function() {
     mdcNamespace = namespaces.find(n => n.includes(MDC_NAMESPACE));
     upsNamespace = namespaces.find(n => n.includes(UPS_NAMESPACE));
     mssNamespace = namespaces.find(n => n.includes(MSS_NAMESPACE));
+
+    log.info(`mdcNamespace = "${mdcNamespace}"`);
+    log.info(`upsNamespace = "${upsNamespace}"`);
+    log.info(`mssNamespace = "${mssNamespace}"`);
   });
 
   let resourceBackup: Backup;
@@ -74,9 +79,9 @@ describe("Backup & Restore", function() {
       /mobile_security_service-\d{2}_\d{2}_\d{2}.pg_dump.gz$/.test(b.file)
     );
 
-    log.info(`resource backup uploaded to: ${JSON.stringify(resourceBackup)}`);
-    log.info(`ups backup uploaded to: ${JSON.stringify(upsBackup)}`);
-    log.info(`mss backup uploaded to: ${JSON.stringify(mssBackup)}`);
+    log.info(`resourceBackup = ${JSON.stringify(resourceBackup)}`);
+    log.info(`upsBackup = ${JSON.stringify(upsBackup)}`);
+    log.info(`mssBackup = ${JSON.stringify(mssBackup)}`);
   });
 
   it("should remove all mdc crs", async () => {
@@ -133,7 +138,7 @@ describe("Backup & Restore", function() {
     // extract all gz files
     gunzipAll(tmpdir);
 
-    log.info(`backups downloaded to '${tmpdir}'`);
+    log.info(`tmpdir = "${tmpdir}"`);
   });
 
   it("should restore mss namespace", async () => {
