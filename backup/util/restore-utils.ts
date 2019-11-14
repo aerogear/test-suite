@@ -2,6 +2,7 @@ import { KubeHelper, GenericResource } from "./kube-helper";
 import path from "path";
 import fs from "fs";
 import yaml from "yaml";
+import { log } from "../../common/util/log";
 
 function loadNamespacedResources(
   dir: string,
@@ -27,6 +28,19 @@ function loadResource(file: string): GenericResource {
   return yaml.parse(a.toString());
 }
 
+async function restoreResource(
+  helper: KubeHelper,
+  file: string
+): Promise<void> {
+  const resource = loadResource(file);
+
+  try {
+    await helper.create(resource);
+  } catch (e) {
+    log.error("ignore error: ", e);
+  }
+}
+
 export async function restoreNamespace(
   helper: KubeHelper,
   dir: string,
@@ -38,7 +52,7 @@ export async function restoreNamespace(
   const rs = loadNamespacedResources(dir, namespace);
 
   // restore the namespace itself
-  await helper.create(loadResource(rs["namespace"]));
+  await restoreResource(helper, rs["namespace"]);
   delete rs["namespace"];
 
   // remove all excluded resources from the rs list
@@ -46,12 +60,12 @@ export async function restoreNamespace(
 
   // restore first the prioritized resources
   for (const n of priority) {
-    await helper.create(loadResource(rs[n]));
+    await restoreResource(helper, rs[n]);
     delete rs[n]; // remove the resource after importing it
   }
 
   // restore all reaming resources
   for (const n in rs) {
-    await helper.create(loadResource(rs[n]));
+    await restoreResource(helper, rs[n]);
   }
 }
