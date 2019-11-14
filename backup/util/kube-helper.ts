@@ -42,6 +42,8 @@ export async function map<T>(call: () => Promise<{ body: T }>): Promise<T> {
     try {
       return (await call()).body;
     } catch (e) {
+      // TODO: remove this solution once this PR will be released:
+      // https://github.com/kubernetes-client/javascript/pull/366
       if (e.response === undefined) {
         throw e;
       } else {
