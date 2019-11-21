@@ -1,285 +1,69 @@
 const util = require('util');
+const { expect } = require('chai')
 const exec = util.promisify(require('child_process').exec);
 const axios = require('axios');
 const { waitFor, getHeaderWithOauthProxyCookie } = require('../../common/util/utils');
 const { init, resource, getNamespaces, TYPE, ACTION } = require('../../common/util/rhmds-api');
 let headers;
 let alertUrl;
-let monitoringNameSpace, mssNamespace, pushNamespace, mdcNamespace;
+let alertList = [];
+let monitoringNameSpace, pushNamespace
 const openshiftAdminUser = process.env.OPENSHIFT_ADMIN_USERNAME;
 const openshiftAdminPassword = process.env.OPENSHIFT_ADMIN_PASSWORD;
-describe('MDC alerts test', function() {
-    this.timeout(0);
-    before('authenticate with oauth proxy', async() => {
-        await init();
-        mdcNamespace = await getNamespaces("mobile-developer-console");
-        await getParam();
-    });
-    it('should check whether MDC alerts are already active', async ()=>{
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            const alertList =  result.data.data.alerts;
-            for(const alert of alertList){
-                if(alert.labels.alertname === 'MobileDeveloperConsoleContainerDown' || alert.labels.alertname === 'MobileDeveloperConsoleOperatorDown' || alert.labels.alertname === 'MobileDeveloperConsoleDown'){
-                    return false;
-                }
-                else{
-                    return true;
-                }
-            }
-        }, 3 * 60000);
-    })
-    it('should trigger mdc down alert', async() => {
-        await exec(`oc scale --replicas=0 dc mdc -n ${mdcNamespace}`);
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            return result.data.data.alerts.find(alert =>
-                alert.labels.alertname === 'MobileDeveloperConsoleContainerDown'
-            );
-        }, 7 * 60000);
 
-        await exec(`oc scale --replicas=1 dc mdc -n ${mdcNamespace}`);
-
-        //check that the alerts are still active
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            if((result.data.data.alerts.findIndex(alert =>
-                alert.labels.alertname === 'MobileDeveloperConsoleContainerDown'
-            ))===-1){
-                return true;
-            }
-        }, 3 * 60000);
-    });
-    it('should trigger mdc operator alert', async() => {
-        await exec(`oc scale --replicas=0 deployment/mobile-developer-console-operator -n ${mdcNamespace}`)
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            })
-            return result.data.data.alerts.find(alert =>
-                alert.labels.alertname === "MobileDeveloperConsoleOperatorDown"
-            )
-        }, 7 * 60000)
-
-        await exec(`oc scale --replicas=1 deployment/mobile-developer-console-operator -n ${mdcNamespace}`);
-
-
-        //check that the alerts are still active
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            if((result.data.data.alerts.findIndex(alert =>
-                alert.labels.alertname === 'MobileDeveloperConsoleOperatorDown'
-            ))===-1){
-                return true;
-            }
-        }, 3 * 60000);
-    })
-});
-describe('MSS Alert test', function() {
-    this.timeout(0);
-    before("get the namespace", async() => {
-        mssNamespace = await getNamespaces("mobile-security-service");
-    });
-    it('should check whether MSS alerts are already active', async ()=>{
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            const alertList =  result.data.data.alerts;
-            for(const alert of alertList){
-                if(alert.labels.alertname === 'MobileSecurityServiceOperatorDown' || alert.labels.alertname === 'MobileSecurityServiceDatabaseDown' || alert.labels.alertname === 'MobileSecurityServiceDown'){
-                    return false;
-                }
-                else{
-                    return true;
-                }
-            }
-        }, 3 * 60000);
-    })
-    it('should trigger MSS operator down alert', async() => {
-        await exec(`oc scale --replicas=0 deployment/mobile-security-service-operator -n ${mssNamespace}`)
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            })
-            return result.data.data.alerts.find(alert =>
-                alert.labels.alertname === "MobileSecurityServiceOperatorDown"
-            )
-        }, 7 * 60000)
-    })
-    it("should trigger MobileSecurityServiceDown alert", async() => {
-        await exec(`oc scale --replicas=0 deployment/mobile-security-service -n ${mssNamespace}`)
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            })
-            return result.data.data.alerts.find(alert =>
-                alert.labels.alertname === "MobileSecurityServiceDown"
-            )
-        }, 7 * 60000)
-    })
-    it("should trigger MobileSecurityServiceDatabaseDown alert", async() => {
-        await exec(`oc scale --replicas=0 deployment/mobile-security-service-db -n ${mssNamespace}`)
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            })
-            return result.data.data.alerts.find(alert =>
-                alert.labels.alertname === "MobileSecurityServiceDatabaseDown"
-            )
-        }, 7 * 60000)
-
-        await exec(`oc scale --replicas=1 deployment/mobile-security-service-operator -n ${mssNamespace}`)
-
-        //check that the alerts are still active
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            if((result.data.data.alerts.findIndex(alert =>
-                alert.labels.alertname === 'MobileSecurityServiceOperatorDown'
-            ))===-1){
-                return true;
-            }
-        }, 3 * 60000);
-    })
-})
 describe('UPS Alert test', function() {
     this.timeout(0);
-    before("get the namespace", async() => {
+    before("get push namespace and oauth token", async() => {
+        await init();
         pushNamespace = await getNamespaces("mobile-unifiedpush");
+        await getParam();
     });
-    it('should check whether UPS alerts are already active', async ()=>{
+    it('Should check whether UPS alerts are not active before test', async ()=>{
+        let checkAlertList;
+        const activeAlerts = await getActiveAlertNames(alertUrl,headers);
+        activeAlerts.forEach(alert => {
+            checkAlertList =  checkAlertName(alert.labels.alertname);
+    });
+        expect(checkAlertList).to.be.an('array').that.is.empty;
+    })
+    it('Should trigger UnifiedPushConsoleDown alert', async() => {
+        await scaleDownPod('dc','unifiedpush',pushNamespace);
         await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            const alertList =  result.data.data.alerts;
-            for(const alert of alertList){
-                if(alert.labels.alertname === 'UnifiedPushConsoleDown' || alert.labels.alertname === 'UnifiedPushDatabaseDown' || alert.labels.alertname === 'UnifiedPushOperatorDown'){
-                    return false;
-                }
-                else{
-                    return true;
-                }
-            }
+            const result = await getActiveAlertNames(alertUrl,headers);
+            return result.find( alert => alert.labels.alertname ===  'UnifiedPushConsoleDown');
+        }, 8 * 60000);
+        await scaleUpPod('dc','unifiedpush',pushNamespace);
+        //make sure alert disappears after scaling up the pod
+        await waitFor(async() => {
+            const result = await getActiveAlertNames(alertUrl,headers);
+            return result.findIndex( alert => alert.labels.alertname ===  'UnifiedPushConsoleDown')=== -1;
         }, 3 * 60000);
     })
-    it('should trigger UnifiedPushConsoleDown alert', async() => {
-        await exec(`oc scale --replicas=0 dc unifiedpush -n ${pushNamespace}`);
+    it('Should trigger UnifiedPushDatabaseDown alert', async() => {
+        await scaleDownPod('dc','unifiedpush-postgresql',pushNamespace);
         await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            return result.data.data.alerts.find(
-                alert =>
-                alert.labels.alertname === 'UnifiedPushConsoleDown'
-            );
-        }, 7 * 60000);
-
-        await exec(`oc scale --replicas=1 dc unifiedpush -n ${pushNamespace}`);
-
-        //check that the alerts are still active
+            const result = await getActiveAlertNames(alertUrl,headers);
+            return result.find( alert => alert.labels.alertname ===  'UnifiedPushDatabaseDown');
+        }, 8 * 60000);
+        await scaleUpPod('dc','unifiedpush-postgresql',pushNamespace);
+        //make sure alert disappears after scaling up the pod
         await waitFor(async() => {
-        const result = await axios.request({
-            url: alertUrl,
-            headers,
-            method: 'get'
-        });
-        if((result.data.data.alerts.findIndex(alert =>
-            alert.labels.alertname === 'UnifiedPushConsoleDown'
-        ))===-1){
-            return true;
-        }
-    }, 3 * 60000);
+            const result = await getActiveAlertNames(alertUrl,headers);
+            return result.findIndex( alert => alert.labels.alertname ===  'UnifiedPushDatabaseDown')=== -1;
+        }, 3 * 60000);
     })
-    it('should trigger UnifiedPushDatabaseDown alert', async() => {
-        await exec(`oc scale --replicas=0 dc unifiedpush-postgresql -n ${pushNamespace}`);
+    it('Should trigger UnifiedPushOperatorDown alert', async() => {
+        await scaleDownPod('deployments','unifiedpush-operator',pushNamespace);
         await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            });
-            return result.data.data.alerts.find(
-                alert =>
-                alert.labels.alertname === 'UnifiedPushDatabaseDown'
-            );
-        }, 7 * 60000);
-
-        await exec(`oc scale --replicas=1 dc unifiedpush-postgresql -n ${pushNamespace}`);
-
-        //check that the alerts are still active
+            const result = await getActiveAlertNames(alertUrl,headers);
+            return result.find( alert => alert.labels.alertname ===  'UnifiedPushOperatorDown');
+        }, 8 * 60000);
+        await scaleUpPod('deployments','unifiedpush-operator',pushNamespace);;
+        //make sure alert disappears after scaling up the pod
         await waitFor(async() => {
-        const result = await axios.request({
-            url: alertUrl,
-            headers,
-            method: 'get'
-        });
-        if((result.data.data.alerts.findIndex(alert =>
-            alert.labels.alertname === 'UnifiedPushDatabaseDown'
-        ))===-1){
-            return true;
-        }
-    }, 3 * 60000);
-    })
-    it('should trigger  UnifiedPushOperatorDown alert', async() => {
-        await exec(`oc scale --replicas=0 deployments unifiedpush-operator -n ${pushNamespace}`);
-        await waitFor(async() => {
-            const result = await axios.request({
-                url: alertUrl,
-                headers,
-                method: 'get'
-            })
-            return result.data.data.alerts.find(alert => alert.labels.alertname === "UnifiedPushOperatorDown");
-        }, 7 * 60000);
-        await exec(`oc scale --replicas=1 deployments unifiedpush-operator -n ${pushNamespace}`);
-
-        //check that the alerts are still active
-        await waitFor(async() => {
-        const result = await axios.request({
-            url: alertUrl,
-            headers,
-            method: 'get'
-        });
-        if((result.data.data.alerts.findIndex(alert =>
-            alert.labels.alertname === 'UnifiedPushOperatorDown'
-        ))===-1){
-            return true;
-        }
-    }, 3 * 60000);
+            const result = await getActiveAlertNames(alertUrl,headers);
+            return result.findIndex( alert => alert.labels.alertname ===  'UnifiedPushOperatorDown')=== -1;
+        }, 3 * 60000);
     })
 })
 const getParam = async() => {
@@ -292,11 +76,23 @@ const getParam = async() => {
     }
     headers = await getHeaderWithOauthProxyCookie(alertUrl,openshiftAdminUser,openshiftAdminPassword);
 }
-// const getNameSpaces = async nameSpaceType => {
-//     const namespaces = await resource(TYPE.PROJECT, ACTION.GET_ALL);
-//     for (const ns of namespaces.items) {
-//         if (ns.metadata.name.endsWith(nameSpaceType)) {
-//             return ns.metadata.name;
-//         }
-//     }
-// }
+function checkAlertName(alertName){
+    if(alertName=== 'UnifiedPushConsoleDown' || alertName=== 'UnifiedPushOperatorDown' || alertName === 'UnifiedPushDatabaseDown' || alertName === 'UnifiedPushDown'){
+        alertList.push(alertName);
+    }
+    return alertList;
+}
+async function getActiveAlertNames(alertUrl, headers){
+        const result = await axios.request({
+            url: alertUrl,
+            headers,
+            method: 'get'
+        });
+        return result.data.data.alerts;
+}
+async function scaleDownPod(resourceType, resource, namespace){
+    await exec(`oc scale --replicas=0 ${resourceType} ${resource} -n ${namespace}`);
+};
+async function scaleUpPod(resourceType, resource, namespace){
+    await exec(`oc scale --replicas=1 ${resourceType} ${resource} -n ${namespace}`);
+}
