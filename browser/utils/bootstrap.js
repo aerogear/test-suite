@@ -18,7 +18,7 @@ before(async () => {
   global.browser = await puppeteer.launch(opts);
   global.page = null;
   global.context = null;
-  global.mdcUrl = await getMdcUrl();
+  global.seUrl = await getSEUrl();
   global.openshiftConsoleUrl = getOpenShiftConsoleUrl(openshiftClient);
 });
 
@@ -39,10 +39,10 @@ afterEach(function() {
   }
 });
 
-async function getMdcUrl() {
+async function getSEUrl() {
   // MDC namespace is targeted by default
-  const mdcRoute = await resource(TYPE.ROUTE, ACTION.GET_ALL);
-  return `https://${mdcRoute.items[0].spec.host}`;
+  const seRoute = await resource(TYPE.ROUTE, ACTION.GET_ALL, null, 'openshift-webapp');
+  return `https://${seRoute.items[0].spec.host}`;
 }
 
 function getOpenShiftConsoleUrl(openshiftClient) {
