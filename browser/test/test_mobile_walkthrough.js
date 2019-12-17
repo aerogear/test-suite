@@ -40,7 +40,7 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     );
   });
   it("should open the Mobile WT and verify the links", async () => {
-    await page.click('button[aria-controls=solutionPatternsTabSection]');
+    await page.click("button[aria-controls=solutionPatternsTabSection]");
     await Promise.all([
       page.click("#mobile-walkthrough-walkthroughs-1-ionic-showcase article"),
       page.waitForNavigation({ waitUntil: ["domcontentloaded"] })
