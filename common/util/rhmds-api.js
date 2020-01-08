@@ -5,7 +5,11 @@ const { waitFor, randomString } = require("./utils");
 
 const getNamespaces = async () => {
   const output = await exec(`oc get projects -o name`);
-  return output.stdout.split('project.project.openshift.io/').join('').trim().split('\n');
+  return output.stdout
+    .split("project.project.openshift.io/")
+    .join("")
+    .trim()
+    .split("\n");
 };
 
 const deployShowcaseServer = async namespace => {

@@ -23,10 +23,16 @@ describe("Push", function() {
 
   if (process.env.DOCKER_COMPOSE !== "true") {
     before("expose ups", async () => {
-      const output = await exec("oc get projects | grep mobile-unifiedpush | awk '{print $1}'");
+      const output = await exec(
+        "oc get projects | grep mobile-unifiedpush | awk '{print $1}'"
+      );
       upsNamespace = output.stdout.trim();
-      await exec(`oc expose service unifiedpush-unifiedpush -n ${upsNamespace}`);
-      const routeOutput = await exec(`oc get routes -n ${upsNamespace} | grep web | awk '{print $2}'`);
+      await exec(
+        `oc expose service unifiedpush-unifiedpush -n ${upsNamespace}`
+      );
+      const routeOutput = await exec(
+        `oc get routes -n ${upsNamespace} | grep web | awk '{print $2}'`
+      );
       upsUrl = `http://${routeOutput.stdout.trim()}`;
     });
   } else {
@@ -44,7 +50,7 @@ describe("Push", function() {
     }
 
     upsConfig = {
-      url: upsUrl + '/',
+      url: upsUrl + "/",
       android: {
         senderID: senderId,
         variantID: null,

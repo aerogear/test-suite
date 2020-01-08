@@ -11,9 +11,11 @@ const appName = "device-test-suite";
 (async () => {
   const project = await redeployShowcase(appName);
 
-  const output = await exec(`oc get routes -n ${project} | grep ionic-showcase-server | awk '{print $2}'`);
+  const output = await exec(
+    `oc get routes -n ${project} | grep ionic-showcase-server | awk '{print $2}'`
+  );
 
-  fs.writeFileSync('sync-url.txt', output.stdout.trim());
+  fs.writeFileSync("sync-url.txt", output.stdout.trim());
 
   console.log("Setup successful");
 })();

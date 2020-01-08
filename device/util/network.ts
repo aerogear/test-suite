@@ -10,7 +10,7 @@ export async function setNetwork(profile: string): Promise<void> {
   );
   await axios.put(
     `https://api-cloud.browserstack.com/app-automate/sessions/${device.browser.sessionId}/update_network.json`,
-    { networkProfile : profile },
+    { networkProfile: profile },
     { headers: { Authorization: `Basic ${buff.toString("base64")}` } }
   );
 }

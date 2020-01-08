@@ -28,16 +28,10 @@ describe("Data Sync", function() {
     };
     syncAppUrl = syncConfig.serverUrl;
 
-    await device.execute(async function(
-      modules,
-      universe: Universe,
-      config
-    ) {
-      const {
-        createClient,
-        CacheOperation,
-        getUpdateFunction
-      } = modules["offix-client-boost"];
+    await device.execute(async function(modules, universe: Universe, config) {
+      const { createClient, CacheOperation, getUpdateFunction } = modules[
+        "offix-client-boost"
+      ];
       const { gql } = modules["graphql-tag"];
 
       const getAllItemsQuery = gql(`
@@ -69,8 +63,7 @@ describe("Data Sync", function() {
 
       // eslint-disable-next-line require-atomic-updates
       universe.apolloClient = offlineClient;
-    },
-    syncConfig);
+    }, syncConfig);
   });
 
   it("should perform query", async () => {
