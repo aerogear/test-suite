@@ -1,11 +1,11 @@
 import axios from "axios";
 import { expect } from "chai";
 import sender = require("unifiedpush-node-sender");
-import {
-  config as mobileServices,
-  dockerCompose
-} from "../../config/mobile-services";
 import { device } from "../../util/device";
+
+import { promisify } from "util";
+import { exec as execAsync } from "child_process";
+const exec = promisify(execAsync);
 
 describe("Push", function() {
   this.timeout(0);
@@ -15,82 +15,91 @@ describe("Push", function() {
     return;
   }
 
+  let upsNamespace;
   let upsUrl;
   let pushApplicationID;
   let masterSecret;
+  let upsConfig;
 
-  if (dockerCompose) {
-    before("create ups application", async () => {
-      const serverKey = process.env.FIREBASE_SERVER_KEY;
-      const senderId = process.env.FIREBASE_SENDER_ID;
-
-      if (serverKey === undefined || senderId == undefined) {
-        throw new Error(
-          "FIREBASE_SERVER_KEY and/or FIREBASE_SENDER_ID are not defined"
-        );
-      }
-
-      const config = mobileServices.services.find(
-        service => service.name === "push"
-      );
-
-      upsUrl = config.url;
-
-      // set sender id in config
-      config.config.android.senderId = senderId;
-
-      // create test application
-      const application = await axios({
-        method: "post",
-        url: `${upsUrl}/rest/applications`,
-        data: {
-          name: "test"
-        }
-      });
-      pushApplicationID = application.data.pushApplicationID;
-      masterSecret = application.data.masterSecret;
-
-      // create android variant
-      const variant = await axios({
-        method: "post",
-        url: `${upsUrl}/rest/applications/${pushApplicationID}/android`,
-        data: {
-          name: "android",
-          googleKey: serverKey,
-          projectNumber: senderId
-        }
-      });
-
-      // set variant and secret in config
-      config.config.android.variantId = variant.data.variantID;
-      config.config.android.variantSecret = variant.data.secret;
-    });
-
-    after("delete ups application", async () => {
-      // delete test application
-      await axios({
-        method: "delete",
-        url: `${upsUrl}/rest/applications/${pushApplicationID}`
-      });
+  if (process.env.DOCKER_COMPOSE !== "true") {
+    before("expose ups", async () => {
+      const output = await exec("oc get projects | grep mobile-unifiedpush | awk '{print $1}'");
+      upsNamespace = output.stdout.trim();
+      await exec(`oc expose service unifiedpush-unifiedpush -n ${upsNamespace}`);
+      const routeOutput = await exec(`oc get routes -n ${upsNamespace} | grep web | awk '{print $2}'`);
+      upsUrl = `http://${routeOutput.stdout.trim()}`;
     });
   } else {
-    before("get push app config", async () => {
-      pushApplicationID = require("../../push-app.json").status
-        .pushApplicationId;
-      masterSecret = require("../../push-app.json").status.masterSecret;
+    upsUrl = process.env.UPS_URL;
+  }
+
+  before("create ups application", async () => {
+    const serverKey = process.env.FIREBASE_SERVER_KEY;
+    const senderId = process.env.FIREBASE_SENDER_ID;
+
+    if (serverKey === undefined || senderId == undefined) {
+      throw new Error(
+        "FIREBASE_SERVER_KEY and/or FIREBASE_SENDER_ID are not defined"
+      );
+    }
+
+    upsConfig = {
+      url: upsUrl + '/',
+      android: {
+        senderID: senderId,
+        variantID: null,
+        variantSecret: null
+      }
+    };
+
+    // create test application
+    const application = await axios({
+      method: "post",
+      url: `${upsUrl}/rest/applications`,
+      data: {
+        name: "test"
+      }
+    });
+    pushApplicationID = application.data.pushApplicationID;
+    masterSecret = application.data.masterSecret;
+
+    // create android variant
+    const variant = await axios({
+      method: "post",
+      url: `${upsUrl}/rest/applications/${pushApplicationID}/android`,
+      data: {
+        name: "android",
+        googleKey: serverKey,
+        projectNumber: senderId
+      }
+    });
+
+    // set variant and secret in config
+    upsConfig.android.variantID = variant.data.variantID;
+    upsConfig.android.variantSecret = variant.data.secret;
+  });
+
+  after("delete ups application", async () => {
+    // delete test application
+    await axios({
+      method: "delete",
+      url: `${upsUrl}/rest/applications/${pushApplicationID}`
+    });
+  });
+
+  if (process.env.DOCKER_COMPOSE !== "true") {
+    after("delete exposed route", async () => {
+      await exec(`oc delete route unifiedpush-unifiedpush -n ${upsNamespace}`);
     });
   }
 
   it("send and receive test notification", async () => {
     // register the app to the UPS server
     await device.execute(async (modules, universe, config) => {
-      const { init } = modules["@aerogear/app"];
       const { PushRegistration } = modules["@aerogear/push"];
 
-      const app = init(config);
-
-      await new PushRegistration(app.config).register({ alias: "alias" });
-    }, mobileServices);
+      await new PushRegistration(config).register({ alias: "alias" });
+    }, upsConfig);
 
     // start listening for notifications
     const message = device.execute(async modules => {
@@ -102,12 +111,6 @@ describe("Push", function() {
         );
       });
     });
-
-    const config = mobileServices.services.find(
-      service => service.name === "push"
-    );
-
-    upsUrl = config.url;
 
     // send test notification
     sender({
@@ -125,13 +128,10 @@ describe("Push", function() {
   it("should not receive notification if unregistered", async () => {
     // unregister from the UPS server
     await device.execute(async (modules, universe, config) => {
-      const { init } = modules["@aerogear/app"];
       const { PushRegistration } = modules["@aerogear/push"];
 
-      const app = init(config);
-
-      await new PushRegistration(app.config).unregister();
-    }, mobileServices);
+      await new PushRegistration(config).unregister();
+    }, upsConfig);
 
     // start listening for notifications
     // fail if notification received
@@ -146,12 +146,6 @@ describe("Push", function() {
         );
       });
     });
-
-    const config = mobileServices.services.find(
-      service => service.name === "push"
-    );
-
-    upsUrl = config.url;
 
     // send test notification
     sender({

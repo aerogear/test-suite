@@ -1,12 +1,7 @@
 import chai = require("chai");
 chai.should();
 
-import {
-  ApolloOfflineClient,
-  CordovaNetworkStatus,
-  OfflineError
-} from "@aerogear/voyager-client";
-import { ToggleNetworkStatus } from "../../fixtures/ToggleNetworkStatus";
+import { ApolloOfflineClient } from "offix-client-boost";
 import { device } from "../../util/device";
 import { GlobalUniverse } from "../../util/init";
 import { setNetwork } from "../../util/network";
@@ -14,7 +9,6 @@ import axios from "axios";
 import { DocumentNode } from "graphql";
 
 interface Universe extends GlobalUniverse {
-  networkStatus: ToggleNetworkStatus | CordovaNetworkStatus;
   getAllItemsQuery: DocumentNode;
   subscriptionUpdate: { data?: unknown[]; numberOfTasksBeforeUpdate?: number };
   apolloClient: ApolloOfflineClient;
@@ -23,37 +17,28 @@ interface Universe extends GlobalUniverse {
 
 describe("Data Sync", function() {
   let syncAppUrl;
+  let syncConfig;
 
   this.timeout(0);
 
   it("should initialize voyager client", async () => {
-    const appConfig = await device.execute(async function(
+    syncConfig = {
+      serverUrl: `${process.env.SYNC_URL}/graphql`,
+      wsServerUrl: `${process.env.SYNC_WS_URL}/graphql`
+    };
+    syncAppUrl = syncConfig.serverUrl;
+
+    await device.execute(async function(
       modules,
       universe: Universe,
-      platform
+      config
     ) {
       const {
-        OfflineClient,
-        CordovaNetworkStatus,
+        createClient,
         CacheOperation,
         getUpdateFunction
-      } = modules["@aerogear/voyager-client"];
+      } = modules["offix-client-boost"];
       const { gql } = modules["graphql-tag"];
-      const { ToggleNetworkStatus } = modules["./ToggleNetworkStatus"];
-
-      const { app } = universe;
-
-      let networkStatus;
-
-      if (platform === "ios") {
-        // this is workaround for iOS as BrowserStack does not support
-        // putting iOS devices offline
-        networkStatus = new ToggleNetworkStatus();
-      } else {
-        networkStatus = new CordovaNetworkStatus();
-      }
-
-      universe.networkStatus = networkStatus;
 
       const getAllItemsQuery = gql(`
         query allTasks {
@@ -75,20 +60,17 @@ describe("Data Sync", function() {
       };
 
       const options = {
-        openShiftConfig: app.config,
-        networkStatus,
+        httpUrl: config.serverUrl,
+        wsUrl: config.wsServerUrl,
         mutationCacheUpdates: cacheUpdates
       };
 
-      const offlineClient = new OfflineClient(options);
+      const offlineClient = await createClient(options);
 
       // eslint-disable-next-line require-atomic-updates
-      universe.apolloClient = await offlineClient.init();
-
-      return app.config;
+      universe.apolloClient = offlineClient;
     },
-    process.env.MOBILE_PLATFORM);
-    syncAppUrl = appConfig.configurations.find(s => s.type === "sync-app").url;
+    syncConfig);
   });
 
   it("should perform query", async () => {
@@ -110,7 +92,7 @@ describe("Data Sync", function() {
       await device.execute(async (modules, universe: Universe) => {
         const { apolloClient, getAllItemsQuery } = universe;
         const { CacheOperation, createSubscriptionOptions } = modules[
-          "@aerogear/voyager-client"
+          "offix-client-boost"
         ];
         const { gql } = modules["graphql-tag"];
         universe.subscriptionUpdate = {};
@@ -189,18 +171,16 @@ describe("Data Sync", function() {
     });
   });
 
+  // skip iOS tests for offline mutation (no easy way to set device offline)
+  if (process.env.MOBILE_PLATFORM === "ios") {
+    return;
+  }
+
   describe("Offline mutation test", function() {
     let testTitleToCheck;
 
     it("should perform offline mutation", async () => {
-      if (process.env.MOBILE_PLATFORM === "ios") {
-        await device.execute(async (_, universe: Universe) => {
-          const { networkStatus } = universe;
-          (networkStatus as ToggleNetworkStatus).setOnline(false);
-        });
-      } else {
-        await setNetwork("no-network");
-      }
+      await setNetwork("airplane-mode");
 
       await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -225,10 +205,9 @@ describe("Data Sync", function() {
               returnType: "Task"
             });
           } catch (error) {
-            if (error.networkError && error.networkError.offline) {
-              const offlineError = error.networkError as OfflineError;
+            if (error.offline) {
               // eslint-disable-next-line require-atomic-updates
-              universe.offlineChangePromise = offlineError.watchOfflineChange();
+              universe.offlineChangePromise = error.watchOfflineChange();
               return testTitle;
             }
 
@@ -258,14 +237,7 @@ describe("Data Sync", function() {
     });
 
     it("should sync changes when going online", async () => {
-      if (process.env.MOBILE_PLATFORM === "ios") {
-        await device.execute(async (_, universe: Universe) => {
-          const { networkStatus } = universe;
-          (networkStatus as ToggleNetworkStatus).setOnline(true);
-        });
-      } else {
-        await setNetwork("reset");
-      }
+      await setNetwork("reset");
 
       const result = await device.execute(async (_, universe: Universe) => {
         const {

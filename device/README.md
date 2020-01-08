@@ -35,14 +35,13 @@ npm install
 Tests can either target locally running services or OpenShift instance with RHMI. To start services locally run:
 
 ```
+export DOCKER_COMPOSE=true
 ./scripts/docker-compose-up.sh
 ```
 
 By default latest version of services will be installed. Version of each service can be specified via environment variables before running above script:
 
 ```
-export KEYCLOAK_VERSION="..."
-export METRICS_VERSION="..."
 export UPS_VERSION="..."
 export DATASYNC_VERSION="..."
 ```
@@ -50,16 +49,13 @@ export DATASYNC_VERSION="..."
 To target OpenShift instance run:
 
 ```
-export OPENSHIFT_USERNAME=<EVALS_USERNAME>
-export OPENSHIFT_PASSWORD=<EVALS_PASSWORD>
-
-oc login ...
+oc login ... (evals user)
 
 cd .. && npm install && cd device
 ./scripts/prepare.js
-```
 
-Script will create mobile app and bindings via CRs and fetch mobile-services.json.
+oc login ... (cluster-admin user)
+```
 
 ## Setup testing app
 

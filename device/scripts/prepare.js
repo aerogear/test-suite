@@ -1,36 +1,19 @@
 #!/usr/bin/env node
 
-const path = require("path");
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
+const fs = require("fs");
 
-const {
-  init,
-  BINDING,
-  bind,
-  recreateMobileApp,
-  redeployShowcase,
-  outputAppConfig,
-  outputPushConfig
-} = require("../../common/util/rhmds-api");
+const { redeployShowcase } = require("../../common/util/rhmds-api");
 
 const appName = "device-test-suite";
 
 (async () => {
-  await init();
+  const project = await redeployShowcase(appName);
 
-  const app = await recreateMobileApp(appName);
+  const output = await exec(`oc get routes -n ${project} | grep ionic-showcase-server | awk '{print $2}'`);
 
-  await redeployShowcase(appName);
-
-  await bind(app, [
-    BINDING.DATA_SYNC,
-    BINDING.KEYCLOAK,
-    BINDING.MSS,
-    BINDING.PUSH_ANDROID
-  ]);
-
-  const folder = path.resolve(__dirname, "..");
-  outputAppConfig(app, folder);
-  outputPushConfig(app, folder);
+  fs.writeFileSync('sync-url.txt', output.stdout.trim());
 
   console.log("Setup successful");
 })();

@@ -24,22 +24,17 @@ cd testing-app
 SDK_VERSION="${SDK_VERSION:-latest}"
 
 npm install --save \
-  @aerogear/security@$SDK_VERSION \
-  @aerogear/app@$SDK_VERSION \
-  @aerogear/auth@$SDK_VERSION \
-  @aerogear/voyager-client@$SDK_VERSION \
   @aerogear/push@$SDK_VERSION \
   webpack \
   webpack-cli \
   typescript \
   ts-loader \
   graphql \
-  graphql-tag
+  graphql-tag \
+  offix-client-boost
 
-cordova plugin add @aerogear/cordova-plugin-aerogear-metrics@$SDK_VERSION
-cordova plugin add @aerogear/cordova-plugin-aerogear-security@$SDK_VERSION
-cordova plugin add @aerogear/cordova-plugin-aerogear-sync@$SDK_VERSION
-cordova plugin add cordova-plugin-inappbrowser
+cordova plugin add cordova-plugin-device
+cordova plugin add cordova-plugin-network-information
 
 npx webpack
 
