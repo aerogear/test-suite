@@ -17,6 +17,7 @@ describe("Push", function() {
 
   let upsNamespace;
   let upsUrl;
+  let upsConfigUrl;
   let pushApplicationID;
   let masterSecret;
   let upsConfig;
@@ -34,9 +35,14 @@ describe("Push", function() {
         `oc get routes -n ${upsNamespace} | grep web | awk '{print $2}'`
       );
       upsUrl = `http://${routeOutput.stdout.trim()}`;
+      const routeProxyOutput = await exec(
+        `oc get routes -n ${upsNamespace} | grep unifiedpush-unifiedpush-proxy | awk '{print $2}'`
+      );
+      upsConfigUrl = `https://${routeProxyOutput.stdout.trim()}`;
     });
   } else {
     upsUrl = process.env.UPS_URL;
+    upsConfigUrl = upsUrl;
   }
 
   before("create ups application", async () => {
@@ -50,7 +56,7 @@ describe("Push", function() {
     }
 
     upsConfig = {
-      url: upsUrl + "/",
+      url: upsConfigUrl + "/",
       android: {
         senderID: senderId,
         variantID: null,

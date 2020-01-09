@@ -4,11 +4,13 @@ const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 const fs = require("fs");
 
-const { redeployShowcase } = require("../../common/util/rhmds-api");
+const { redeployShowcase, init } = require("../../common/util/rhmds-api");
 
 const appName = "device-test-suite";
 
 (async () => {
+  await init();
+
   const project = await redeployShowcase(appName);
 
   const output = await exec(

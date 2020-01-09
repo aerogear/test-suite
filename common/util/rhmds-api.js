@@ -1,15 +1,94 @@
+const { Client, KubeConfig } = require("kubernetes-client");
+const Request = require("kubernetes-client/backends/request");
+const { OpenshiftClient } = require("openshift-rest-client");
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
 const { waitFor, randomString } = require("./utils");
 
-const getNamespaces = async () => {
-  const output = await exec(`oc get projects -o name`);
-  return output.stdout
-    .split("project.project.openshift.io/")
-    .join("")
-    .trim()
-    .split("\n");
+const CONFIG_MAP = "configmaps";
+const ROUTE = "routes";
+const PROJECT = "projects";
+
+const GET = "get";
+const CREATE = "create";
+const DELETE = "delete";
+const GET_ALL = "getAll";
+
+let mdcNamespace;
+let kubeClient;
+let openshiftClient;
+let allNamespaces;
+
+const getNamespaces = async namespaceName => {
+  if (!allNamespaces) {
+    // eslint-disable-next-line require-atomic-updates
+    allNamespaces = await resource(PROJECT, GET_ALL);
+  }
+  if (namespaceName) {
+    return allNamespaces.items
+      .map(ns => ns.metadata.name)
+      .find(name => name.includes(namespaceName));
+  }
+  return allNamespaces;
+};
+
+const init = async () => {
+  const kubeconfig = new KubeConfig();
+
+  kubeconfig.loadFromDefault();
+
+  const backend = new Request({ kubeconfig });
+  kubeClient = new Client({ backend });
+
+  await kubeClient.loadSpec();
+
+  openshiftClient = await OpenshiftClient();
+
+  return openshiftClient;
+};
+
+const resource = async (type, action, param, namespace = null) => {
+  let api;
+
+  switch (type) {
+    case CONFIG_MAP:
+      api = kubeClient.api.v1;
+      break;
+
+    case ROUTE:
+      api = openshiftClient.apis.route.v1;
+      break;
+
+    case PROJECT:
+      api = openshiftClient.apis.project.v1;
+      break;
+
+    default:
+      break;
+  }
+
+  const request = (type === PROJECT
+    ? api
+    : api.namespaces(namespace || mdcNamespace))[type];
+
+  switch (action) {
+    case GET:
+      return (await request(param).get()).body;
+
+    case CREATE:
+      return (await request.post({ body: param })).body;
+
+    case DELETE:
+      await request(param).delete();
+      break;
+
+    case GET_ALL:
+      return (await request.get()).body;
+
+    default:
+      break;
+  }
 };
 
 const deployShowcaseServer = async namespace => {
@@ -39,9 +118,9 @@ const deleteProject = async name => {
 const cleanupNamespaces = async nsPrefix => {
   const namespaces = await getNamespaces();
 
-  for (const ns of namespaces) {
-    if (ns.startsWith(nsPrefix)) {
-      await deleteProject(ns);
+  for (const ns of namespaces.items) {
+    if (ns.metadata.name.startsWith(nsPrefix)) {
+      await deleteProject(ns.metadata.name);
     }
   }
 };
@@ -63,5 +142,23 @@ const redeployShowcase = async namePrefix => {
 };
 
 module.exports = {
-  redeployShowcase
+  init,
+  TYPE: {
+    CONFIG_MAP,
+    ROUTE,
+    PROJECT
+  },
+  ACTION: {
+    GET,
+    CREATE,
+    DELETE,
+    GET_ALL
+  },
+  resource,
+  deployShowcaseServer,
+  newProject,
+  deleteProject,
+  redeployShowcase,
+  getNamespaces,
+  cleanupNamespaces
 };
