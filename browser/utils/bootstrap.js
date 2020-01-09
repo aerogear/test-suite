@@ -42,20 +42,15 @@ afterEach(function() {
 });
 
 async function getSEUrl() {
-  let webappNs = 'openshift-webapp';
+  let webappNs = "openshift-webapp";
   try {
     await exec(`oc get projects | grep ${webappNs}`);
   } catch (_) {
-    webappNs = 'webapp';
+    webappNs = "webapp";
   }
-  
+
   // MDC namespace is targeted by default
-  const seRoute = await resource(
-    TYPE.ROUTE,
-    ACTION.GET_ALL,
-    null,
-    webappNs
-  );
+  const seRoute = await resource(TYPE.ROUTE, ACTION.GET_ALL, null, webappNs);
   return `https://${seRoute.items[0].spec.host}`;
 }
 
