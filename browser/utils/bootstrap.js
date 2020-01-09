@@ -1,4 +1,6 @@
 const puppeteer = require("puppeteer");
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
 const { init, resource, TYPE, ACTION } = require("../../common/util/rhmds-api");
 const FAILED_TESTS = {};
 
@@ -40,12 +42,19 @@ afterEach(function() {
 });
 
 async function getSEUrl() {
+  let webappNs = 'openshift-webapp';
+  try {
+    await exec(`oc get projects | grep ${webappNs}`);
+  } catch (_) {
+    webappNs = 'webapp';
+  }
+  
   // MDC namespace is targeted by default
   const seRoute = await resource(
     TYPE.ROUTE,
     ACTION.GET_ALL,
     null,
-    "openshift-webapp"
+    webappNs
   );
   return `https://${seRoute.items[0].spec.host}`;
 }

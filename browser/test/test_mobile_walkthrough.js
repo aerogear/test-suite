@@ -57,15 +57,11 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     await checkLinks(".integr8ly-c-card--content a");
   });
   it("should open the Task 03 and verify the links", async () => {
-    await page.click("#nextPartWalkthrough");
-    await checkLinks(".integr8ly-c-card--content a");
-  });
-  it("should open the Task 04 and verify the links", async () => {
     await clickOnElements('input[name*="Yes"]');
     await page.click("#nextPartWalkthrough");
     await checkLinks(".integr8ly-c-card--content a");
   });
-  it("should open the Task 05 and verify the links", async () => {
+  it("should open the Task 04 and verify the links", async () => {
     await clickOnElements('input[name*="Yes"]');
     await page.click("#nextPartWalkthrough");
   });
