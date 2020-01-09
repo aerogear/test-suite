@@ -1,4 +1,6 @@
 const puppeteer = require("puppeteer");
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
 const { init, resource, TYPE, ACTION } = require("../../common/util/rhmds-api");
 const FAILED_TESTS = {};
 
@@ -18,7 +20,7 @@ before(async () => {
   global.browser = await puppeteer.launch(opts);
   global.page = null;
   global.context = null;
-  global.mdcUrl = await getMdcUrl();
+  global.seUrl = await getSEUrl();
   global.openshiftConsoleUrl = getOpenShiftConsoleUrl(openshiftClient);
 });
 
@@ -39,10 +41,17 @@ afterEach(function() {
   }
 });
 
-async function getMdcUrl() {
+async function getSEUrl() {
+  let webappNs = "openshift-webapp";
+  try {
+    await exec(`oc get projects | grep ${webappNs}`);
+  } catch (_) {
+    webappNs = "webapp";
+  }
+
   // MDC namespace is targeted by default
-  const mdcRoute = await resource(TYPE.ROUTE, ACTION.GET_ALL);
-  return `https://${mdcRoute.items[0].spec.host}`;
+  const seRoute = await resource(TYPE.ROUTE, ACTION.GET_ALL, null, webappNs);
+  return `https://${seRoute.items[0].spec.host}`;
 }
 
 function getOpenShiftConsoleUrl(openshiftClient) {
