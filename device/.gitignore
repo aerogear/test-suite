@@ -11,3 +11,4 @@ mobile-services.json
 push-app.json
 tmp
 /docker-compose.yml
+sync-url.txt

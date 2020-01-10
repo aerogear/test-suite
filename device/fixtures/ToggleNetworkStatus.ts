@@ -1,7 +1,4 @@
-import {
-  NetworkStatus,
-  NetworkStatusChangeCallback
-} from "@aerogear/voyager-client";
+import { NetworkStatus, NetworkStatusChangeCallback } from "offix-client-boost";
 
 export class ToggleNetworkStatus implements NetworkStatus {
   private callback: NetworkStatusChangeCallback = null;

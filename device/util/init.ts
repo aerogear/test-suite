@@ -1,13 +1,7 @@
-import { AeroGearApp } from "@aerogear/app";
-import {
-  config as mobileServices,
-  dockerCompose
-} from "../config/mobile-services";
 import { device } from "./device";
-import { postgres } from "./postgres";
 
 interface Universe {
-  app: AeroGearApp;
+  app: string;
 }
 
 before("Initialize appium", async function() {
@@ -27,31 +21,8 @@ before("Wait for cordova device ready", async function() {
   });
 });
 
-if (dockerCompose) {
-  before("connect to postgres", async () => {
-    await postgres.connect();
-  });
-
-  before("reset metrics db", async () => {
-    await postgres.query("DELETE FROM mobileappmetrics");
-  });
-}
-
-before("Initialize aerogear-js-sdk", async () => {
-  await device.execute(async (modules, universe: Universe, config) => {
-    const { init } = modules["@aerogear/app"];
-    universe.app = init(config);
-  }, mobileServices);
-});
-
 after("Close appium session", async () => {
   await device.close();
 });
-
-if (dockerCompose) {
-  after("close postgres connection", async () => {
-    await postgres.end();
-  });
-}
 
 export { Universe as GlobalUniverse };

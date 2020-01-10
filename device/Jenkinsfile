@@ -8,6 +8,8 @@ def runIntegrationTests() {
 //   - OPENSHIFT_URL - RHMI cluster to target (https://...)
 //   - OPENSHIFT_USERNAME - Evals username
 //   - OPENSHIFT_PASSWORD - Evals user password
+//   - ADMIN_USERNAME - RHMI cluster-admin username
+//   - ADMIN_PASSWORD - RHMI cluster-admin password
 
 pipeline {
   agent none
@@ -91,6 +93,9 @@ pipeline {
                 sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p ${OPENSHIFT_PASSWORD}"
               }
               sh './scripts/prepare.js'
+              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'ADMIN_PASSWORD', password: ADMIN_PASSWORD]]]) {
+                sh "oc login $OPENSHIFT_URL -u $ADMIN_USERNAME -p ${ADMIN_PASSWORD}"
+              }
             }
           }
         }

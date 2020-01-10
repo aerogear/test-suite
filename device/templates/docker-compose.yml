@@ -1,34 +1,6 @@
 version: "3"
 
 services:
-  keycloak:
-    image: jboss/keycloak:${KEYCLOAK_VERSION}
-    ports:
-      - "8080:8080"
-    environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-      DB_VENDOR: h2
-  metricsdb:
-    image: postgres:9.6
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: metrics
-      POSTGRES_PASSWORD: metrics
-      POSTGRES_DB: metrics
-  metrics:
-    image: aerogear/aerogear-app-metrics:${METRICS_VERSION}
-    ports:
-      - "3000:3000"
-    environment:
-      PGHOST: metricsdb
-      PGUSER: metrics
-      PGPASSWORD: metrics
-      PGDATABASE: metrics
-    restart: always
-    depends_on:
-      - metricsdb
   upsdb:
     image: postgres:9.6
     environment:
@@ -66,21 +38,3 @@ services:
     restart: always
     depends_on:
       - datasyncdb
-  mssdb:
-    image: postgres:9.6
-    environment:
-      POSTGRES_USER: mss
-      POSTGRES_PASSWORD: mss
-      POSTGRES_DB: mss
-  mss:
-    image: quay.io/aerogear/mobile-security-service:${MSS_VERSION}
-    ports:
-      - "3001:3000"
-    environment:
-      PGHOST: mssdb
-      PGUSER: mss
-      PGPASSWORD: mss
-      PGDATABASE: mss
-    restart: always
-    depends_on:
-      - mssdb
