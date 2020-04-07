@@ -42,7 +42,7 @@ afterEach(function() {
 });
 
 async function getSEUrl() {
-  let webappNs = "openshift-webapp";
+  let webappNs = "redhat-rhmi-solution-explorer";
   try {
     await exec(`oc get projects | grep ${webappNs}`);
   } catch (_) {

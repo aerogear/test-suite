@@ -16,11 +16,11 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
         waitUntil: ["domcontentloaded", "networkidle0"]
       })
     ]);
-
+    await page.click("#providers li:nth-child(3) a");
     await page.waitForSelector(".login-pf-header");
 
     // SSO login page
-    expect(await page.title()).to.eql("Log in to openshift");
+    expect(await page.title()).to.eql("Log in to Testing IDP");
 
     await page.type("#username", openshiftUsername);
     await page.type("#password", openshiftPassword);
@@ -34,27 +34,29 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     await page.close();
   });
 
-  it("should redirect to Solution Explorer", async () => {
+  it("should redirect to Solution Patterns", async () => {
     await page.waitForSelector(
-      "#mobile-walkthrough-walkthroughs-1-ionic-showcase article"
+      "#datasync-starter\\.git-walkthroughs-1-exploring-datasync-codeready article"
     );
+    await page.click("#pf-tab-1-solutionPatternsTab");
   });
-  it("should open the Mobile WT and verify the links", async () => {
-    await page.click("button[aria-controls=solutionPatternsTabSection]");
+  it("should open the Data Sync WT and verify the sidebar links", async () => {
     await Promise.all([
-      page.click("#mobile-walkthrough-walkthroughs-1-ionic-showcase article"),
+      page.click(
+        "#datasync-starter\\.git-walkthroughs-1-exploring-datasync-codeready article"
+      ),
       page.waitForNavigation({ waitUntil: ["domcontentloaded"] })
     ]);
-    await checkLinks(".integr8ly-c-card--content a");
+    await checkLinks(".integr8ly-module-frame a");
   });
   it("should open the Task 01 and verify the links", async () => {
-    page.click("#get-started-01");
+    await page.waitForSelector("#get-started-01");
+    await page.click("#get-started-01");
     await checkLinks(".integr8ly-c-card--content a");
   });
   it("should open the Task 02 and verify the links", async () => {
     await clickOnElements('input[name*="Yes"]');
     await page.click("#nextPartWalkthrough");
-    await checkLinks(".integr8ly-c-card--content a");
   });
   it("should open the Task 03 and verify the links", async () => {
     await clickOnElements('input[name*="Yes"]');
@@ -62,7 +64,6 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     await checkLinks(".integr8ly-c-card--content a");
   });
   it("should open the Task 04 and verify the links", async () => {
-    await clickOnElements('input[name*="Yes"]');
     await page.click("#nextPartWalkthrough");
   });
   it("should finish the walkthrough", async () => {
