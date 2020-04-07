@@ -2,6 +2,7 @@
 //   - OPENSHIFT_URL - RHMI cluster to target (https://...)
 //   - OPENSHIFT_USERNAME - cluster-admin username
 //   - OPENSHIFT_PASSWORD - cluster-admin password
+//   - OPENSHIFT_TOKEN - token for logging into the cluster
 
 pipeline {
   agent {
@@ -30,9 +31,7 @@ pipeline {
     }
     stage('Login with oc') {
       steps {
-        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
-          sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p ${OPENSHIFT_PASSWORD}"
-        }
+          sh "oc login --token=$OPENSHIFT_TOKEN --server=$OPENSHIFT_URL"
       }
     }
     stage('Test') {
