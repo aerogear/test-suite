@@ -32,7 +32,6 @@ pipeline {
     stage('Login with oc') {
       steps {
           sh "oc login --token=$OPENSHIFT_TOKEN --server=$OPENSHIFT_URL"
-        }
       }
     }
     stage('Test') {
