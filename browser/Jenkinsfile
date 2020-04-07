@@ -31,7 +31,6 @@ pipeline {
     }
     stage('Login with oc') {
       steps {
-        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
           sh "oc login --token=$OPENSHIFT_TOKEN --server=$OPENSHIFT_URL"
         }
       }
