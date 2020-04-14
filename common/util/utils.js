@@ -46,7 +46,12 @@ const getHeaderWithOauthProxyCookie = async (
     const page = await browser.newPage();
 
     await page.goto(serviceURL);
-    await Promise.all([page.waitForNavigation(), page.click("button")]);
+    await page.$('input[name="rd"]');
+    await Promise.all([page.waitForNavigation(), page.click("button.btn")]);
+    const idp = await page.$("#providers > li:nth-child(3) > a:nth-child(1)");
+    if (idp) {
+      await Promise.all([page.waitForNavigation(), idp.click()]);
+    }
     await page.type("#username", openshiftUser);
     await page.type("#password", openshiftPass);
     await Promise.all([page.waitForNavigation(), page.click("#kc-login")]);
