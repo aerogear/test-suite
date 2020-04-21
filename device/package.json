@@ -30,6 +30,7 @@
     "ts-node": "8.4.1",
     "typescript": "3.6.3",
     "unifiedpush-node-sender": "git+https://git@github.com/aerogear/aerogear-unifiedpush-nodejs-client.git",
+    "wd": "^1.12.1",
     "webdriverio": "5.14.4"
   }
 }

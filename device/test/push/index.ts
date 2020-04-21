@@ -25,18 +25,18 @@ describe("Push", function() {
   if (process.env.DOCKER_COMPOSE !== "true") {
     before("expose ups", async () => {
       const output = await exec(
-        "oc get projects | grep mobile-unifiedpush | awk '{print $1}'"
+        "oc get projects | grep -m1 redhat-rhmi-ups | awk '{print $1}'"
       );
       upsNamespace = output.stdout.trim();
       await exec(
-        `oc expose service unifiedpush-unifiedpush -n ${upsNamespace}`
+        `oc expose service ups-unifiedpush -n ${upsNamespace}`
       );
       const routeOutput = await exec(
         `oc get routes -n ${upsNamespace} | grep web | awk '{print $2}'`
       );
       upsUrl = `http://${routeOutput.stdout.trim()}`;
       const routeProxyOutput = await exec(
-        `oc get routes -n ${upsNamespace} | grep unifiedpush-unifiedpush-proxy | awk '{print $2}'`
+        `oc get routes -n ${upsNamespace} | grep ups-unifiedpush-proxy | awk '{print $2}'`
       );
       upsConfigUrl = `https://${routeProxyOutput.stdout.trim()}`;
     });
@@ -101,7 +101,7 @@ describe("Push", function() {
 
   if (process.env.DOCKER_COMPOSE !== "true") {
     after("delete exposed route", async () => {
-      await exec(`oc delete route unifiedpush-unifiedpush -n ${upsNamespace}`);
+      await exec(`oc delete route ups-unifiedpush -n ${upsNamespace}`);
     });
   }
 
