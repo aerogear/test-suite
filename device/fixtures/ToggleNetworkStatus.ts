@@ -5,7 +5,7 @@ export class ToggleNetworkStatus implements NetworkStatus {
   private online = true;
 
   addListener(callback) {
-    this.callbacks.push(callback)
+    this.callbacks.push(callback);
   }
   public removeListener(callback: any) {
     const index = this.callbacks.indexOf(callback);
@@ -21,7 +21,7 @@ export class ToggleNetworkStatus implements NetworkStatus {
   public setOnline(online: boolean): void {
     this.online = online;
     for (const callback of this.callbacks) {
-      callback({ online })
+      callback({ online });
     }
   }
 }
