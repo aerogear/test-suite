@@ -1,11 +1,17 @@
 import { NetworkStatus, NetworkStatusChangeCallback } from "offix-client-boost";
 
 export class ToggleNetworkStatus implements NetworkStatus {
-  private callback: NetworkStatusChangeCallback = null;
+  private callbacks: NetworkStatusChangeCallback[] = [];
   private online = true;
 
-  public onStatusChangeListener(callback: NetworkStatusChangeCallback): void {
-    this.callback = callback;
+  addListener(callback) {
+    this.callbacks.push(callback);
+  }
+  public removeListener(callback: any) {
+    const index = this.callbacks.indexOf(callback);
+    if (index >= 0) {
+      this.callbacks.splice(index, 1);
+    }
   }
 
   public async isOffline(): Promise<boolean> {
@@ -14,9 +20,8 @@ export class ToggleNetworkStatus implements NetworkStatus {
 
   public setOnline(online: boolean): void {
     this.online = online;
-
-    if (this.callback !== null) {
-      this.callback.onStatusChange({ online });
+    for (const callback of this.callbacks) {
+      callback({ online });
     }
   }
 }
