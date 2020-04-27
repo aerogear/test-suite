@@ -14,16 +14,24 @@ RUN npm config set -g registry https://repository.engineering.redhat.com/nexus/r
 
 # install oc cli tool
 
-ADD https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz $HOME/oc.tar.gz
+ADD https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz $HOME/oc.tar.gz
 
 RUN tar -xvf oc.tar.gz
 
-RUN mv openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/* /usr/local/bin/
+RUN mv oc /usr/local/bin/
 
 # create jenkins user
 
-RUN useradd -m -u 1001 jenkins
+RUN useradd -m -u 1001 jenkins -G audio,video
 
 ENV HOME=/home/jenkins
+
+ENV CHROME_DEVEL_SANDBOX=/opt/google/chrome/chrome-sandbox
+
+RUN echo $CHROME_DEVEL_SANDBOX
+
+RUN echo 'kernel.unprivileged_userns_clone=1' > /etc/sysctl.d/00-local-userns.conf
+
+RUN service procps restart
 
 USER jenkins
