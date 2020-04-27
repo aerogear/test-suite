@@ -7,25 +7,25 @@ const {
   getNamespaces,
   ACTION,
   resource,
-  TYPE
+  TYPE,
 } = require("../../common/util/rhmds-api");
 const { getHeaderWithOauthProxyCookie } = require("../../common/util/utils");
 const {
   waitForApp,
   waitForPodsToBeReady,
   waitForPodsToBeDeleted,
-  triggerRedeploy
+  triggerRedeploy,
 } = require("../utils");
 
-describe("Data after redeployment", async function() {
+describe("Data after redeployment", async function () {
   let headers;
   this.timeout(0);
 
-  before("Init kube client", async function() {
+  before("Init kube client", async function () {
     await init();
   });
 
-  describe("UPS", async function() {
+  describe("UPS", async function () {
     let upsProjectName;
     let upsHostname;
     let pushAppEndpoint;
@@ -34,16 +34,13 @@ describe("Data after redeployment", async function() {
     const pushAppName = `push-app-test-${Date.now()}`;
     const pushVariantName = `push-variant-test-${Date.now()}`;
 
-    before("Get UPS resources", async function() {
+    before("Get UPS resources", async function () {
       upsProjectName = await getNamespaces("redhat-rhmi-ups");
-      upsHostname = (await resource(
-        TYPE.ROUTE,
-        ACTION.GET_ALL,
-        null,
-        upsProjectName
-      )).items
-        .map(r => r.spec.host)
-        .find(url => url.includes("ups-unifiedpush"));
+      upsHostname = (
+        await resource(TYPE.ROUTE, ACTION.GET_ALL, null, upsProjectName)
+      ).items
+        .map((r) => r.spec.host)
+        .find((url) => url.includes("ups-unifiedpush"));
       pushAppEndpoint = `https://${upsHostname}/rest/applications`;
       headers = await getHeaderWithOauthProxyCookie(
         pushAppEndpoint,
@@ -52,11 +49,11 @@ describe("Data after redeployment", async function() {
       );
     });
 
-    after("Delete UPS app", async function() {
+    after("Delete UPS app", async function () {
       await axios({
         method: "DELETE",
         headers,
-        url: `${pushAppEndpoint}/${pushApp.pushApplicationID}`
+        url: `${pushAppEndpoint}/${pushApp.pushApplicationID}`,
       });
     });
 
@@ -74,8 +71,8 @@ describe("Data after redeployment", async function() {
         {
           resourceType: "deployment.extensions",
           resourceName: upsDcName,
-          namespace: upsProjectName
-        }
+          namespace: upsProjectName,
+        },
       ]);
       await waitForPodsToBeDeleted(upsProjectName);
       await waitForPodsToBeReady(upsProjectName);
@@ -90,7 +87,7 @@ describe("Data after redeployment", async function() {
         "Previously created app was not found"
       );
       const foundVariant = foundApp.variants.find(
-        v => v.name === pushVariantName
+        (v) => v.name === pushVariantName
       );
       should.not.equal(
         foundVariant,
@@ -99,34 +96,40 @@ describe("Data after redeployment", async function() {
       );
     });
 
-    const createPushApp = async name => {
-      return (await axios({
-        method: "POST",
-        url: pushAppEndpoint,
-        headers,
-        data: { name }
-      })).data;
+    const createPushApp = async (name) => {
+      return (
+        await axios({
+          method: "POST",
+          url: pushAppEndpoint,
+          headers,
+          data: { name },
+        })
+      ).data;
     };
 
     const createPushVariant = async (name, appId) => {
-      return (await axios({
-        method: "POST",
-        url: `${pushAppEndpoint}/${appId}/android`,
-        headers,
-        data: {
-          name,
-          projectNumber: "test",
-          googleKey: "test"
-        }
-      })).data;
+      return (
+        await axios({
+          method: "POST",
+          url: `${pushAppEndpoint}/${appId}/android`,
+          headers,
+          data: {
+            name,
+            projectNumber: "test",
+            googleKey: "test",
+          },
+        })
+      ).data;
     };
 
-    const getPushApp = async pushAppName => {
-      return (await axios({
-        method: "GET",
-        headers,
-        url: pushAppEndpoint
-      })).data.find(app => app.name === pushAppName);
+    const getPushApp = async (pushAppName) => {
+      return (
+        await axios({
+          method: "GET",
+          headers,
+          url: pushAppEndpoint,
+        })
+      ).data.find((app) => app.name === pushAppName);
     };
   });
 });

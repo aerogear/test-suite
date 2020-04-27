@@ -4,7 +4,7 @@ module.exports = async () => {
   await page.waitForSelector(".mobile-client-config pre");
   const mobileServicesConfig = await page.$eval(
     ".mobile-client-config pre",
-    el => el.textContent
+    (el) => el.textContent
   );
   expect(mobileServicesConfig).to.be.a("string");
   return JSON.parse(mobileServicesConfig);

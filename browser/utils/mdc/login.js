@@ -15,7 +15,7 @@ module.exports = async () => {
 
   await Promise.all([
     page.click("button[type=submit"),
-    page.waitForNavigation()
+    page.waitForNavigation(),
   ]);
 
   // SSO login page
@@ -25,7 +25,7 @@ module.exports = async () => {
   await page.type("#password", password);
   await Promise.all([
     page.click("input[type=submit]"),
-    page.waitForNavigation()
+    page.waitForNavigation(),
   ]);
 
   // MDC main page

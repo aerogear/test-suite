@@ -4,7 +4,7 @@ const prefix = {
   info: chalk.blue("I:"),
   success: chalk.green("S:"),
   warning: chalk.yellow("W:"),
-  error: chalk.red("E:")
+  error: chalk.red("E:"),
 };
 
 function format(prefix: string, message: string): string {
@@ -31,5 +31,5 @@ export const log = {
   info,
   success,
   warning,
-  error
+  error,
 };

@@ -6,9 +6,11 @@ const { waitFor } = require("../../common/util/utils");
 async function waitForPodsToBeReady(namespace) {
   await waitFor(
     async () => {
-      const podsOutput = (await exec(
-        `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
-      )).stdout;
+      const podsOutput = (
+        await exec(
+          `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
+        )
+      ).stdout;
       console.log(`Waiting for all pods in ${namespace} namespace to be ready`);
       // until all pods have ready=true status
       return !podsOutput.includes("false");
@@ -21,9 +23,11 @@ async function waitForPodsToBeReady(namespace) {
 async function waitForPodsToBeDeleted(namespace) {
   await waitFor(
     async () => {
-      const podsOutput = (await exec(
-        `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
-      )).stdout;
+      const podsOutput = (
+        await exec(
+          `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
+        )
+      ).stdout;
       console.log(
         `Waiting for all pods in ${namespace} namespace to be deleted`
       );
@@ -68,5 +72,5 @@ module.exports = {
   waitForPodsToBeReady,
   waitForPodsToBeDeleted,
   waitForApp,
-  triggerRedeploy
+  triggerRedeploy,
 };

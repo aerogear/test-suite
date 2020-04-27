@@ -18,8 +18,8 @@ export async function getAutomationSession(
   const response = await axios.get<Data>(`${automateApi}/sessions/${id}.json`, {
     auth: {
       username: BROWSERSTACK_USER,
-      password: BROWSERSTACK_KEY
-    }
+      password: BROWSERSTACK_KEY,
+    },
   });
 
   return response.data.automation_session;

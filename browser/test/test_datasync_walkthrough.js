@@ -13,8 +13,8 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     await Promise.all([
       page.goto(seUrl),
       page.waitForNavigation({
-        waitUntil: ["domcontentloaded", "networkidle0"]
-      })
+        waitUntil: ["domcontentloaded", "networkidle0"],
+      }),
     ]);
     await page.click("#providers li:nth-child(3) a");
     await page.waitForSelector(".login-pf-header");
@@ -26,7 +26,7 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
     await page.type("#password", openshiftPassword);
     await Promise.all([
       page.click("input[type=submit]"),
-      page.waitForNavigation()
+      page.waitForNavigation(),
     ]);
   });
 
@@ -45,7 +45,7 @@ describe("Test Mobile Walkthrough in Solution Explorer", () => {
       page.click(
         "#datasync-starter\\.git-walkthroughs-1-exploring-datasync-codeready article"
       ),
-      page.waitForNavigation({ waitUntil: ["domcontentloaded"] })
+      page.waitForNavigation({ waitUntil: ["domcontentloaded"] }),
     ]);
     await checkLinks(".integr8ly-module-frame a");
   });

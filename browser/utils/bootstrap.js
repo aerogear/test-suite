@@ -12,7 +12,7 @@ const opts = {
   // Pretty useful when fixing/writing a test
   slowMo: 50,
   defaultViewport: null,
-  args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  args: ["--no-sandbox", "--disable-setuid-sandbox"],
 };
 
 before(async () => {
@@ -29,13 +29,13 @@ after(() => {
 });
 
 // Skip test if first test from folder failed
-beforeEach(function() {
+beforeEach(function () {
   if (FAILED_TESTS[this.currentTest.file]) {
     this.skip();
   }
 });
 
-afterEach(function() {
+afterEach(function () {
   if (this.currentTest.state === "failed") {
     FAILED_TESTS[this.currentTest.file] = true;
   }

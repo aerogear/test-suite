@@ -8,15 +8,15 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: "ts-loader",
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js"]
+    extensions: [".tsx", ".ts", ".js"],
   },
   output: {
     filename: "index.js",
-    path: path.resolve(__dirname, "www/js")
-  }
+    path: path.resolve(__dirname, "www/js"),
+  },
 };

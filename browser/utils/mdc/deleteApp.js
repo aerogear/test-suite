@@ -1,8 +1,8 @@
-module.exports = async appName => {
+module.exports = async (appName) => {
   const mdcLoginPageUrl = global.mdcUrl;
 
   await page.goto(mdcLoginPageUrl, {
-    waitUntil: ["domcontentloaded", "networkidle0"]
+    waitUntil: ["domcontentloaded", "networkidle0"],
   });
   await page.waitForSelector(".toolbar-pf-actions button");
   // Find app's "Dropdown" button and click on it
@@ -17,7 +17,7 @@ module.exports = async appName => {
     document.querySelector(".modal-footer .btn-danger").click();
   });
   await page.waitForFunction(
-    appName => document.querySelector(`#${appName}`) === null,
+    (appName) => document.querySelector(`#${appName}`) === null,
     {},
     appName
   );

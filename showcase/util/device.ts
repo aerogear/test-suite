@@ -3,7 +3,7 @@ import {
   BROWSERSTACK_APP,
   BROWSERSTACK_KEY,
   BROWSERSTACK_USER,
-  MOBILE_PLATFORM
+  MOBILE_PLATFORM,
 } from "./config";
 
 const capabilities = {
@@ -21,14 +21,14 @@ const capabilities = {
   "browserstack.key": BROWSERSTACK_KEY,
   "browserstack.debug": true,
   "browserstack.networkLogs": true,
-  "browserstack.appium_version": "1.14.0"
+  "browserstack.appium_version": "1.14.0",
 };
 
 const options: WebdriverIO.RemoteOptions = {
   hostname: "hub-cloud.browserstack.com",
   logLevel: "error",
   waitforTimeout: 10 * 1000,
-  capabilities
+  capabilities,
 };
 
 export let device: BrowserObject;

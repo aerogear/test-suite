@@ -21,7 +21,7 @@ function getEnv(name: string, fallback?: string): string {
 
 export enum MobilePlatform {
   IOS = "ios",
-  ANDROID = "android"
+  ANDROID = "android",
 }
 
 export const BROWSERSTACK_USER = getEnv("BROWSERSTACK_USER");
