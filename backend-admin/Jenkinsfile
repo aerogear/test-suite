@@ -2,6 +2,8 @@
 //   - OPENSHIFT_URL - RHMI cluster to target (https://...)
 //   - OPENSHIFT_ADMIN_USERNAME - Admin username
 //   - OPENSHIFT_ADMIN_PASSWORD - Admin user password
+//   - OPENSHIFT_KUBEADMIN_USERNAME - Admin username
+//   - OPENSHIFT_KUBEADMIN_PASSWORD - Admin user password
 
 pipeline {
   agent {
@@ -10,25 +12,35 @@ pipeline {
       label 'psi_rhel8'
     }
   }
+  options {
+    timestamps()
+    ansiColor('gnome-terminal')
+  }
+  environment {
+    JUNIT_REPORT_STACK = '1'
+    JUNIT_REPORT_PATH = 'report.xml'
+    JUNIT_REPORT_NAME = 'Backend-admin Tests'
+  }
   stages {
     stage('Install dependencies') {
       steps {
         sh 'npm install'
-        dir('backend') {
+        dir('backend-admin') {
           sh 'npm install'
         }
       }
     }
     stage('Login with oc') {
       steps {
-        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_ADMIN_PASSWORD', password: 'OPENSHIFT_ADMIN_PASSWORD']]]) {
-          sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_ADMIN_USERNAME -p ${OPENSHIFT_ADMIN_PASSWORD}"
+        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_KUBEADMIN_PASSWORD', password: 'OPENSHIFT_KUBEADMIN_PASSWORD']]]) {
+          sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_KUBEADMIN_USERNAME -p ${OPENSHIFT_KUBEADMIN_PASSWORD}"
         }
       }
     }
     stage('Test') {
       steps {
-        dir('backend') {
+        dir('backend-admin') {
+          sh 'node --version'
           sh 'npm start -- --reporter mocha-jenkins-reporter || true'
           archiveArtifacts JUNIT_REPORT_PATH
           junit allowEmptyResults: true, testResults: JUNIT_REPORT_PATH
