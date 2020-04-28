@@ -1,9 +1,9 @@
 // Expected parameters for the pipeline:
 //   - OPENSHIFT_URL - RHMI cluster to target (https://...)
-//   - OPENSHIFT_ADMIN_USERNAME - Admin username
-//   - OPENSHIFT_ADMIN_PASSWORD - Admin user password
-//   - OPENSHIFT_KUBEADMIN_USERNAME - Admin username
-//   - OPENSHIFT_KUBEADMIN_PASSWORD - Admin user password
+//   - OPENSHIFT_ADMIN_USERNAME - customer-admin username
+//   - OPENSHIFT_ADMIN_PASSWORD - customer-admin user password
+//   - OPENSHIFT_KUBEADMIN_USERNAME - kubeadmin username
+//   - OPENSHIFT_KUBEADMIN_PASSWORD - kubeadmin user password
 
 pipeline {
   agent {
