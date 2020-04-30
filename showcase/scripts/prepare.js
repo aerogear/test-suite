@@ -8,7 +8,7 @@ const {
   bind,
   recreateMobileApp,
   redeployShowcase,
-  outputAppConfig
+  outputAppConfig,
 } = require("../../common/util/rhmds-api");
 
 const appName = "showcase-test-suite";

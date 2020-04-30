@@ -57,7 +57,7 @@ simulate a real user.
 
 ```ts
 const e = await device.$("#e2e-menu-item-profile");
-await interact(e, e => e.click());
+await interact(e, (e) => e.click());
 ```
 
 #### 1. Use the retry() method
@@ -75,7 +75,7 @@ consequence isn't satisfied throw an Error and the `retry()` method will try aga
 ```ts
 await retry(async () => {
   const e = await device.$("#e2e-menu-item-profile");
-  await interact(e, e => e.click());
+  await interact(e, (e) => e.click());
   await e.waitForDisplayed(undefined, true);
 });
 ```

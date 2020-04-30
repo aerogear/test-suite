@@ -13,7 +13,7 @@ const waitFor = async (check, timeout, pause = 4000) => {
 
     passed = await check();
     while (!timedout && !passed) {
-      await new Promise(resolve => setTimeout(resolve, pause));
+      await new Promise((resolve) => setTimeout(resolve, pause));
       passed = await check();
     }
 
@@ -22,10 +22,7 @@ const waitFor = async (check, timeout, pause = 4000) => {
   });
 };
 
-const randomString = () =>
-  Math.random()
-    .toString(36)
-    .substring(7);
+const randomString = () => Math.random().toString(36).substring(7);
 
 const getHeaderWithOauthProxyCookie = async (
   serviceURL,
@@ -42,11 +39,19 @@ const getHeaderWithOauthProxyCookie = async (
   let cookie;
 
   try {
-    browser = await puppeteer.launch({ slowMo: 50 });
+    browser = await puppeteer.launch({
+      slowMo: 50,
+      executablePath: "google-chrome",
+    });
     const page = await browser.newPage();
 
     await page.goto(serviceURL);
-    await Promise.all([page.waitForNavigation(), page.click("button")]);
+    await page.$('input[name="rd"]');
+    await Promise.all([page.waitForNavigation(), page.click("button.btn")]);
+    const idp = await page.$("#providers > li:nth-child(3) > a:nth-child(1)");
+    if (idp) {
+      await Promise.all([page.waitForNavigation(), idp.click()]);
+    }
     await page.type("#username", openshiftUser);
     await page.type("#password", openshiftPass);
     await Promise.all([page.waitForNavigation(), page.click("#kc-login")]);
@@ -55,8 +60,8 @@ const getHeaderWithOauthProxyCookie = async (
       await Promise.all([page.waitForNavigation(), approveButton.click()]);
     }
     const cookies = await page.cookies();
-    cookie = cookies.find(c => c.name === "_oauth_proxy").value;
-  } catch (_) {
+    cookie = cookies.find((c) => c.name === "_oauth_proxy").value;
+  } catch (err) {
     throw new Error(
       `Error occured when logging in to ${serviceURL} via oauth proxy`
     );
@@ -70,5 +75,5 @@ const getHeaderWithOauthProxyCookie = async (
 module.exports = {
   waitFor,
   randomString,
-  getHeaderWithOauthProxyCookie
+  getHeaderWithOauthProxyCookie,
 };

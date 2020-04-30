@@ -6,14 +6,35 @@ const { waitFor } = require("../../common/util/utils");
 async function waitForPodsToBeReady(namespace) {
   await waitFor(
     async () => {
-      const podsOutput = (await exec(
-        `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
-      )).stdout;
+      const podsOutput = (
+        await exec(
+          `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
+        )
+      ).stdout;
       console.log(`Waiting for all pods in ${namespace} namespace to be ready`);
       // until all pods have ready=true status
       return !podsOutput.includes("false");
     },
-    200000,
+    300000,
+    10000
+  );
+}
+
+async function waitForPodsToBeDeleted(namespace) {
+  await waitFor(
+    async () => {
+      const podsOutput = (
+        await exec(
+          `oc get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' -n ${namespace}`
+        )
+      ).stdout;
+      console.log(
+        `Waiting for all pods in ${namespace} namespace to be deleted`
+      );
+      // until all pods have ready=true status
+      return podsOutput.includes("false");
+    },
+    300000,
     10000
   );
 }
@@ -26,8 +47,8 @@ async function waitForApp(url, headers, statusCode) {
       });
       return res ? res.status === statusCode : false;
     },
-    30000,
-    1000
+    90000,
+    2000
   );
 }
 
@@ -49,6 +70,7 @@ async function triggerRedeploy(resources) {
 
 module.exports = {
   waitForPodsToBeReady,
+  waitForPodsToBeDeleted,
   waitForApp,
-  triggerRedeploy
+  triggerRedeploy,
 };

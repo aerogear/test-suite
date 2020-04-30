@@ -7,7 +7,7 @@ import { promisify } from "util";
 import { exec as execAsync } from "child_process";
 const exec = promisify(execAsync);
 
-describe("Push", function() {
+describe("Push", function () {
   this.timeout(0);
 
   // skip push tests in ios
@@ -58,8 +58,8 @@ describe("Push", function() {
       android: {
         senderID: senderId,
         variantID: null,
-        variantSecret: null
-      }
+        variantSecret: null,
+      },
     };
 
     // create test application
@@ -67,8 +67,8 @@ describe("Push", function() {
       method: "post",
       url: `${upsUrl}/rest/applications`,
       data: {
-        name: "test"
-      }
+        name: "test",
+      },
     });
     pushApplicationID = application.data.pushApplicationID;
     masterSecret = application.data.masterSecret;
@@ -80,8 +80,8 @@ describe("Push", function() {
       data: {
         name: "android",
         googleKey: serverKey,
-        projectNumber: senderId
-      }
+        projectNumber: senderId,
+      },
     });
 
     // set variant and secret in config
@@ -93,7 +93,7 @@ describe("Push", function() {
     // delete test application
     await axios({
       method: "delete",
-      url: `${upsUrl}/rest/applications/${pushApplicationID}`
+      url: `${upsUrl}/rest/applications/${pushApplicationID}`,
     });
   });
 
@@ -112,11 +112,11 @@ describe("Push", function() {
     }, upsConfig);
 
     // start listening for notifications
-    const message = device.execute(async modules => {
+    const message = device.execute(async (modules) => {
       const { PushRegistration } = modules["@aerogear/push"];
 
-      return await new Promise(resolve => {
-        PushRegistration.onMessageReceived(notification =>
+      return await new Promise((resolve) => {
+        PushRegistration.onMessageReceived((notification) =>
           resolve(notification.message)
         );
       });
@@ -126,8 +126,8 @@ describe("Push", function() {
     sender({
       url: upsUrl,
       applicationId: pushApplicationID,
-      masterSecret
-    }).then(client => {
+      masterSecret,
+    }).then((client) => {
       client.sender.send({ alert: "test" }, { criteria: { alias: ["alias"] } });
     });
 
@@ -146,12 +146,12 @@ describe("Push", function() {
     // start listening for notifications
     // fail if notification received
     // pass if no message received in 5s
-    const messageTimeout = device.execute(async modules => {
+    const messageTimeout = device.execute(async (modules) => {
       const { PushRegistration } = modules["@aerogear/push"];
 
       return await new Promise((resolve, reject) => {
         setTimeout(resolve, 5000);
-        PushRegistration.onMessageReceived(notification =>
+        PushRegistration.onMessageReceived((notification) =>
           reject(notification)
         );
       });
@@ -161,8 +161,8 @@ describe("Push", function() {
     sender({
       url: upsUrl,
       applicationId: pushApplicationID,
-      masterSecret
-    }).then(client => {
+      masterSecret,
+    }).then((client) => {
       client.sender.send({ alert: "test" }, { criteria: { alias: ["alias"] } });
     });
 

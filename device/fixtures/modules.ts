@@ -7,7 +7,7 @@ export const modules = {
   "@aerogear/push": aerogearPush,
   "offix-client-boost": offix,
   "graphql-tag": { gql },
-  "./ToggleNetworkStatus": _ToggleNetworkStatus
+  "./ToggleNetworkStatus": _ToggleNetworkStatus,
 };
 
 export type Modules = typeof modules;

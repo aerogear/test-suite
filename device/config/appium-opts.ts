@@ -15,8 +15,8 @@ if (process.env.LOCAL_APPIUM === "true") {
         "../testing-app/platforms/android/app/build/outputs/apk/debug/app-debug.apk"
       ),
       automationName: "UiAutomator2",
-      autoWebview: true
-    }
+      autoWebview: true,
+    },
   };
 } else {
   opts = {
@@ -38,8 +38,8 @@ if (process.env.LOCAL_APPIUM === "true") {
       autoWebview: true,
       "browserstack.appium_version": "1.14.0",
       "browserstack.networkLogs": true,
-      "browserstack.debug": true
-    }
+      "browserstack.debug": true,
+    },
   };
 }
 

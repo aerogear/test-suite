@@ -15,7 +15,7 @@ interface Universe extends GlobalUniverse {
   offlineChangePromise: Promise<unknown>;
 }
 
-describe("Data Sync", function() {
+describe("Data Sync", function () {
   let syncAppUrl;
   let syncConfig;
 
@@ -24,11 +24,11 @@ describe("Data Sync", function() {
   it("should initialize voyager client", async () => {
     syncConfig = {
       serverUrl: `${process.env.SYNC_URL}/graphql`,
-      wsServerUrl: `${process.env.SYNC_WS_URL}/graphql`
+      wsServerUrl: `${process.env.SYNC_WS_URL}/graphql`,
     };
     syncAppUrl = syncConfig.serverUrl;
 
-    await device.execute(async function(modules, universe: Universe, config) {
+    await device.execute(async function (modules, universe: Universe, config) {
       const { createClient, CacheOperation, getUpdateFunction } = modules[
         "offix-client-boost"
       ];
@@ -49,14 +49,14 @@ describe("Data Sync", function() {
           mutationName: "createTask",
           idField: "id",
           operationType: CacheOperation.ADD,
-          updateQuery: getAllItemsQuery
-        })
+          updateQuery: getAllItemsQuery,
+        }),
       };
 
       const options = {
         httpUrl: config.serverUrl,
         wsUrl: config.wsServerUrl,
-        mutationCacheUpdates: cacheUpdates
+        mutationCacheUpdates: cacheUpdates,
       };
 
       const offlineClient = await createClient(options);
@@ -73,12 +73,12 @@ describe("Data Sync", function() {
       await apolloClient.query({
         query: getAllItemsQuery,
         fetchPolicy: "network-only",
-        errorPolicy: "none"
+        errorPolicy: "none",
       });
     });
   });
 
-  describe("Subscription test", function() {
+  describe("Subscription test", function () {
     const subscriptionTestTaskTitle = `task received via websocket-${Date.now()}`;
 
     it("device should successfully subscribe to ws", async () => {
@@ -102,16 +102,16 @@ describe("Data Sync", function() {
         const options = {
           subscriptionQuery: taskAddedSubscription,
           cacheUpdateQuery: getAllItemsQuery,
-          operationType: CacheOperation.ADD
+          operationType: CacheOperation.ADD,
         };
 
         const subscriptionOptions = createSubscriptionOptions(options);
         const getTasks = await apolloClient.watchQuery({
           query: getAllItemsQuery,
-          fetchPolicy: "network-only"
+          fetchPolicy: "network-only",
         });
         getTasks.subscribeToMore(subscriptionOptions);
-        getTasks.subscribe(result => {
+        getTasks.subscribe((result) => {
           universe.subscriptionUpdate.data = result.data.allTasks;
         });
         // Wait until the client is successfully subscribed and the last update from subscription is received
@@ -121,7 +121,7 @@ describe("Data Sync", function() {
           universe.subscriptionUpdate.data !== lastUpdate
         ) {
           lastUpdate = universe.subscriptionUpdate.data;
-          await new Promise(res => setTimeout(res, 1000));
+          await new Promise((res) => setTimeout(res, 1000));
         }
         // eslint-disable-next-line require-atomic-updates
         universe.subscriptionUpdate.numberOfTasksBeforeUpdate =
@@ -135,7 +135,7 @@ describe("Data Sync", function() {
         await axios({
           method: "POST",
           url: syncAppUrl,
-          data: { query }
+          data: { query },
         });
         // Postpone sending the mutation. Otherwise the test is flaky.
       }, 5000);
@@ -145,14 +145,14 @@ describe("Data Sync", function() {
       const updatedContent = await device.execute(
         async (_, universe: Universe) => {
           const {
-            subscriptionUpdate: { numberOfTasksBeforeUpdate }
+            subscriptionUpdate: { numberOfTasksBeforeUpdate },
           } = universe;
           // Wait until the number of items changes since the new task was created
           while (
             universe.subscriptionUpdate.data.length ===
             numberOfTasksBeforeUpdate
           ) {
-            await new Promise(res => setTimeout(res, 1000));
+            await new Promise((res) => setTimeout(res, 1000));
           }
           return universe.subscriptionUpdate.data;
         }
@@ -169,13 +169,13 @@ describe("Data Sync", function() {
     return;
   }
 
-  describe("Offline mutation test", function() {
+  describe("Offline mutation test", function () {
     let testTitleToCheck;
 
     it("should perform offline mutation", async () => {
       await setNetwork("airplane-mode");
 
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       testTitleToCheck = await device.execute(
         async (modules, universe: Universe) => {
@@ -195,7 +195,7 @@ describe("Data Sync", function() {
               mutation: createTaskMutation,
               variables: { title: testTitle, description: "test" },
               updateQuery: getAllItemsQuery,
-              returnType: "Task"
+              returnType: "Task",
             });
           } catch (error) {
             if (error.offline) {
@@ -217,14 +217,14 @@ describe("Data Sync", function() {
         const { apolloClient, getAllItemsQuery } = universe;
 
         const { data } = await apolloClient.query({
-          query: getAllItemsQuery
+          query: getAllItemsQuery,
         });
 
         return { data: data.allTasks };
       });
 
       const foundTitle = result.data.find(
-        task => task.title === testTitleToCheck
+        (task) => task.title === testTitleToCheck
       );
       foundTitle.should.not.equal(undefined);
     });
@@ -236,22 +236,22 @@ describe("Data Sync", function() {
         const {
           apolloClient,
           getAllItemsQuery,
-          offlineChangePromise
+          offlineChangePromise,
         } = universe;
 
         await offlineChangePromise;
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const { data } = await apolloClient.query({
-          query: getAllItemsQuery
+          query: getAllItemsQuery,
         });
 
         return { data: data.allTasks };
       });
 
       const foundTitle = result.data.find(
-        task => task.title === testTitleToCheck
+        (task) => task.title === testTitleToCheck
       );
       foundTitle.should.not.equal(undefined);
     });

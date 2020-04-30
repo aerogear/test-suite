@@ -18,8 +18,8 @@ export const config: AeroGearConfiguration = mobileServices || {
       type: "sync-app",
       url: `http://${syncUrl}`,
       config: {
-        websocketUrl: `ws://${syncUrl}`
-      }
+        websocketUrl: `ws://${syncUrl}`,
+      },
     },
     {
       id: "fb8ebb60-83b1-11e9-9805-e86a640057de",
@@ -30,9 +30,9 @@ export const config: AeroGearConfiguration = mobileServices || {
         android: {
           senderId: null,
           variantId: null,
-          variantSecret: null
-        }
-      }
-    }
-  ]
+          variantSecret: null,
+        },
+      },
+    },
+  ],
 };

@@ -2,7 +2,7 @@ import { getAutomationSession } from "./browserstack";
 import { device, init } from "./device";
 import { login } from "./login";
 
-before("Initialize device", async function() {
+before("Initialize device", async function () {
   this.timeout(0);
 
   await init();

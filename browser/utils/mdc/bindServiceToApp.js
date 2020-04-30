@@ -7,7 +7,7 @@ module.exports = async (appName, serviceName, params) => {
     syncServiceName,
     idmServiceName,
     mssServiceName,
-    upsServiceName
+    upsServiceName,
   } = config;
   if (!params) {
     params = config;
@@ -15,14 +15,14 @@ module.exports = async (appName, serviceName, params) => {
   await openApp(appName);
   await Promise.all([
     page.click('a[href="#services"]'),
-    page.waitForNavigation({ waitUntil: ["domcontentloaded", "networkidle0"] })
+    page.waitForNavigation({ waitUntil: ["domcontentloaded", "networkidle0"] }),
   ]);
   await page.waitForSelector(".unboundService button", { visible: true });
   // Find the service row index
   const serviceIndex = await page.$$eval(
     ".unboundService .service-name",
     (svcs, serviceName) =>
-      svcs.findIndex(s => s.innerText.includes(serviceName)),
+      svcs.findIndex((s) => s.innerText.includes(serviceName)),
     serviceName
   );
   // Make sure the row with service name was found
@@ -88,8 +88,8 @@ module.exports = async (appName, serviceName, params) => {
   await page.click(".wizard-pf-footer .btn-primary");
   // Wait until the service appears in Bound services section
   await page.waitForFunction(
-    serviceName =>
-      [...document.querySelectorAll(".boundService .service-name")].find(el =>
+    (serviceName) =>
+      [...document.querySelectorAll(".boundService .service-name")].find((el) =>
         el.innerText.includes(serviceName)
       ),
     {},

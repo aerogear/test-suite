@@ -20,15 +20,15 @@ let kubeClient;
 let openshiftClient;
 let allNamespaces;
 
-const getNamespaces = async namespaceName => {
+const getNamespaces = async (namespaceName) => {
   if (!allNamespaces) {
     // eslint-disable-next-line require-atomic-updates
     allNamespaces = await resource(PROJECT, GET_ALL);
   }
   if (namespaceName) {
     return allNamespaces.items
-      .map(ns => ns.metadata.name)
-      .find(name => name.includes(namespaceName));
+      .map((ns) => ns.metadata.name)
+      .find((name) => name.includes(namespaceName));
   }
   return allNamespaces;
 };
@@ -91,13 +91,15 @@ const resource = async (type, action, param, namespace = null) => {
   }
 };
 
-const deployShowcaseServer = async namespace => {
+const deployShowcaseServer = async (namespace) => {
   await exec(`oc new-app --template datasync-showcase-server -n ${namespace}`);
   await waitFor(
     async () => {
-      const replicasReady = (await exec(
-        `oc get dc -o jsonpath='{.items[*].status.readyReplicas}' -n ${namespace} | wc -w`
-      )).stdout.replace(/\s/g, "");
+      const replicasReady = (
+        await exec(
+          `oc get dc -o jsonpath='{.items[*].status.readyReplicas}' -n ${namespace} | wc -w`
+        )
+      ).stdout.replace(/\s/g, "");
       console.log(`Waiting for showcase server: ${replicasReady}/3`);
       // until postgresql, mqtt and showcase-server are ready
       return replicasReady.includes("3");
@@ -107,15 +109,15 @@ const deployShowcaseServer = async namespace => {
   );
 };
 
-const newProject = async name => {
+const newProject = async (name) => {
   await exec(`oc new-project ${name}`);
 };
 
-const deleteProject = async name => {
+const deleteProject = async (name) => {
   await exec(`oc delete project ${name}`);
 };
 
-const cleanupNamespaces = async nsPrefix => {
+const cleanupNamespaces = async (nsPrefix) => {
   const namespaces = await getNamespaces();
 
   for (const ns of namespaces.items) {
@@ -125,7 +127,7 @@ const cleanupNamespaces = async nsPrefix => {
   }
 };
 
-const redeployShowcase = async namePrefix => {
+const redeployShowcase = async (namePrefix) => {
   // Creating namespace with random string suffix is a workaround
   // for some reason when deleting then creating namespace with
   // same name in script, no matter how long it waits before
@@ -146,13 +148,13 @@ module.exports = {
   TYPE: {
     CONFIG_MAP,
     ROUTE,
-    PROJECT
+    PROJECT,
   },
   ACTION: {
     GET,
     CREATE,
     DELETE,
-    GET_ALL
+    GET_ALL,
   },
   resource,
   deployShowcaseServer,
@@ -160,5 +162,5 @@ module.exports = {
   deleteProject,
   redeployShowcase,
   getNamespaces,
-  cleanupNamespaces
+  cleanupNamespaces,
 };

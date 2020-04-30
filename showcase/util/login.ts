@@ -3,7 +3,7 @@ import {
   KEYCLOAK_PASSWORD,
   KEYCLOAK_USERNAME,
   MOBILE_PLATFORM,
-  MobilePlatform
+  MobilePlatform,
 } from "./config";
 import { device } from "./device";
 
@@ -16,7 +16,7 @@ async function switchWindow(): Promise<void> {
     await device.switchToWindow(handles[0]);
   } else if (handles.length === 2) {
     const current = await device.getWindowHandle();
-    const switchTo = handles.find(h => h !== current);
+    const switchTo = handles.find((h) => h !== current);
     await device.switchToWindow(switchTo);
   } else {
     throw new Error(
@@ -73,15 +73,15 @@ export async function login(): Promise<void> {
 
   // Login
   await retry(async () => {
-    await interact(await device.$("#username"), e =>
+    await interact(await device.$("#username"), (e) =>
       e.setValue(KEYCLOAK_USERNAME)
     );
 
-    await interact(await device.$("#password"), e =>
+    await interact(await device.$("#password"), (e) =>
       e.setValue(KEYCLOAK_PASSWORD)
     );
 
-    await interact(await device.$("#kc-login"), e => e.click());
+    await interact(await device.$("#kc-login"), (e) => e.click());
     await waitForLoggedIn();
   });
 

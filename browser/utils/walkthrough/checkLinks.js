@@ -1,15 +1,17 @@
 const { expect } = require("chai");
 
-module.exports = async selector => {
+module.exports = async (selector) => {
   await page.waitForSelector(selector);
-  const linksToCheck = await page.$$eval(selector, els => els.map(a => a.href));
+  const linksToCheck = await page.$$eval(selector, (els) =>
+    els.map((a) => a.href)
+  );
 
   for (const link of linksToCheck) {
     const newPage = await context.newPage();
     let response;
     try {
       response = await newPage.goto(link, {
-        waitUntil: ["domcontentloaded", "networkidle0"]
+        waitUntil: ["domcontentloaded", "networkidle0"],
       });
       while (response === null) {
         console.log(
@@ -17,7 +19,7 @@ module.exports = async selector => {
         );
         await page.waitFor(1000);
         response = await newPage.reload({
-          waitUntil: ["domcontentloaded", "networkidle0"]
+          waitUntil: ["domcontentloaded", "networkidle0"],
         });
       }
     } catch (error) {
