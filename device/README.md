@@ -54,7 +54,7 @@ oc login ... (evals user)
 cd .. && npm install && cd device
 ./scripts/prepare.js
 
-oc login ... (cluster-admin user)
+oc login ... (kubeadmin user)
 ```
 
 ## Setup testing app
