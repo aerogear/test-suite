@@ -2,16 +2,21 @@ require("chai").should();
 const axios = require("axios");
 const util = require("util");
 const exec = util.promisify(require("child_process").exec);
+const openshiftUser = process.env.OPENSHIFT_USERNAME;
+const openshiftPassword = process.env.OPENSHIFT_PASSWORD;
+const openshiftURL = process.env.OPENSHIFT_URL;
 const {
   init,
   cleanupNamespaces,
+  getNamespaces,
   resource,
   TYPE,
   ACTION,
   newProject,
   deleteProject,
+  userLogin
 } = require("../../common/util/rhmds-api");
-const { waitFor } = require("../../common/util/utils");
+const { waitFor, getOpenshiftAPItoken } = require("../../common/util/utils");
 
 describe("Data Sync App deploy test", async function () {
   this.timeout(0);
@@ -19,8 +24,31 @@ describe("Data Sync App deploy test", async function () {
   const projectName = `${projectPrefix}-${Date.now()}`;
   let syncAppHostname;
 
+  let authEndpoint;
+  let authProject;
+  let authHostname;
+  let token;
+
   before("Initialize kube client", async () => {
     await init();
+
+    authProject = await getNamespaces("openshift-authentication");
+    authHostname = (await resource(
+      TYPE.ROUTE,
+      ACTION.GET_ALL,
+      null,
+      authProject
+    )).items
+      .map(r => r.spec.host)
+      .find(url => url.includes("oauth-openshift"));
+    authEndpoint = `https://${authHostname}/oauth/token/request`;
+    token = await getOpenshiftAPItoken(
+      authEndpoint,
+      openshiftUser,
+      openshiftPassword
+    );
+
+    await userLogin(openshiftURL, token.token);
     await cleanupNamespaces(projectPrefix);
     await newProject(projectName);
   });
