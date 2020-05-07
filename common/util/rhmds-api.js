@@ -127,6 +127,10 @@ const cleanupNamespaces = async (nsPrefix) => {
   }
 };
 
+const userLogin = async (url, token) => {
+  await exec(`oc login --server=${url} --token=${token}`);
+};
+
 const redeployShowcase = async (namePrefix) => {
   // Creating namespace with random string suffix is a workaround
   // for some reason when deleting then creating namespace with
@@ -163,4 +167,5 @@ module.exports = {
   redeployShowcase,
   getNamespaces,
   cleanupNamespaces,
+  userLogin
 };
