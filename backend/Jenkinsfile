@@ -1,5 +1,7 @@
 // Expected parameters for the pipeline:
 //   - OPENSHIFT_URL - RHMI cluster to target (https://...)
+//   - OPENSHIFT_KUBEADMIN_USERNAME - kubeadmin username
+//   - OPENSHIFT_KUBEADMIN_PASSWORD - kubeadmin user password
 //   - OPENSHIFT_USERNAME - Evals username
 //   - OPENSHIFT_PASSWORD - Evals user password
 
@@ -33,8 +35,8 @@ pipeline {
     }
     stage('Login with oc') {
       steps {
-        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
-          sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p ${OPENSHIFT_PASSWORD}"
+        wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_KUBEADMIN_PASSWORD', password: OPENSHIFT_KUBEADMIN_PASSWORD]]]) {
+          sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_KUBEADMIN_USERNAME -p ${OPENSHIFT_KUBEADMIN_PASSWORD}"
         }
       }
     }
