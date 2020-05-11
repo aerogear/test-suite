@@ -89,7 +89,7 @@ const getOpenshiftAPItoken = async (
   try {
     browser = await puppeteer.launch({
       slowMo: 50,
-      executablePath: "google-chrome"
+      executablePath: "google-chrome",
     });
     const page = await browser.newPage();
 
@@ -129,5 +129,5 @@ module.exports = {
   waitFor,
   randomString,
   getHeaderWithOauthProxyCookie,
-  getOpenshiftAPItoken
+  getOpenshiftAPItoken,
 };

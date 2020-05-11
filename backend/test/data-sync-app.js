@@ -14,7 +14,7 @@ const {
   ACTION,
   newProject,
   deleteProject,
-  userLogin
+  userLogin,
 } = require("../../common/util/rhmds-api");
 const { waitFor, getOpenshiftAPItoken } = require("../../common/util/utils");
 
@@ -33,14 +33,11 @@ describe("Data Sync App deploy test", async function () {
     await init();
 
     authProject = await getNamespaces("openshift-authentication");
-    authHostname = (await resource(
-      TYPE.ROUTE,
-      ACTION.GET_ALL,
-      null,
-      authProject
-    )).items
-      .map(r => r.spec.host)
-      .find(url => url.includes("oauth-openshift"));
+    authHostname = (
+      await resource(TYPE.ROUTE, ACTION.GET_ALL, null, authProject)
+    ).items
+      .map((r) => r.spec.host)
+      .find((url) => url.includes("oauth-openshift"));
     authEndpoint = `https://${authHostname}/oauth/token/request`;
     token = await getOpenshiftAPItoken(
       authEndpoint,

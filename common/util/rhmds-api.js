@@ -167,5 +167,5 @@ module.exports = {
   redeployShowcase,
   getNamespaces,
   cleanupNamespaces,
-  userLogin
+  userLogin,
 };
