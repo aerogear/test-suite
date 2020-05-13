@@ -49,7 +49,11 @@ export DATASYNC_VERSION="..."
 To target OpenShift instance run:
 
 ```
-oc login ... (evals user)
+oc login ... (kubeadmin user)
+
+export OPENSHIFT_URL= (cluster URL)
+export OPENSHIFT_USERNAME= (customer-admin user)
+export OPENSHIFT_PASSWORD= (customer-admin password)
 
 cd .. && npm install && cd device
 ./scripts/prepare.js

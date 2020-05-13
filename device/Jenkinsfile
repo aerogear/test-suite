@@ -8,8 +8,8 @@ def runIntegrationTests() {
 //   - OPENSHIFT_URL - RHMI cluster to target (https://...)
 //   - OPENSHIFT_USERNAME - Evals username
 //   - OPENSHIFT_PASSWORD - Evals user password
-//   - ADMIN_USERNAME - RHMI cluster-admin username
-//   - ADMIN_PASSWORD - RHMI cluster-admin password
+//   - OPENSHIFT_KUBEADMIN_USERNAME - RHMI cluster-admin username
+//   - OPENSHIFT_KUBEADMIN_PASSWORD - RHMI cluster-admin password
 
 pipeline {
   agent none
@@ -89,12 +89,12 @@ pipeline {
         stage('Bind services') {
           steps {
             dir('device') {
-              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_PASSWORD', password: OPENSHIFT_PASSWORD]]]) {
-                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_USERNAME -p ${OPENSHIFT_PASSWORD}"
+              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_KUBEADMIN_PASSWORD', password: OPENSHIFT_KUBEADMIN_PASSWORD]]]) {
+                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_KUBEADMIN_USERNAME -p ${OPENSHIFT_KUBEADMIN_PASSWORD}"
               }
               sh './scripts/prepare.js'
-              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'ADMIN_PASSWORD', password: ADMIN_PASSWORD]]]) {
-                sh "oc login $OPENSHIFT_URL -u $ADMIN_USERNAME -p ${ADMIN_PASSWORD}"
+              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_KUBEADMIN_PASSWORD', password: OPENSHIFT_KUBEADMIN_PASSWORD]]]) {
+                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_KUBEADMIN_USERNAME -p ${OPENSHIFT_KUBEADMIN_PASSWORD}"
               }
             }
           }
