@@ -22,6 +22,7 @@ const appName = "device-test-suite";
 
 (async () => {
   await init();
+
   let authProject = await getNamespaces("openshift-authentication");
   let authHostname = (
     await resource(TYPE.ROUTE, ACTION.GET_ALL, null, authProject)
@@ -35,6 +36,7 @@ const appName = "device-test-suite";
     openshiftPassword
   );
   await userLogin(openshiftURL, token.token);
+
   const project = await redeployShowcase(appName);
 
   const output = await exec(
