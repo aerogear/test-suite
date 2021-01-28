@@ -1,0 +1,8 @@
+{
+  "pushServerURL": "http://unifiedpush-configurable-container-mmusil-test-push-latesttag.apps.helios.intlyqe.com",
+  "android": {
+    "senderID": "231641968159",
+    "variantID": "8db2c0c8-2623-4e50-82da-4a22ed2c31f7",
+    "variantSecret": "7a2188b2-1c44-4041-b6d5-0f6334befac1"
+  }
+}
