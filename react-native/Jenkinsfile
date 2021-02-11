@@ -1,0 +1,79 @@
+// Expected parameters for the pipeline:
+//   - OPENSHIFT_URL - RHMI cluster to target (https://...)
+//   - OPENSHIFT_USERNAME - Evals username
+//   - OPENSHIFT_PASSWORD - Evals user password
+//   - OPENSHIFT_KUBEADMIN_USERNAME - RHMI cluster-admin username
+//   - OPENSHIFT_KUBEADMIN_PASSWORD - RHMI cluster-admin password
+//   - FIREBASE_SERVER_KEY - FCM server key
+//   - FIREBASE_SENDER_ID - FCM sender ID
+
+pipeline {
+  agent {
+    label 'osx'
+  }
+  options {
+    timestamps()
+    ansiColor('gnome-terminal')
+  }
+  environment {
+    FIREBASE_SERVER_KEY = credentials('reactnative-firebase-server-key')
+    FIREBASE_SENDER_ID = credentials('reactnative-firebase-sender-id')
+    GOOGLE_SERVICES = credentials('reactnative-google-services')
+    JUNIT_REPORT_STACK = '1'
+  }
+  stages {
+    stage('Setup'){
+      stages{
+        stage('Prepare'){
+          steps{
+            dir('react-native'){
+              wrap([$class: 'MaskPasswordsBuildWrapper', varPasswordPairs: [[var: 'OPENSHIFT_KUBEADMIN_PASSWORD', password: OPENSHIFT_KUBEADMIN_PASSWORD]]]) {
+                sh "oc login $OPENSHIFT_URL -u $OPENSHIFT_KUBEADMIN_USERNAME -p ${OPENSHIFT_KUBEADMIN_PASSWORD}"
+              }
+              sh """
+              yarn install
+              ./scripts/prepare.js
+              """
+            }
+          }
+        }
+        stage('Git clone'){
+          steps{
+            dir('react-native') {
+              sh """
+              git clone https://github.com/mmusil/unifiedpush-cookbook.git ./unifiedpush-cookbook
+              cd unifiedpush-cookbook
+              git checkout -b E2E_testing origin/E2E_testing
+              """
+            }
+          }
+        }
+        stage('Build Testing App') {
+          steps {
+            dir('react-native/unifiedpush-cookbook/react-native/push') {
+              sh """
+              cp ${GOOGLE_SERVICES} ./android/app/google-services.json
+              cp ../../../fixtures/push-config.json ./
+              yarn install
+              detox build --configuration android.release
+              """
+            }
+          }
+        }
+      }
+    }
+    stage('Testing') {
+      stages {
+        stage('Test android') {
+          steps {
+            dir('react-native/unifiedpush-cookbook/react-native/push') {
+              sh """
+              detox test -H --configuration android.release --cleanup --loglevel info
+              """
+            }
+          }
+        }
+      }
+    }
+  }
+}

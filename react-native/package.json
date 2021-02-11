@@ -1,0 +1,14 @@
+{
+  "name": "aerogear-push-e2e-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AeroGear Push E2E test fro react-native client",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "./scripts/start-bs-local.sh",
+    "start": ". ./scripts/setup-env-vars.sh && mocha"
+  },
+  "dependencies": {
+    "axios": "0.21.1"
+  }
+}

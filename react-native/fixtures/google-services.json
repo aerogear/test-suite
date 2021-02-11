@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "231641968159",
+    "firebase_url": "https://push-test-reactnative.firebaseio.com",
+    "project_id": "push-test-reactnative",
+    "storage_bucket": "push-test-reactnative.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231641968159:android:484c101a33f23550ebaf2a",
+        "android_client_info": {
+          "package_name": "com.push"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "231641968159-36lvsncmh0uh1sn2qni81ugmo8thepq9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuulcxxgIyr2v1tJaTWpVkQFbTsZY9-YY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "231641968159-36lvsncmh0uh1sn2qni81ugmo8thepq9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231641968159:android:c813a6054850a57eebaf2a",
+        "android_client_info": {
+          "package_name": "com.push.rn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "231641968159-jqb4s3thid4teid421bi25mimbpaicmk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.push.rn",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "231641968159-36lvsncmh0uh1sn2qni81ugmo8thepq9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuulcxxgIyr2v1tJaTWpVkQFbTsZY9-YY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "231641968159-36lvsncmh0uh1sn2qni81ugmo8thepq9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
